@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
+
+
+
+/* Farben */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --foreground: #dfdfdf;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #eeeeee;
     --foreground: #ededed;
+    --grid-color: rgba(95, 95, 95, 0.151);
   }
 }
 
+/* Grundlegendes Reset + Box-Sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* Alles inkl. Padding & Border */
+
+}
+
+/* Body Vollbild + Hintergrund + Schrift */
 body {
-  background: var(--background);
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  
+  /* Das erzeugt das Karo-Muster */
+  background-color: var(--background);
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 40px 40px; /* Größe der Karos */
+  animation: moveGrid 5s linear infinite; 
+
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, sans-serif;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Hide native scrollbar visuals but preserve scrolling */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@keyframes moveGrid {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 40px 40px, 40px 40px;
+  }
+}
+
+
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* Utility-Klasse für Tailwind */
+@layer utilities {
+  .animate-gradient {
+    animation: gradient 1s ease infinite;
+  }
 }
