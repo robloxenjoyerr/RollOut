@@ -11,9 +11,10 @@ export interface Person {
 }
 
 export interface Template {
-    id: string;
-    name: string;
-    persons: Person[];
-    mode: Mode;
-    state: Phase;
+    id: string
+    owner_id: string
+    name: string
+    persons: Person[]
+    mode: Mode
+    state: Phase
 }

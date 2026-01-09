@@ -12,6 +12,7 @@ interface ButtonProps{
     className?: string | undefined,
     href?: string,
     disabled?: boolean,
+    type?: "submit" | "reset" | "button" | undefined,
     [key: string]: any
 }
 
@@ -23,6 +24,7 @@ export default function Button({
     className = "",
     href,
     disabled = false,
+    type=undefined,
     onClick,
     ...props
 }: ButtonProps) {
@@ -35,14 +37,14 @@ export default function Button({
 
     if(href){
         return(
-            <Link href={disabled ? "" : href} className={style} {...props} >
+            <Link href={disabled ? "" : href} type={type} className={style} {...props} >
                 {children}
             </Link>
         )
     }
 
     return(
-        <button className={style} onClick={handleClick} {...props}>
+        <button className={style} type={type} onClick={handleClick} {...props}>
             {children}
         </button>
     )

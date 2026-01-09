@@ -15,7 +15,7 @@ interface InputProps {
     buttonText?: string,
     onButtonClick?: (value: string) => void,
     onEmptyValue?: (value: string) => void,
-    onChange?: (value: string) => void
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
     valid?: boolean,
     shadowOn?: boolean,
     isStyled?: boolean,
@@ -43,7 +43,7 @@ export default function Input({
     ...props
 }: InputProps) {
     const base = `${width} ${height} ${paddingx} ${paddingy} ${marginx} ${marginy}`
-    const styling = `${shadowOn ? 'shadow-lg' : ''} backdrop-blur-3xl ${valid ? "bg-white/5" : "bg-red/5"} border border-2 border-black/20 rounded-2xl focus:outline-none focus:bg-black/10 text-black transition-all duration-200 ${className}`
+    const styling = `${shadowOn ? 'shadow-lg' : ''} backdrop-blur-3xl ${valid ? "bg-black/5 focus:bg-black/20  " : "bg-red-200 border-2 border-red-500 focus:bg-red-200 "} border border-2 border-black/20 rounded-2xl focus:outline-none text-black transition-all duration-200 ${className}`
     const style = `${base} ${styling}`
 
     const inputRef = useRef<HTMLInputElement>(null)
@@ -75,7 +75,7 @@ export default function Input({
                     ref={inputRef}
                     placeholder={placeholder}
                     className={style + className}
-                    onChange={e => onChange?.(e.target.value)}
+                    onChange={e => onChange?.(e)}
                     {...props}
                 />
                 <Button onClick={handleButtonClick}>{buttonText}</Button>
@@ -88,7 +88,7 @@ export default function Input({
             ref={inputRef}
             placeholder={placeholder}
             className={style + className}
-            onChange={e => onChange?.(e.target.value)}
+            onChange={e => onChange?.(e)}
             {...props}
         />
     )
