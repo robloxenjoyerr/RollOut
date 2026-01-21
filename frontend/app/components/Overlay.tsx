@@ -15,9 +15,13 @@ interface OverlayProps {
 export default function Overlay({isOpen = false, onClose, children, className = "", ...props }: OverlayProps) {
     
     return (
-        <div // HIER WAS GEÄNDERT BEI isOpen ? : 
+        <div 
             onClick={onClose}
-            className={`fixed inset-0 flex justify-center items-center transition-colors duration-150 ease-in-out ${isOpen ? "opacity-100 pointer-events-auto bg-black/20" : "opacity-0 pointer-events-none"} `}
+            className={`fixed inset-0 z-50 flex justify-center items-center transition-colors duration-150 ease-in-out 
+                ${isOpen 
+                    ? "opacity-100 pointer-events-auto visible bg-black/20" 
+                    : "opacity-0 pointer-events-none invisible"} 
+                `}
         >
             <div
                 className={`bg-white rounded-xl border-2 border-black/30 shadow-md p-6 transition-all ease-in-out ${isOpen ? "scale-100 opacity-100" : "scale-125 opacity-0"} ${className}`}
@@ -27,5 +31,5 @@ export default function Overlay({isOpen = false, onClose, children, className = 
                 {children}
             </div>
         </div>
-    )
+    ) 
 }
