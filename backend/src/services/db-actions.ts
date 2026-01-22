@@ -7,23 +7,20 @@ const JWT_SECRET = "c426a049b495b92e2fa250961d99ef62b36f8c97fd99d742e105c2141e08
 export type GamePhase = "unstarted" | "waiting-lobby" | "in-progress" | "finished";
 export type Mode = "random" | "wheel" | "plinko" | "casino";
 export type PersonState = "unrolled" | "rolled";
-
-type Person = {
+export type Person = {
     id: string,
     name: string,
     state: PersonState
 }
 
 
-interface Template {
+export type Template = {
     id: string,
     owner_id: string,
     name: string,
     persons: Person[],
     mode: Mode
 }
-
-
 
 export async function createNewUserTemplate(owner_id: string, template: Template) {
     const stmt = db.prepare(`
@@ -164,4 +161,6 @@ export async function updateUserTemplate(owner_id: string, templateId: string, u
         return null
     }
 }
+
+
 

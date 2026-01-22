@@ -17,7 +17,7 @@ import { randomBytes } from "crypto";
 import { useToasts } from "../hooks/useToasts";
 import { useAuth } from "../hooks/useAuth";
 import { useTemplates } from "../hooks/useTemplates";
-import { create } from "domain";
+
 
 type Modal =
     | { type: "create" }
@@ -39,7 +39,7 @@ export default function Home() {
         fetchTemplates()
     }, [])
 
-   
+
     function openCreateModal() {
         setDraftTemplate({
             id: "",
@@ -110,7 +110,7 @@ export default function Home() {
     }
 
     function addPersonToTemplate(newName: string) {
-
+        console.log("adding person", newName)
         setDraftTemplate((prev) => {
             if (!prev) return null
 
@@ -163,14 +163,38 @@ export default function Home() {
         }
     }
 
-    function startGame(template: Template | null) {
+    async function startGame(template: Template | null) {
         if (!template) return
-        window.location.href = `/game/${template.id}`
+
+        try {
+            const res = await apiFetch("/api/game/start", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ template: template, owner_id: user.id })
+            })
+
+            if (res.success) {
+                localStorage.setItem("session_id", res.session_id)
+                window.location.href = `/game/${res.game_id}`
+            }
+            else {
+                localStorage.setItem("session_id", res.session_id)
+                 const { game_id } = await apiFetch(`/api/game/from-session/${res.session_id}`)
+                window.location.href = `/game/${res.game_id}`
+            }
+        }
+        catch (err) {
+            console.log(err)
+        }
+
     }
 
     function logOut() {
-        localStorage.setItem("login_token", "")
-        if (!token) window.location.href = "/login"
+        localStorage.removeItem("login_token")
+        window.location.href = "/login"
     }
 
     async function deleteTemplate() {
@@ -199,13 +223,13 @@ export default function Home() {
         }
     }
 
-    if (state === "loading") return <Loading className="bg-white "></Loading>
+    if (state === "loading") return <Loading></Loading>
     if (state === "unauthenticated") {
         window.location.href = "/login"
     }
     if (state === "authenticated") {
         return <>
-            <span onClick={() => window.location.href = "/"} className="hover:cursor-pointer absolute rounded-xs top-5 self-center select-none text-6xl hover:scale-110 transition-all duration-200 ease-in-out bg-gradient-to-r from-pink-500 via-yellow-500 to-blue-500 bg-[length:200%_200%] animate-gradient text-transparent bg-clip-text font-extrabold">RollOut</span>
+            <span onClick={() => window.location.href = "/"} className="hover:cursor-pointer absolute rounded-xs top-5 self-center select-none text-6xl hover:scale-110 transition-all duration-200 ease-in-out bg-linear-to-r from-pink-500 via-yellow-500 to-blue-500 bg-size-[200%_200%] animate-gradient text-transparent bg-clip-text font-extrabold">RollOut</span>
             <Button onClick={logOut} className="flex hover:bg-red-300 text-black hover:cursor-pointer absolute rounded-xl border-2 p-0! border-black/30 top-5 bg-red-200 right-5 h-fit w-fit items-center justify-center ">
                 <img className="w-7 h-7 " src="/logout.svg" alt="" />
             </Button>
@@ -213,7 +237,7 @@ export default function Home() {
                 <div className="flex flex-col gap-2 relative top-0">
                     <div className="flex flex-row gap-4">
                         <h1 className="text-black font-bold text-7xl top-0 select-none">Your Templates</h1>
-                        <Button className="group w-15 h-15 self-center bg-blue-200 rounded-3xl" onClick={() => setModal({ type: "create" })}>
+                        <Button className="group w-15 h-15 self-center bg-blue-200 rounded-3xl" onClick={openCreateModal}>
                             <img className="group-hover:rotate-90 transition-all duration-150" src="/PlusImage.svg" alt="" />
                         </Button>
                     </div>
@@ -335,7 +359,7 @@ export default function Home() {
 
                 <div className="h-160 flex flex-row flex-wrap gap-5 items-start content-start ">
                     <AnimatePresence>
-                        {templates ? templates.map((template, index) => (
+                        {!loading ? templates.map((template, index) => (
                             <motion.div
                                 key={template.id}
                                 initial={{ scale: 0, opacity: 0 }}

@@ -31,5 +31,16 @@ db.exec(`
 
     FOREIGN KEY (owner_id) REFERENCES users(id)
   );
+
+  CREATE TABLE IF NOT EXISTS live_games (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  host_id TEXT NOT NULL,
+  session_id TEXT UNIQUE NOT NULL,
+  phase TEXT NOT NULL,
+  mode TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  ended_at DATETIME
+);
 `)
 

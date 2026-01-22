@@ -28,7 +28,7 @@ export function useAuth() {
     useEffect(()=> {
         const check = () => {
             const user = getUser()
-            if(!user || Date.now() >= user.exep * 1000) {
+            if(!user || Date.now() >= user.exp * 1000) {
                 localStorage.removeItem("login_token")
                 setState("unauthenticated")
                 router.push("/login")

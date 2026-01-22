@@ -1,14 +1,16 @@
-import express from "express";
+import express from "express"
 import cors from "cors"
 require('dotenv').config()
 
 import { loginAuthentication } from "./middleware/secureMiddleware";
-import { checkLogin, createNewUser, fetchAllTemplates, updateUserTemplate, createNewUserTemplate, deleteTemplateById } from "./services/db-actions";
+import { checkLogin, createNewUser, fetchAllTemplates, updateUserTemplate, createNewUserTemplate, deleteTemplateById } from "./services/db-actions"
 import { randomBytes } from "crypto"
 import { Server } from "socket.io"
 import { createServer } from "node:http"
-import { registerGameHandlers } from "./sockets/gameHandler";
-
+import { registerGameHandlers } from "./sockets/gameHandler"
+import { checkUserForActiveSession, getLiveGames, startGame } from "./lib/game-manager";
+import { db } from "./db/database";
+import { LiveGame } from "./lib/game-manager";
 
 const PORT = process.env.PORT || 4000
 const app = express();
@@ -17,7 +19,9 @@ const io = new Server()
 
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL // Nur dein echtes Frontend darf anfragen
+  origin: process.env.FRONTEND_URL, // Nur dein echtes Frontend darf anfragen
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 app.use(express.json());
@@ -63,8 +67,7 @@ app.post("/api/user/create", async (req, res) => {
 })
 
 app.post("/api/user/login", async (req, res) => {
-  console.log("Checking Login.")
-
+  console.log("AUTH HEADER:", req.headers.authorization)
   try {
     const { username, password } = req.body
     if (!username || !password) {
@@ -88,7 +91,7 @@ app.post("/api/user/login", async (req, res) => {
 app.post("/api/templates/all", loginAuthentication, async (req, res) => {
   const { owner_id } = req.body
   const result = await fetchAllTemplates(owner_id)
-
+  console.log("Owner templates: ", result)
   return res.json(result)
 })
 
@@ -116,7 +119,7 @@ app.post("/api/templates/create", loginAuthentication, async (req, res) => {
   if (!newTemplate || !owner_id) return res.send({ success: false, message: "New Template or ownerId is missing." })
 
   newTemplate.id = randomBytes(8).toString("hex")
-  
+
   try {
     console.log("Template ID: ", newTemplate.id)
     const success = await createNewUserTemplate(owner_id, newTemplate)
@@ -142,8 +145,42 @@ app.post("/api/templates/delete", loginAuthentication, async (req, res) => {
   }
 })
 
+app.get("/api/livegames", async (req, res) => {
+  const liveGames = await getLiveGames()
 
+  return res.send({ liveGames })
+})
 
+app.get("/api/game/from-session/:session_id", loginAuthentication, async (req, res) => {
+    const { session_id } = req.params;
+
+    const game = db.prepare(`SELECT id FROM live_games WHERE session_id = ? AND ended_at IS NULL`).get<LiveGame>(session_id);
+
+    if (!game) return res.status(404).send({ success: false, message: "Session not found." });
+
+    return res.send({ success: true, game_id: game.id });
+});
+
+app.post("/api/game/start", loginAuthentication, async (req, res) => {
+  const { template, owner_id } = req.body
+
+  //Check if user already stared a game
+  const alreadyStarted = await checkUserForActiveSession(owner_id)
+
+  if (alreadyStarted) return res.send({ success: false, message: "User already started a game.", session_id: alreadyStarted.session_id })
+
+  try {
+    const info = await startGame(template, owner_id)
+    if (info.success) {
+      console.log("Game with session ID: ", info.session_id, "started.")
+      return res.send({ success: true, game_id: info.game_id, session_id: info.session_id })
+    }
+  } catch (err) {
+    console.log(err)
+    return res.status(500).send({ success: false, message: "Server error." })
+  }
+
+})
 
 
 io.on("startGame", (data) => {
@@ -154,4 +191,16 @@ io.on("joinGame", (data) => {
   console.log("Player joined game with data: ", data)
 })
 
-io.on
+
+
+
+
+
+
+
+// .env => BACKEND
+//FRONTEND_URL=http://localhost:3000
+//JWT_SECRET=c426a049b495b92e2fa250961d99ef62b36f8c97fd99d742e105c2141e08388bb81f8dd4a5a4ecd0864dd05760dff2944cb1e71e9802b013f958ea62b8f651a5
+
+//.env.local => FRONTEND
+//NEXT_PUBLIC_API_URL=http://localhost:4000

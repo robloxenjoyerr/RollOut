@@ -11,7 +11,7 @@ export function useTemplates(owner_id: string | null, addToast: Function) {
     async function fetchTemplates() {
         if (!owner_id) return
         setLoading(true)
-
+        console.log("OwnerID:", owner_id)
         const res = await apiFetch("/api/templates/all", {
             method: "POST",
             body: JSON.stringify({ owner_id: owner_id }),
@@ -20,6 +20,7 @@ export function useTemplates(owner_id: string | null, addToast: Function) {
                 "Authorization": `Bearer ${token}`
             },
         })
+        console.log("res:", res)
 
         setTemplates(res)
         setLoading(false)

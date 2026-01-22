@@ -8,7 +8,7 @@ import Button from "../components/Button";
 import { apiFetch } from "../lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import ToastContainer from "../components/ToastContainer";
 import { useToasts } from "../hooks/useToasts";
 
@@ -26,6 +26,9 @@ export default function LoginPage() {
 
     useEffect(() => {
         token = localStorage.getItem("login_token")
+        if (token){
+            window.location.href = "/host"
+        }
     })
 
     async function TryLogin(e: React.ChangeEvent<HTMLFormElement>) {

@@ -10,6 +10,7 @@ import Link from "next/link"
 import { AnimatePresence, motion } from "framer-motion";
 import ToastContainer from "../components/ToastContainer";
 import { useToasts } from "../hooks/useToasts";
+import { useEffect } from "react"
 
 
 interface UserCredentials {
@@ -23,6 +24,13 @@ export default function RegisterPage() {
     const router = useRouter()
     const [userCredentials, setUserCredentials] = useState<UserCredentials>({ username: "", password: "", password_validity: "" })
     const token = localStorage.getItem("login_token")
+
+    useEffect(() => {
+            const token = localStorage.getItem("login_token")
+            if (token){
+                window.location.href = "/host"
+            }
+        })
 
     async function TryRegister(e: React.ChangeEvent<HTMLFormElement>) {
         e.preventDefault()
