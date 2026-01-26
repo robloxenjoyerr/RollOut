@@ -17,12 +17,16 @@ import { randomBytes } from "crypto";
 import { useToasts } from "../hooks/useToasts";
 import { useAuth } from "../hooks/useAuth";
 import { useTemplates } from "../hooks/useTemplates";
-
+import Cookies from "js-cookie";
+import { tr } from "framer-motion/client";
+import { SourceTextModule } from "vm";
+import RollOutHeader from "../components/RollOutHeader";
 
 type Modal =
     | { type: "create" }
     | { type: "edit"; template: Template | null }
     | { type: "delete"; template: Template | null }
+    | { type: "start"; template: Template | null }
     | null
 
 export default function Home() {
@@ -64,6 +68,12 @@ export default function Home() {
         setModal({ type: "delete", template })
     }
 
+    function openStartModal(template: Template | null){
+        if(!template) return
+
+        setIsStartingTemplate(structuredClone(template))
+        setModal({ type: "start", template})
+    }
 
     function handleTemplateNameChange(newName: string, isNewTemplate: boolean = false) {
         if (isNewTemplate) {
@@ -167,6 +177,7 @@ export default function Home() {
         if (!template) return
 
         try {
+            const session_id = Cookies.get("session_id")
             const res = await apiFetch("/api/game/start", {
                 method: "POST",
                 headers: {
@@ -175,14 +186,15 @@ export default function Home() {
                 },
                 body: JSON.stringify({ template: template, owner_id: user.id })
             })
-
+            console.log(res.message, res.session_id)
             if (res.success) {
-                localStorage.setItem("session_id", res.session_id)
+                console.log("New Game started successfully. Rederecting now.")
+                Cookies.set("session_id", res.session_id)
                 window.location.href = `/game/${res.game_id}`
             }
             else {
-                localStorage.setItem("session_id", res.session_id)
-                 const { game_id } = await apiFetch(`/api/game/from-session/${res.session_id}`)
+                console.log("Could not start new Game. You have already started one. Rederecting now.")
+                Cookies.set("session_id", res.session_id)
                 window.location.href = `/game/${res.game_id}`
             }
         }
@@ -193,14 +205,13 @@ export default function Home() {
     }
 
     function logOut() {
-        localStorage.removeItem("login_token")
+        Cookies.remove("login_token")
         window.location.href = "/login"
     }
 
     async function deleteTemplate() {
         if (!(modal?.type === "delete") || !modal.template) return null
 
-        console.log("Is deleting", modal?.type === "delete")
         if (!token || !user.id) return null
         try {
             const res = await apiFetch("/api/templates/delete", {
@@ -229,7 +240,7 @@ export default function Home() {
     }
     if (state === "authenticated") {
         return <>
-            <span onClick={() => window.location.href = "/"} className="hover:cursor-pointer absolute rounded-xs top-5 self-center select-none text-6xl hover:scale-110 transition-all duration-200 ease-in-out bg-linear-to-r from-pink-500 via-yellow-500 to-blue-500 bg-size-[200%_200%] animate-gradient text-transparent bg-clip-text font-extrabold">RollOut</span>
+            <RollOutHeader/>
             <Button onClick={logOut} className="flex hover:bg-red-300 text-black hover:cursor-pointer absolute rounded-xl border-2 p-0! border-black/30 top-5 bg-red-200 right-5 h-fit w-fit items-center justify-center ">
                 <img className="w-7 h-7 " src="/logout.svg" alt="" />
             </Button>
@@ -246,116 +257,131 @@ export default function Home() {
 
                 {/* Toast Message Container */}
                 <AnimatePresence>
-
                     <ToastContainer toasts={toasts}></ToastContainer>
                 </AnimatePresence>
 
                 {/* Create new Template */}
-                <Overlay isOpen={modal?.type === "create"} onClose={() => setModal(null)} className="z-50 w-100 h-100">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-row gap-2 h-fit">
-                            <Input onChangeValue={(e: React.ChangeEvent<HTMLInputElement>) => handleTemplateNameChange(e.target.value, true)} name="templateName" placeholder="New Template Name" className="hover:bg-black/10" />
-                            <SwitchMode onChange={(e) => handleUpdateTemplateMode(e)} className="bg-blue-200"></SwitchMode>
-                        </div>
-                        <Input onButtonClick={(name: string) => addPersonToTemplate(name)} buttonText="Add" placeholder="Person Name" className="hover:bg-black/10" />
-                        <div className="flex flex-col border-2 border-black/20 rounded-2xl h-40 overflow-y-scroll">
-                            {
-                                <AnimatePresence>
-                                    {draftTemplate ? draftTemplate.persons.map((person, index) => (
-                                        <motion.div
-                                            key={person.id}
-                                            className="flex items-center text-black m-1 hover:bg-black/30 text-center select-none hover:cursor-pointer bg-black/20 p-1.5 rounded-xl"
-                                            onClick={() => ""}
-                                            layout={true}
-                                            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-                                            initial={{ opacity: 0, scale: 0.8 }} // Start-Zustand: Klein und unsichtbar
-                                            whileInView={{ opacity: 1, scale: 1 }} // Zustand, wenn es in den sichtbaren Bereich gescrollt wird
-                                            viewport={{ once: false, margin: "-5px" }}  // Verhindert, dass die Animation jedes Mal neu triggert (optional)
-                                            transition={{ type: "spring", stiffness: 200, damping: 25 }}
-                                        >
-                                            <input
-                                                className="flex-1 text-center focus:outline-none focus:cursor-pointer hover:cursor-pointer"
-                                                value={person.name}
-                                                onChange={(e) => handlePersonNameChange(index, e.target.value)}
-                                            />
-                                            <div onClick={() => deletePersonFromTemplate(index, true)} className="flex rounded-xl hover:bg-red-300 active:bg-red-400 active:scale-95 transition-all duration-100 ease-in-out hover:scale-105 right-0">
-                                                <img className="h-5 w-5 rounded-2xl p-0 m-1 " src="/Bin.svg" alt="" />
-                                            </div>
-                                        </motion.div>
-                                    ))
-                                        :
-                                        <span className="text-black/70 self-center justify-self-center mt-17">No Person added...</span>
+                <AnimatePresence>
+                    {modal?.type === "create" && (
+                        <Overlay isOpen={true} onClose={() => setModal(null)} className="z-50 w-100 h-100">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex flex-row gap-2 h-fit">
+                                    <Input onChangeValue={(e: React.ChangeEvent<HTMLInputElement>) => handleTemplateNameChange(e.target.value, true)} name="templateName" placeholder="New Template Name" className="hover:bg-black/10" />
+                                    <SwitchMode onChange={(e) => handleUpdateTemplateMode(e)} className="bg-blue-200"></SwitchMode>
+                                </div>
+                                <Input onButtonClick={(name: string) => addPersonToTemplate(name)} buttonText="Add" placeholder="Person Name" className="hover:bg-black/10" />
+                                <div className="flex flex-col border-2 border-black/20 rounded-2xl h-40 overflow-y-scroll">
+                                    {
+                                        <AnimatePresence>
+                                            {draftTemplate ? draftTemplate.persons.map((person, index) => (
+                                                <motion.div
+                                                    key={person.id}
+                                                    className="flex items-center text-black m-1 hover:bg-black/30 text-center select-none hover:cursor-pointer bg-black/20 p-1.5 rounded-xl"
+                                                    onClick={() => ""}
+                                                    layout={true}
+                                                    exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                                                    initial={{ opacity: 0, scale: 0.8 }} // Start-Zustand: Klein und unsichtbar
+                                                    whileInView={{ opacity: 1, scale: 1 }} // Zustand, wenn es in den sichtbaren Bereich gescrollt wird
+                                                    viewport={{ once: false, margin: "-5px" }}  // Verhindert, dass die Animation jedes Mal neu triggert (optional)
+                                                    transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                                                >
+                                                    <input
+                                                        className="flex-1 text-center focus:outline-none focus:cursor-pointer hover:cursor-pointer"
+                                                        value={person.name}
+                                                        onChange={(e) => handlePersonNameChange(index, e.target.value)}
+                                                    />
+                                                    <div onClick={() => deletePersonFromTemplate(index, true)} className="flex rounded-xl hover:bg-red-300 active:bg-red-400 active:scale-95 transition-all duration-100 ease-in-out hover:scale-105 right-0">
+                                                        <img className="h-5 w-5 rounded-2xl p-0 m-1 " src="/Bin.svg" alt="" />
+                                                    </div>
+                                                </motion.div>
+                                            ))
+                                                :
+                                                <span className="text-black/70 self-center justify-self-center mt-17">No Person added...</span>
+                                            }
+                                        </AnimatePresence>
                                     }
-                                </AnimatePresence>
-                            }
-                        </div>
-                        <Button onClick={() => { draftTemplate && createTemplate(draftTemplate); setModal(null) }}>Create Template</Button>
-                    </div>
-                </Overlay>
+                                </div>
+                                <Button onClick={() => { draftTemplate && createTemplate(draftTemplate); setModal(null) }}>Create Template</Button>
+                            </div>
+                        </Overlay>
+                    )}
+                </AnimatePresence>
 
                 {/* Edit existing Templates */}
-                <Overlay isOpen={modal?.type === "edit"} onClose={() => { setModal(null) }} className="z-50 w-100 h-100">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-row gap-2 h-fit">
-                            <Input onChangeValue={(e: React.ChangeEvent<HTMLInputElement>) => handleTemplateNameChange(e.target.value)} name="templateName" placeholder="New Template Name" className="hover:bg-black/10" />
-                            <SwitchMode onChange={(e) => handleUpdateTemplateMode(e)} className="bg-blue-200"></SwitchMode>
-                        </div>
-                        <Input onButtonClick={(name: string) => addPersonToTemplate(name)} buttonText="Add" placeholder="Person Name" className="hover:bg-black/10" />
-                        <div className="flex flex-col border-2 border-black/20 rounded-2xl h-40 overflow-y-scroll">
-                            {
-                                <AnimatePresence>
-                                    {draftTemplate ? draftTemplate.persons.map((person, index) => (
-                                        <motion.div
-                                            key={person.id}
-                                            className="flex items-center text-black m-1 hover:bg-black/30 text-center select-none hover:cursor-pointer bg-black/20 p-1.5 rounded-xl"
-                                            onClick={() => ""}
-                                            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-                                            layout={true}
-                                            initial={{ opacity: 0, scale: 0.8 }} // Start-Zustand: Klein und unsichtbar
-                                            whileInView={{ opacity: 1, scale: 1 }} // Zustand, wenn es in den sichtbaren Bereich gescrollt wird
-                                            viewport={{ once: false, margin: "-5px" }}  // Verhindert, dass die Animation jedes Mal neu triggert (optional)
-                                            transition={{ type: "spring", stiffness: 200, damping: 25 }}
-                                        >
-                                            <input
-                                                className="flex-1 text-center focus:outline-none focus:cursor-pointer hover:cursor-pointer"
-                                                value={person.name}
-                                                onChange={(e) => handlePersonNameChange(index, e.target.value)}
-                                            />
-                                            <div onClick={() => deletePersonFromTemplate(index)} className="flex rounded-xl hover:bg-red-300 active:bg-red-400 active:scale-95 transition-all duration-100 ease-in-out hover:scale-105 right-0">
-                                                <img className="h-5 w-5 rounded-2xl p-0 m-1 " src="/Bin.svg" alt="" />
-                                            </div>
-                                        </motion.div>
+                <AnimatePresence>
+                    {modal?.type === "edit" && (
+                        <Overlay isOpen={true} onClose={() => { setModal(null) }} className="z-50 w-100 h-100">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex flex-row gap-2 h-fit">
+                                    <Input onChangeValue={(e: React.ChangeEvent<HTMLInputElement>) => handleTemplateNameChange(e.target.value)} name="templateName" placeholder="New Template Name" className="hover:bg-black/10" />
+                                    <SwitchMode onChange={(e) => handleUpdateTemplateMode(e)} className="bg-blue-200"></SwitchMode>
+                                </div>
+                                <Input onButtonClick={(name: string) => addPersonToTemplate(name)} buttonText="Add" placeholder="Person Name" className="hover:bg-black/10" />
+                                <div className="flex flex-col border-2 border-black/20 rounded-2xl h-40 overflow-y-scroll">
+                                    {
+                                        <AnimatePresence>
+                                            {draftTemplate ? draftTemplate.persons.map((person, index) => (
+                                                <motion.div
+                                                    key={person.id}
+                                                    className="flex items-center text-black m-1 hover:bg-black/30 text-center select-none hover:cursor-pointer bg-black/20 p-1.5 rounded-xl"
+                                                    onClick={() => ""}
+                                                    exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                                                    layout={true}
+                                                    initial={{ opacity: 0, scale: 0.8 }} // Start-Zustand: Klein und unsichtbar
+                                                    whileInView={{ opacity: 1, scale: 1 }} // Zustand, wenn es in den sichtbaren Bereich gescrollt wird
+                                                    viewport={{ once: false, margin: "-5px" }}  // Verhindert, dass die Animation jedes Mal neu triggert (optional)
+                                                    transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                                                >
+                                                    <input
+                                                        className="flex-1 text-center focus:outline-none focus:cursor-pointer hover:cursor-pointer"
+                                                        value={person.name}
+                                                        onChange={(e) => handlePersonNameChange(index, e.target.value)}
+                                                    />
+                                                    <div onClick={() => deletePersonFromTemplate(index)} className="flex rounded-xl hover:bg-red-300 active:bg-red-400 active:scale-95 transition-all duration-100 ease-in-out hover:scale-105 right-0">
+                                                        <img className="h-5 w-5 rounded-2xl p-0 m-1 " src="/Bin.svg" alt="" />
+                                                    </div>
+                                                </motion.div>
 
-                                    ))
-                                        :
+                                            ))
+                                                :
 
-                                        <Loading></Loading>
+                                                <Loading></Loading>
+                                            }
+                                        </AnimatePresence>
+
                                     }
-                                </AnimatePresence>
-
-                            }
-                        </div>
-                        <Button onClick={() => { updateTemplate(draftTemplate); setModal(null) }}>Update</Button>
-                    </div>
-                </Overlay>
+                                </div>
+                                <Button onClick={() => { updateTemplate(draftTemplate); setModal(null) }}>Update</Button>
+                            </div>
+                        </Overlay>
+                    )}
+                </AnimatePresence>
 
                 {/* Delete confirmation */}
-                <Overlay isOpen={modal?.type === "delete"} onClose={() => setModal(null)} className="z-50 flex flex-col gap-2 ">
-                    <span className="text-black">Delete permanently?</span>
-                    <div className="flex gap-3 justify-between">
-                        <Button onClick={() => deleteTemplate()}>Yes</Button>
-                        <Button onClick={() => setModal(null)}>No</Button>
-                    </div>
-                </Overlay>
+                <AnimatePresence>
+                    {modal?.type === "delete" && (
+                        <Overlay isOpen={modal?.type === "delete"} onClose={() => setModal(null)} className="z-50 flex flex-col gap-2 ">
+                            <span className="text-black">Delete permanently?</span>
+                            <div className="flex gap-3 justify-between">
+                                <Button className="bg-green-400" onClick={() => deleteTemplate()}>Yes</Button>
+                                <Button className="bg-red-400" onClick={() => setModal(null)}>No</Button>
+                            </div>
+                        </Overlay>
+                    )}
+                </AnimatePresence>
 
                 {/* Start confirmation */}
-                <Overlay isOpen={isStartingTemplate ? true : false} onClose={() => setIsStartingTemplate(null)} className="z-50 flex flex-col gap-2 ">
-                    <span className="text-black">Start game with selected template?</span>
-                    <div className="flex gap-3 justify-center">
-                        <Button className="bg-green-400" onClick={() => startGame(isStartingTemplate)}>Yes</Button>
-                        <Button className="bg-red-400" onClick={() => setIsStartingTemplate(null)}>No</Button>
-                    </div>
-                </Overlay>
+                <AnimatePresence>
+                    {modal?.type === "start" && (
+                        <Overlay isOpen={true} onClose={() => {setIsStartingTemplate(null); setModal(null)}} className="z-50 flex flex-col gap-2 ">
+                            <span className="text-black">Start game with selected template?</span>
+                            <div className="flex gap-3 justify-center">
+                                <Button className="bg-green-400" onClick={() => {startGame(isStartingTemplate); setModal(null)}}>Yes</Button>
+                                <Button className="bg-red-400" onClick={() => {setIsStartingTemplate(null); setModal(null)}}>No</Button>
+                            </div>
+                        </Overlay>
+                    )}
+                </AnimatePresence>
 
                 <div className="h-160 flex flex-row flex-wrap gap-5 items-start content-start ">
                     <AnimatePresence>
@@ -390,7 +416,7 @@ export default function Home() {
                                         <Button onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); setModal({ type: "delete", template: template }) }} className={`${modal?.type === "create" || modal?.type === "edit" || modal?.type === "delete" ? "hidden" : "block"} h-fit w-fit p-0 bg-transparent shadow-none opacity-0  hover:bg-red-300 active:bg-red-400 group-hover:opacity-100`}>
                                             <img className="w-4 h-4 p-0" src="/Bin.svg" alt="" />
                                         </Button>
-                                        <Button onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); setIsStartingTemplate(template) }} className={`${modal?.type === "create" || modal?.type === "edit" || modal?.type === "delete" ? "hidden" : "block"} bg-transparent shadow-none opacity-0 hover:bg-green-300 active:bg-green-400 group-hover:opacity-100`}>
+                                        <Button onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); openStartModal(template) }} className={`${modal?.type === "create" || modal?.type === "edit" || modal?.type === "delete" ? "hidden" : "block"} bg-transparent shadow-none opacity-0 hover:bg-green-300 active:bg-green-400 group-hover:opacity-100`}>
                                             <img className="w-4 h-4 " src="/play-svgrepo-com.svg" alt="" />
                                         </Button>
                                     </div>

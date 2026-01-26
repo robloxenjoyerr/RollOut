@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from 'js-cookie';
 
 type AuthState = "loading" | "authenticated" | "unauthenticated"
 
@@ -8,7 +9,7 @@ export function useAuth() {
     const router = useRouter()
 
     function getToken() {
-        return typeof window === "undefined" ? null : localStorage.getItem("login_token")
+        return typeof window === "undefined" ? null : Cookies.get("login_token")
     }
 
     function getUser() {
@@ -29,7 +30,7 @@ export function useAuth() {
         const check = () => {
             const user = getUser()
             if(!user || Date.now() >= user.exp * 1000) {
-                localStorage.removeItem("login_token")
+                Cookies.remove("login_token")
                 setState("unauthenticated")
                 router.push("/login")
             } else {

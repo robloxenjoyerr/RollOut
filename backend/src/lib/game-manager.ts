@@ -42,7 +42,7 @@ export async function startGame(template: Template, user_id: string) {
     return { success: true, game_id: game_id, session_id: session_id }
 }
 
-export async function checkUserForActiveSession(user_id: string): Promise<LiveGame | null> {
+export async function checkUserForActiveSession(user_id: string){
     const game = db
         .prepare(`
           SELECT *
@@ -51,6 +51,18 @@ export async function checkUserForActiveSession(user_id: string): Promise<LiveGa
             AND ended_at IS NULL
           LIMIT 1
         `)
-        .get(user_id) as LiveGame | undefined
-    return game || null
+        .get(user_id) as Template
+
+    console.log("GAME: ", game)
+
+    return game.id || null
+}
+
+export async function checkIfGameIdExist(id: string){
+    const game_id = db.prepare(`
+            SELECT * FROM live_games WHERE id = ? AND ended_at IS NULL LIMIT 1
+        `).get(id)
+
+    return game_id || null
+    
 }

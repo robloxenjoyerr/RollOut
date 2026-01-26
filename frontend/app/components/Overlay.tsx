@@ -1,35 +1,47 @@
 import { ReactNode } from "react"
 import Button from "./Button"
-
+import { motion } from "framer-motion" // Importieren
 
 interface OverlayProps {
     isOpen: boolean,
-    onClose: any,
-    children: ReactNode
+    onClose: () => void,
+    children: ReactNode,
     className?: string
-    [key: string]: any
 }
 
+export default function Overlay({ isOpen, onClose, children, className = "" }: OverlayProps) {
+    // Wenn isOpen false ist, rendern wir gar nichts. 
+    // Das erlaubt AnimatePresence im Parent, die exit-Animation zu starten!
+    if (!isOpen) return null;
 
-
-export default function Overlay({isOpen = false, onClose, children, className = "", ...props }: OverlayProps) {
-    
     return (
-        <div 
+        <motion.div
+            // Hintergrund-Animation
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
             onClick={onClose}
-            className={`fixed inset-0 z-50 flex justify-center items-center transition-colors duration-150 ease-in-out 
-                ${isOpen 
-                    ? "opacity-100 pointer-events-auto visible bg-black/20" 
-                    : "opacity-0 pointer-events-none invisible"} 
-                `}
+            className="fixed inset-0 z-50 flex justify-center items-center bg-black/20"
         >
-            <div
-                className={`bg-white rounded-xl border-2 border-black/30 shadow-md p-6 transition-all ease-in-out ${isOpen ? "scale-100 opacity-100" : "scale-125 opacity-0"} ${className}`}
+            <motion.div
+                // Fenster-Animation
+                initial={{ scale: 1.2, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 1.1, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className={`bg-white rounded-xl border-2 border-black/30 shadow-md p-6 relative ${className}`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <Button onClick={onClose} padding="p-0" className="hover:rotate-90 absolute top-0 right-0 rounded-md p-1 shadow-none bg-transparent h-7 w-7"><img src="/close.svg" alt="" /></Button>
+                <Button 
+                    onClick={onClose} 
+                    padding="p-0" 
+                    className="hover:rotate-90 absolute top-0 right-0 rounded-md p-1 shadow-none bg-transparent h-7 w-7"
+                >
+                    <img src="/close.svg" alt="close" />
+                </Button>
                 {children}
-            </div>
-        </div>
-    ) 
+            </motion.div>
+        </motion.div>
+    )
 }

@@ -10,7 +10,6 @@ import { createServer } from "node:http"
 import { registerGameHandlers } from "./sockets/gameHandler"
 import { checkUserForActiveSession, getLiveGames, startGame } from "./lib/game-manager";
 import { db } from "./db/database";
-import { LiveGame } from "./lib/game-manager";
 
 const PORT = process.env.PORT || 4000
 const app = express();
@@ -153,21 +152,25 @@ app.get("/api/livegames", async (req, res) => {
 
 app.get("/api/game/from-session/:session_id", loginAuthentication, async (req, res) => {
     const { session_id } = req.params;
-
-    const game = db.prepare(`SELECT id FROM live_games WHERE session_id = ? AND ended_at IS NULL`).get<LiveGame>(session_id);
+    const game = db.prepare(`SELECT id FROM live_games WHERE session_id = ? AND ended_at IS NULL`).get(session_id) as { id: string } | undefined
 
     if (!game) return res.status(404).send({ success: false, message: "Session not found." });
 
     return res.send({ success: true, game_id: game.id });
 });
 
+app.post("/api/game/verify", async (req, res)=> {
+  const { game_id_url } = req.body
+})
+
 app.post("/api/game/start", loginAuthentication, async (req, res) => {
   const { template, owner_id } = req.body
 
   //Check if user already stared a game
   const alreadyStarted = await checkUserForActiveSession(owner_id)
+  console.log("Host hast already started a Game with IDStarted Game ID: ", alreadyStarted)
 
-  if (alreadyStarted) return res.send({ success: false, message: "User already started a game.", session_id: alreadyStarted.session_id })
+  if (alreadyStarted) return res.send({ success: false, message: "User already started a game.", game_id: alreadyStarted })
 
   try {
     const info = await startGame(template, owner_id)

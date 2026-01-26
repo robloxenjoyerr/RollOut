@@ -9,6 +9,7 @@ import { useToasts } from "../hooks/useToasts";
 import { useAuth } from "../hooks/useAuth";
 import { useTemplates } from "../hooks/useTemplates";
 import { useAvailableGames } from "../hooks/useAvailableGames";
+import RollOutHeader from "../components/RollOutHeader";
 
 
 export default function JoinPage() {
@@ -19,7 +20,7 @@ export default function JoinPage() {
     console.log("Live Games: ", liveGames)
     return <>
         <div className=" flex flex-col w-[80vw] h-[80vh] gap-20">
-
+            <RollOutHeader/>
             <div className="flex flex-col gap-2 relative top-0">
                 <div className="flex flex-row gap-4">
                     <h1 className="text-black font-bold text-7xl top-0 select-none">Live Games</h1>
