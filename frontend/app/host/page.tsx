@@ -68,11 +68,11 @@ export default function Home() {
         setModal({ type: "delete", template })
     }
 
-    function openStartModal(template: Template | null){
-        if(!template) return
+    function openStartModal(template: Template | null) {
+        if (!template) return
 
         setIsStartingTemplate(structuredClone(template))
-        setModal({ type: "start", template})
+        setModal({ type: "start", template })
     }
 
     function handleTemplateNameChange(newName: string, isNewTemplate: boolean = false) {
@@ -177,7 +177,6 @@ export default function Home() {
         if (!template) return
 
         try {
-            const session_id = Cookies.get("session_id")
             const res = await apiFetch("/api/game/start", {
                 method: "POST",
                 headers: {
@@ -190,13 +189,14 @@ export default function Home() {
             if (res.success) {
                 console.log("New Game started successfully. Rederecting now.")
                 Cookies.set("session_id", res.session_id)
-                window.location.href = `/game/${res.game_id}`
+                router.push(`/game/${res.game_id}`)
             }
             else {
                 console.log("Could not start new Game. You have already started one. Rederecting now.")
                 Cookies.set("session_id", res.session_id)
-                window.location.href = `/game/${res.game_id}`
+                router.push(`/game/${res.game_id}`)
             }
+
         }
         catch (err) {
             console.log(err)
@@ -240,7 +240,7 @@ export default function Home() {
     }
     if (state === "authenticated") {
         return <>
-            <RollOutHeader/>
+            <RollOutHeader />
             <Button onClick={logOut} className="flex hover:bg-red-300 text-black hover:cursor-pointer absolute rounded-xl border-2 p-0! border-black/30 top-5 bg-red-200 right-5 h-fit w-fit items-center justify-center ">
                 <img className="w-7 h-7 " src="/logout.svg" alt="" />
             </Button>
@@ -373,11 +373,11 @@ export default function Home() {
                 {/* Start confirmation */}
                 <AnimatePresence>
                     {modal?.type === "start" && (
-                        <Overlay isOpen={true} onClose={() => {setIsStartingTemplate(null); setModal(null)}} className="z-50 flex flex-col gap-2 ">
+                        <Overlay isOpen={true} onClose={() => { setIsStartingTemplate(null); setModal(null) }} className="z-50 flex flex-col gap-2 ">
                             <span className="text-black">Start game with selected template?</span>
                             <div className="flex gap-3 justify-center">
-                                <Button className="bg-green-400" onClick={() => {startGame(isStartingTemplate); setModal(null)}}>Yes</Button>
-                                <Button className="bg-red-400" onClick={() => {setIsStartingTemplate(null); setModal(null)}}>No</Button>
+                                <Button className="bg-green-400" onClick={() => { startGame(isStartingTemplate); setModal(null) }}>Yes</Button>
+                                <Button className="bg-red-400" onClick={() => { setIsStartingTemplate(null); setModal(null) }}>No</Button>
                             </div>
                         </Overlay>
                     )}

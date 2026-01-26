@@ -8,7 +8,7 @@ import { randomBytes } from "crypto"
 import { Server } from "socket.io"
 import { createServer } from "node:http"
 import { registerGameHandlers } from "./sockets/gameHandler"
-import { checkUserForActiveSession, getLiveGames, startGame } from "./lib/game-manager";
+import { checkIfGameIdExist, checkUserForActiveSession, getLiveGames, startGame } from "./lib/game-manager";
 import { db } from "./db/database";
 
 const PORT = process.env.PORT || 4000
@@ -161,6 +161,14 @@ app.get("/api/game/from-session/:session_id", loginAuthentication, async (req, r
 
 app.post("/api/game/verify", async (req, res)=> {
   const { game_id_url } = req.body
+
+  try {
+    const info = await checkIfGameIdExist(game_id_url)
+    if(info) return res.send({ success: true })
+    else return res.send({success: false})
+  } catch(err){
+    console.log("SERVER-TS using GAME-MANAGER Service: ", err)
+  }
 })
 
 app.post("/api/game/start", loginAuthentication, async (req, res) => {

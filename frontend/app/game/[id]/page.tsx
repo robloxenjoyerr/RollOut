@@ -1,5 +1,4 @@
 import { apiFetch } from "@/app/lib/api"
-import { param } from "framer-motion/client"
 import { redirect } from "next/navigation"
 import GameClientView from "@/app/components/GameClientView"
 
@@ -14,6 +13,5 @@ export default async function Page({ params }: {params: { id: string }} ) {
     })
 
     if(!res.success) redirect("/")
-    
-    return <GameClientView/>
+    else return <GameClientView/>
 }

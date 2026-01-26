@@ -13,7 +13,6 @@ import RollOutHeader from "../components/RollOutHeader";
 
 
 export default function JoinPage() {
-    const { state, user, token } = useAuth()
     const { toasts, addToast } = useToasts()
     const { liveGames, loading } = useAvailableGames()
 
