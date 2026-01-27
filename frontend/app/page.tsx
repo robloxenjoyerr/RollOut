@@ -6,7 +6,8 @@ import { motion } from "framer-motion";
 export default function Home() {
   return (
     <div className="flex flex-col gap-8 h-120">
-      <span className="select-none self-center text-6xl hover:scale-110 transition-all duration-200 ease-in-out hover:rotate-1 bg-gradient-to-r from-pink-500 via-yellow-500 to-blue-500 bg-[length:200%_200%] animate-gradient text-transparent bg-clip-text font-extrabold">RollOut</span>
+      <span className="text-black font-bold left-5 top-5 text-5xl absolute">Hello User142!</span>
+      <span className="select-none self-center text-6xl hover:scale-110 transition-all duration-200 ease-in-out hover:rotate-1 bg-linear-to-r from-pink-500 via-yellow-500 to-blue-500 bg-size-[200%_200%] animate-gradient text-transparent bg-clip-text font-extrabold">RollOut</span>
       <div className="flex flex-row gap-15">
         <motion.div
           initial={{ scale: 0, opacity: 0 }}

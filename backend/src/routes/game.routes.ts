@@ -64,4 +64,14 @@ gameRouter.post("/start", loginAuthentication, async (req, res) => {
 
 })
 
+gameRouter.post("/stop", loginAuthentication, async (req, res)=> {
+    try{
+        console.log("stopping")
+        return res.send({success: true, message: "stopped"})
+    }
+    catch(err){
+        console.error(err)
+    }
+})
+
 export default gameRouter

@@ -42,6 +42,10 @@ export async function startGame(template: Template, user_id: string) {
     return { success: true, game_id: game_id, session_id: session_id }
 }
 
+export async function stopGame(){
+    
+}
+
 export async function checkUserForActiveSession(user_id: string){
     const game = db
         .prepare(`
