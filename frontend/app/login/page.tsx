@@ -13,6 +13,7 @@ import { useToasts } from "../hooks/useToasts";
 
 // 1. Importiere js-cookie
 import Cookies from 'js-cookie';
+import RollOutHeader from "../components/RollOutHeader";
 
 interface UserCredentials {
     username: string,
@@ -32,7 +33,7 @@ export default function LoginPage() {
         }
     }, [router]);
 
-    async function TryLogin(e: React.FormEvent<HTMLFormElement>) { // Typ-Fix: FormEvent statt ChangeEvent
+    async function TryLogin(e: React.FormEvent<HTMLFormElement>) { 
         e.preventDefault()
         try {
             const res = await apiFetch("/api/user/login", {
@@ -62,6 +63,7 @@ export default function LoginPage() {
     // Ein kurzes "if (token)" im Render-Body kann bei Next.js manchmal Hydration-Fehler werfen.
     return (
         <>
+            <RollOutHeader/>
             <AnimatePresence>
                 <ToastContainer toasts={toasts}></ToastContainer>
             </AnimatePresence>

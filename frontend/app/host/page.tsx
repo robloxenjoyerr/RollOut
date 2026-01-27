@@ -82,7 +82,7 @@ export default function Home() {
                 return { ...prev, name: newName };
             })
 
-            addToast(`Template name updated to ${newName}`, "info")
+            
         } else {
             if (!draftTemplate) return;
             setDraftTemplate((prev) => {
@@ -183,7 +183,7 @@ export default function Home() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ template: template, owner_id: user.id })
+                body: JSON.stringify({ template: template, owner_id: user.id, host: true })
             })
             console.log(res.message, res.session_id)
             if (res.success) {

@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import ToastContainer from "../components/ToastContainer";
 import { useToasts } from "../hooks/useToasts";
 import { useEffect } from "react"
+import RollOutHeader from "../components/RollOutHeader"
 
 
 interface UserCredentials {
@@ -38,7 +39,7 @@ export default function RegisterPage() {
         try {
             if (userCredentials.password !== userCredentials.password_validity) return "Password must be the same."
             console.log("Trying to register.")
-            const res = await apiFetch("/api/user/create", {
+            const res = await apiFetch("/api/user/register", {
                 method: "POST",
                 body: JSON.stringify({ username: userCredentials.username, password: userCredentials.password })
             })
@@ -63,6 +64,7 @@ export default function RegisterPage() {
     } else {
 
         return <>
+            <RollOutHeader/>
             <AnimatePresence>
                 <ToastContainer toasts={toasts}></ToastContainer>
             </AnimatePresence>

@@ -8,8 +8,8 @@ interface Client {
 }
 
 export interface LiveGame {
-    name: string,
     id: string,
+    name: string,
     host_id: string,
     session_id: string,
     phase: GamePhase,
@@ -58,11 +58,14 @@ export async function checkUserForActiveSession(user_id: string){
     return game.id || null
 }
 
-export async function checkIfGameIdExist(id: string){
-    const game_id = db.prepare(`
-            SELECT * FROM live_games WHERE id = ? AND ended_at IS NULL LIMIT 1
-        `).get(id)
+export async function checkIfGameIdExist(id: string) {
+    const game = db.prepare(`
+        SELECT id, host_id
+        FROM live_games
+        WHERE id = ? AND ended_at IS NULL
+        LIMIT 1
+    `).get(id) as { id: string; host_id: string } | undefined
 
-    return game_id || null
     
+    return game ?? null
 }

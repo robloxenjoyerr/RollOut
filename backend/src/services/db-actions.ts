@@ -114,7 +114,7 @@ export async function checkLogin(username: string, password: string) {
     const isMatch = await bcrypt.compare(password, user.hashed_password)
 
     if (isMatch) {
-        const token = jwt.sign({ id: user.id.toString(), name: user.username}, JWT_SECRET, { expiresIn: "1h"})
+        const token = jwt.sign({ id: user.id.toString(), name: user.username}, JWT_SECRET, { expiresIn: "7d"})
         return { success: true, token: token}
     } else {
         return { success: false, message: "Wrong password."}

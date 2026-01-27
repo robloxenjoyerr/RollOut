@@ -1,6 +1,10 @@
 import { apiFetch } from "@/app/lib/api"
 import { redirect } from "next/navigation"
 import GameClientView from "@/app/components/GameClientView"
+import GameHostView from "@/app/components/GameHostView"
+import { io } from "socket.io-client"
+
+
 
 export default async function Page({ params }: {params: { id: string }} ) {
     const { id } = await params
@@ -12,6 +16,11 @@ export default async function Page({ params }: {params: { id: string }} ) {
         body: JSON.stringify({game_id_url: id})
     })
 
-    if(!res.success) redirect("/")
+    console.log(res.host)
+
+    if(!res.success) return redirect("/")
+    if(res.host === true){
+        return <GameHostView/>
+    } 
     else return <GameClientView/>
 }
