@@ -2,7 +2,7 @@ import { db } from "../db/database";
 import { Router } from "express";
 import { idFromToken } from "../lib/services";
 import { loginAuthentication } from "../middleware/secureMiddleware";
-import { startGame, checkUserForActiveSession, checkIfGameIdExist } from "../lib/game-manager";
+import { startGame, checkUserForActiveSession, checkIfGameIdExist, stopGame } from "../lib/game-manager";
 
 
 const gameRouter = Router()
@@ -65,9 +65,15 @@ gameRouter.post("/start", loginAuthentication, async (req, res) => {
 })
 
 gameRouter.post("/stop", loginAuthentication, async (req, res)=> {
+    const {game_id} = req.body
     try{
-        console.log("stopping")
-        return res.send({success: true, message: "stopped"})
+        const info = await stopGame(game_id)
+        if(info.success){
+            return res.send({success: true, message: "Game stopped successfully"})
+        }
+        else {
+            return res.send({success: false, message: "Game could not be stopped. Already stopped or deleted."})
+        }
     }
     catch(err){
         console.error(err)

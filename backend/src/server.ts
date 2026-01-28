@@ -1,19 +1,20 @@
 import express from "express"
 import cors from "cors"
-import { loginAuthentication } from "./middleware/secureMiddleware";
 import { Server } from "socket.io"
 import { createServer } from "node:http"
 import { registerGameHandlers } from "./sockets/gameHandler"
-import userRouter from "./routes/user.routes";
-import templateRouter from "./routes/templates.routes";
-import gameRouter from "./routes/game.routes";
 import apiRouter from "./routes/api.routes";
 
 require('dotenv').config()
 const PORT = process.env.PORT || 4000
 const app = express();
 const httpServer = createServer(app)
-const io = new Server(httpServer)
+const io = new Server(httpServer, {
+    cors: {
+      origin: process.env.FRONTEND_URL,
+      methods: ["GET", "POST"]
+    }
+})
 
 
 app.use(cors({
@@ -22,17 +23,18 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-app.use(express.json());
+app.use(express.json())
 
 app.get("/", (_req, res) => {
   console.log("test")
   console.log("test")
   console.log("test")
-  return res.send("Backend läuft 🚀");
+  return res.send("Backend läuft 🚀")
 })
+app.use("/api", apiRouter)
 
 httpServer.listen(PORT, () => {
-  console.log("Backend listening on http://localhost:4000");
+  console.log("Backend listening on http://localhost:4000")
 })
 
 io.on("connection", (socket) => {
@@ -40,21 +42,9 @@ io.on("connection", (socket) => {
 })
 
 
-app.use("/api", apiRouter)
 
 
 
-io.on("connection", (socket) => {
-  console.log("a user connected with id: ", socket.id)
-})
-
-io.on("startGame", (data) => {
-  console.log("Game started with data: ", data)
-})
-
-io.on("joinGame", (data) => {
-  console.log("Player joined game with data: ", data)
-})
 
 
 

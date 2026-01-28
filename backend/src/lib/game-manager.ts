@@ -42,14 +42,21 @@ export async function startGame(template: Template, user_id: string) {
     return { success: true, game_id: game_id, session_id: session_id }
 }
 
-export async function stopGame(){
-    
+export async function stopGame(game_id: string) {
+    const stmt = db.prepare(`
+            DELETE FROM live_games WHERE id = ? AND ended_at IS NULL 
+        `)
+
+    const info = stmt.run(game_id)
+
+    if (info.changes === 1) return { success: true }
+    else return { success: false }
 }
 
-export async function checkUserForActiveSession(user_id: string){
-    const game = db
+export async function checkUserForActiveSession(user_id: string) {
+    const game_id = db
         .prepare(`
-          SELECT *
+          SELECT id
           FROM live_games
           WHERE host_id = ?
             AND ended_at IS NULL
@@ -57,9 +64,7 @@ export async function checkUserForActiveSession(user_id: string){
         `)
         .get(user_id) as Template
 
-    console.log("GAME: ", game)
-
-    return game.id || null
+    return game_id?.id || null
 }
 
 export async function checkIfGameIdExist(id: string) {
@@ -70,6 +75,6 @@ export async function checkIfGameIdExist(id: string) {
         LIMIT 1
     `).get(id) as { id: string; host_id: string } | undefined
 
-    
+
     return game ?? null
 }

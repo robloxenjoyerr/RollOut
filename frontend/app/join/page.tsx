@@ -16,6 +16,10 @@ export default function JoinPage() {
     const { toasts, addToast } = useToasts()
     const { liveGames, loading } = useAvailableGames()
 
+    async function joinGame(){
+        
+    }
+
     console.log("Live Games: ", liveGames)
     return <>
         <div className=" flex flex-col w-[80vw] h-[80vh] gap-20">
@@ -67,6 +71,7 @@ export default function JoinPage() {
                                     overflowAutoOn={false}
                                     width="w-75"
                                     className="group hover:cursor-pointer border-black/20 p-4"
+                                    onClick={joinGame}
                                 >
                                     <div className="flex flex-col gap-4">
                                         <div className="flex flex-row gap-3">
