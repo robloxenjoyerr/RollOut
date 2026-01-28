@@ -6,7 +6,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     console.log("Data roomCode: ", game_id)
     socket.join(game_id); // Erstellt/Tritt einem Raum bei
     
-    console.log(`Spieler ${socket_id} ist Raum ${game_id} beigetreten`);
+    console.log(`Client ${socket_id} ist Game ${game_id} beigetreten`);
     
     // Allen im Raum mitteilen, dass jemand da ist
     io.to(game_id).emit("playerJoined", { socket_id });
@@ -17,7 +17,5 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     io.to(game_id).emit("gameStarted");
   });
 
-  socket.on("submitAnswer", (data) => {
-    // Logik für Punkteberechnung
-  });
+  
 }

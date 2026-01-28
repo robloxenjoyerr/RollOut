@@ -11,7 +11,6 @@ const templateRouter = Router()
 templateRouter.post("/all", loginAuthentication, async (req, res) => {
   const { owner_id } = req.body
   const result = await fetchAllTemplates(owner_id)
-  console.log("Owner templates: ", result)
   return res.json(result)
 })
 
@@ -19,8 +18,6 @@ templateRouter.post("/all", loginAuthentication, async (req, res) => {
 templateRouter.post("/update", loginAuthentication, async (req, res) => {
   try {
     const { updatedTemplate, owner_id } = req.body
-
-    console.log("Template to be updated: ", updatedTemplate)
 
     if (!updatedTemplate) return res.send({ success: false, message: "Error: Template given to API is either empty or damaged." })
 
@@ -30,24 +27,22 @@ templateRouter.post("/update", loginAuthentication, async (req, res) => {
     else return res.send({ success: false, message: "Error: Could not update the template." })
 
   } catch (err) {
-    console.log(err)
+    console.log("templateRouter /update ERROR: ", err)
   }
 })
 
 templateRouter.post("/create", loginAuthentication, async (req, res) => {
   const { newTemplate, owner_id } = req.body
-  console.log("new template: ", newTemplate, "owner id: ", owner_id)
   if (!newTemplate || !owner_id) return res.send({ success: false, message: "New Template or ownerId is missing." })
 
   newTemplate.id = randomBytes(8).toString("hex")
 
   try {
-    console.log("Template ID: ", newTemplate.id)
     const success = await createNewUserTemplate(owner_id, newTemplate)
     if (success) return res.send({ success: true, message: "New user template successfully created.", template: success.template })
     else return res.send({ success: false, message: "Error: Could not create new user template." })
   } catch (err) {
-    console.log(err)
+    console.log("templateRouter /create, ERROR: ", err)
   }
 
 })

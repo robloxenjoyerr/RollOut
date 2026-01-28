@@ -90,7 +90,7 @@ export async function createNewUser(id: string, username: string, password: stri
             token: token
         }
     } catch(err:any) {
-        console.log(err)
+        console.log("createNewUser Error: ", err)
         if (err.code === 'SQLITE_CONSTRAINT_UNIQUE'){
             throw new Error("Username existiert bereits.")
         }

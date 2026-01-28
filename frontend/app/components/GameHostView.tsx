@@ -6,6 +6,8 @@ import { io, Socket } from "socket.io-client"
 import { useState, useEffect } from "react"
 import { useToasts } from "../hooks/useToasts"
 import { useAuth } from "../hooks/useAuth"
+import ToastContainer from "./ToastContainer"
+import { AnimatePresence } from "framer-motion"
 
 interface GameHostViewProps {
     game_id: string
@@ -13,7 +15,7 @@ interface GameHostViewProps {
 
 export default function GameHostView({ game_id }: GameHostViewProps) {
     const [socket, setSocket] = useState<Socket | null>(null)
-    const { token} = useAuth()
+    const { token } = useAuth()
     const { toasts, addToast } = useToasts()
 
     useEffect(() => {
@@ -23,12 +25,15 @@ export default function GameHostView({ game_id }: GameHostViewProps) {
             }
         })
         setSocket(newSocket)
-        
-        newSocket.on("connect", ()=> {
+
+        newSocket.on("connect", () => {
             console.log("Connected to GameID: ", game_id, "with socketID: ", newSocket.id)
             newSocket.emit("joinGame", { game_id, socket_id: newSocket.id })
-        })
 
+            newSocket.on("playerJoined", () => {
+                addToast("New Client connected!", "info")
+            })
+        })
 
         return () => { newSocket.disconnect() }
     }, [game_id])
@@ -46,6 +51,9 @@ export default function GameHostView({ game_id }: GameHostViewProps) {
 
     return (
         <div>
+            <AnimatePresence>
+                <ToastContainer toasts={toasts}></ToastContainer>
+            </AnimatePresence>
             <span className="text-green-600 font-bold text-3xl">This is the Game Host View</span>
             <Button onClick={stopGame}>Stop Game</Button>
         </div>

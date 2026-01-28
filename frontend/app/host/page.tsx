@@ -185,7 +185,6 @@ export default function Home() {
                 },
                 body: JSON.stringify({ template: template, owner_id: user.id, host: true })
             })
-            console.log(res.message, res.session_id)
             if (res.success) {
                 console.log("New Game started successfully. Rederecting now.")
                 Cookies.set("session_id", res.session_id)
