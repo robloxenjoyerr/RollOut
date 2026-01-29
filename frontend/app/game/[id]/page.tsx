@@ -18,5 +18,5 @@ export default async function Page({ params }: {params: { id: string }} ) {
     if(res.host === true){
         return <GameHostView game_id={id}/>
     } 
-    else return <GameClientView/>
+    else return <GameClientView game_id={id}/>
 }

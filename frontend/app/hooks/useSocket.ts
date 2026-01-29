@@ -4,35 +4,27 @@ import { useAuth } from "./useAuth";
 
 interface useSocketProps {
     game_id: string
-    isNormalClient: boolean
+    isNormalClient?: boolean
 }
 
-export function useSocket({game_id, isNormalClient = true}: useSocketProps) {
+export function useSocket({ game_id, isNormalClient = true }: useSocketProps) {
     const [socket, setSocket] = useState<Socket | null>(null)
+    const { token } = useAuth()
 
-    if (isNormalClient) {
-        useEffect(() => {
-            const newSocket = io(process.env.NEXT_PUBLIC_API_URL)
-            setSocket(newSocket)
-
-            return () => { newSocket.disconnect() }
-        }, [game_id])
-    }
-    else if (!isNormalClient) {
-        const { token } = useAuth()
-        useEffect(() => {
-            const newSocket = io(process.env.NEXT_PUBLIC_API_URL, {
-                auth: {
-                    token: token
-                }
+    useEffect(() => {
+        const newSocket = isNormalClient
+            ? io(process.env.NEXT_PUBLIC_API_URL_LOCAL! || process.env.NEXT_PUBLIC_API_URL_NETWORK!)
+            : io(process.env.NEXT_PUBLIC_API_URL_LOCAL! || process.env.NEXT_PUBLIC_API_URL_NETWORK!, {
+                auth: { token }
             })
-            setSocket(newSocket)
 
-            return () => { newSocket.disconnect() }
-        }, [game_id])
-    }
+        setSocket(newSocket)
+        return () => {
+            newSocket.disconnect()
+        }
+    }, [game_id, isNormalClient, token])
 
-    return{
+    return {
         socket,
         setSocket
     }

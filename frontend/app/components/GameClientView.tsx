@@ -6,7 +6,7 @@ import { io, Socket } from "socket.io-client"
 import { useState, useEffect } from "react"
 import { useToasts } from "../hooks/useToasts"
 import ToastContainer from "./ToastContainer"
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, isCSSVariableToken } from "framer-motion"
 import { useSocket } from "../hooks/useSocket"
 
 interface GameClientViewProps {
@@ -15,23 +15,24 @@ interface GameClientViewProps {
 
 export default function GameClientView({ game_id }: GameClientViewProps) {
     const { toasts, addToast } = useToasts()
-    const { socket } = useSocket(game_id)
+    const { socket } = useSocket({ game_id })
 
-    useEffect(() => {
-        const newSocket = io(process.env.NEXT_PUBLIC_API_URL)
-        setSocket(newSocket)
+    useEffect(()=> {
+        if(!socket) return
 
-        newSocket.on("connect", () => {
-            console.log("Connected to GameID: ", game_id, "with socketID: ", newSocket.id)
-            newSocket.emit("joinGame", { game_id, socket_id: newSocket.id })
+        socket.on("connect", () => {
+            socket.emit("joinGame", { game_id, socket_id: socket.id })
 
-            newSocket.on("playerJoined", () => {
+            socket.on("playerJoined", () => {
                 addToast("New Client connected!", "info")
+            })
+
+            socket.on("gameStarted", () => {
+                addToast("Rolling has started!", "success")
             })
         })
 
-        return () => { newSocket.disconnect() }
-    }, [game_id])
+    }, [socket, game_id, addToast])
 
     return (
         <div>

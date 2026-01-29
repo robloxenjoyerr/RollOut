@@ -8,35 +8,58 @@ import { useToasts } from "../hooks/useToasts"
 import { useAuth } from "../hooks/useAuth"
 import ToastContainer from "./ToastContainer"
 import { AnimatePresence } from "framer-motion"
+import { useSocket } from "../hooks/useSocket"
+
 
 interface GameHostViewProps {
     game_id: string
 }
 
+interface Client {
+    socket_id: string
+}
+
+
 export default function GameHostView({ game_id }: GameHostViewProps) {
-    const [socket, setSocket] = useState<Socket | null>(null)
     const { token } = useAuth()
     const { toasts, addToast } = useToasts()
+    const { socket } = useSocket({ game_id, isNormalClient: false })
+    const [clients, setClients] = useState<Client[] | null>(null)
 
     useEffect(() => {
-        const newSocket = io(process.env.NEXT_PUBLIC_API_URL, {
-            auth: {
-                token: token
-            }
-        })
-        setSocket(newSocket)
+        if (!socket) return
 
-        newSocket.on("connect", () => {
-            console.log("Connected to GameID: ", game_id, "with socketID: ", newSocket.id)
-            newSocket.emit("joinGame", { game_id, socket_id: newSocket.id })
+        socket.on("connect", () => {
+            console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
+            socket.emit("joinGame", { game_id, socket_id: socket.id })
 
-            newSocket.on("playerJoined", () => {
-                addToast("New Client connected!", "info")
+            socket.on("playerJoined", (data) => {
+                const { socket_id, current_clients } = data; // Achte darauf, dass der Key mit dem Backend übereinstimmt!
+
+                if (current_clients) {
+                    {
+                        setClients(current_clients)
+                    }
+                }
+
+                addToast("New Client connected!", "info");
+            });
+
+            socket.on("playerDisconnected", (data) => {
+                const { socket_id, current_clients } = data
+
+                addToast(`Client with ID: ${socket_id} disconnected.`, "info")
+                setClients(current_clients)
+            })
+
+            socket.on("gameStarted", () => {
+                addToast("Rolling has started!", "success")
             })
         })
+    }, [socket, game_id, addToast, clients])
 
-        return () => { newSocket.disconnect() }
-    }, [game_id])
+
+
     async function stopGame() {
         const res = await apiFetch("/api/game/stop", {
             method: "POST",
@@ -49,13 +72,39 @@ export default function GameHostView({ game_id }: GameHostViewProps) {
         }
     }
 
+    async function startGame() {
+        if (!socket) return
+        socket.emit("startGame", { game_id })
+
+    }
+
     return (
         <div>
             <AnimatePresence>
                 <ToastContainer toasts={toasts}></ToastContainer>
             </AnimatePresence>
-            <span className="text-green-600 font-bold text-3xl">This is the Game Host View</span>
-            <Button onClick={stopGame}>Stop Game</Button>
+            <div className="flex flex-col absolute top-25 left-45 ">
+                <span className="text-black font-bold text-7xl select-none ">Game-Lobby</span>
+                <span className="text-gray-500 font-light text-2xl select-none">Clients currently connected in this game - start whenever your ready!</span>
+            </div>
+            <div className="flex flex-row gap-4 ">
+                <div className="h-full w-full  flex-wrap items-start justify-self-start">
+                    {clients && clients.map((client, i) => (
+                        <span
+                            className="text-black font-bold rounded-2xl border-2 border-black/20 p-3 select-none bg-black/5"
+                            key={client.socket_id}
+                        >
+                            {`Client ID: ${client.socket_id}`}
+                        </span>
+                    ))}
+                </div>
+
+            </div>
+            <div className="absolute bottom-5 left-5 flex gap-5">
+                <Button onClick={startGame}>Start Game</Button>
+                <Button onClick={stopGame}>Stop Game</Button>
+            </div>
+
         </div>
     )
 }

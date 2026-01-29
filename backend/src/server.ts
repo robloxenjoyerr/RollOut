@@ -11,14 +11,14 @@ const app = express();
 const httpServer = createServer(app)
 const io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL,
+      origin: process.env.FRONTEND_URL_LOCAL  ||  process.env.FRONTEND_URL_NETWORK,
       methods: ["GET", "POST"]
     }
 })
 
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL, // Nur dein echtes Frontend darf anfragen
+  origin: process.env.FRONTEND_URL_LOCAL  ||  process.env.FRONTEND_URL_NETWORK, // Nur dein echtes Frontend darf anfragen
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
@@ -33,7 +33,8 @@ app.get("/", (_req, res) => {
 })
 app.use("/api", apiRouter)
 
-httpServer.listen(PORT, () => {
+
+httpServer.listen({port: PORT}, () => {
   console.log("Backend listening on http://localhost:4000")
 })
 
