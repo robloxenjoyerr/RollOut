@@ -5,7 +5,6 @@ import Button from "./Button"
 import { io, Socket } from "socket.io-client"
 import { useState, useEffect } from "react"
 import { useToasts } from "../hooks/useToasts"
-import { useAuth } from "../hooks/useAuth"
 import ToastContainer from "./ToastContainer"
 import { AnimatePresence } from "framer-motion"
 import { useSocket } from "../hooks/useSocket"
@@ -21,7 +20,6 @@ interface Client {
 
 
 export default function GameHostView({ game_id }: GameHostViewProps) {
-    const { token } = useAuth()
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ game_id, isNormalClient: false })
     const [clients, setClients] = useState<Client[] | null>(null)

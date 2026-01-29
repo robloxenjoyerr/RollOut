@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { LiveGame } from "../lib/types";
 import { apiFetch } from "../lib/api";
 
@@ -12,7 +12,8 @@ export function useAvailableGames() {
             try {
                 setLoading(true);
                 const res = await apiFetch("/api/livegames", {
-                    method: "GET"
+                    method: "GET",
+                    redirectAuth: false
                 });
                 console.log(res)
                 // Annahme: res hat die Struktur { live_games: [...] }

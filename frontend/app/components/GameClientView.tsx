@@ -1,12 +1,8 @@
 "use client"
-import { redirect } from "next/navigation"
-import { apiFetch } from "../lib/api"
-import Button from "./Button"
-import { io, Socket } from "socket.io-client"
 import { useState, useEffect } from "react"
 import { useToasts } from "../hooks/useToasts"
 import ToastContainer from "./ToastContainer"
-import { AnimatePresence, isCSSVariableToken } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 import { useSocket } from "../hooks/useSocket"
 
 interface GameClientViewProps {

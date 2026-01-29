@@ -1,5 +1,4 @@
 import { Socket, Server } from "socket.io"
-import gameRouter from "../routes/game.routes";
 
 
 

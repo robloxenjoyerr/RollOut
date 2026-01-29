@@ -1,3 +1,4 @@
+
 import { apiFetch } from "@/app/lib/api"
 import { redirect } from "next/navigation"
 import GameClientView from "@/app/components/GameClientView"
@@ -11,7 +12,8 @@ export default async function Page({ params }: {params: { id: string }} ) {
         method: "POST",
         headers: { "Content-Type": "application/json"},
         cache: "no-store",
-        body: JSON.stringify({game_id_url: id})
+        body: JSON.stringify({game_id_url: id}),
+        redirectAuth: false
     })
 
     if(!res.success) return redirect("/")
@@ -20,3 +22,5 @@ export default async function Page({ params }: {params: { id: string }} ) {
     } 
     else return <GameClientView game_id={id}/>
 }
+
+// BUG => IF NOT LOGGED IN AN JOINING A RUNNING GAME, INSTANTLY GETS REDIRECTED TO /LOGIN

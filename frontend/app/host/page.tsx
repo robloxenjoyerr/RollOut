@@ -18,8 +18,6 @@ import { useToasts } from "../hooks/useToasts";
 import { useAuth } from "../hooks/useAuth";
 import { useTemplates } from "../hooks/useTemplates";
 import Cookies from "js-cookie";
-import { tr } from "framer-motion/client";
-import { SourceTextModule } from "vm";
 import RollOutHeader from "../components/RollOutHeader";
 
 type Modal =

@@ -4,10 +4,8 @@ import Button from "../components/Button";
 import Loading from "../components/Loading";
 import Card from "../components/Card";
 import { AnimatePresence, motion } from "framer-motion";
-
+import { useRouter } from "next/navigation";
 import { useToasts } from "../hooks/useToasts";
-import { useAuth } from "../hooks/useAuth";
-import { useTemplates } from "../hooks/useTemplates";
 import { useAvailableGames } from "../hooks/useAvailableGames";
 import RollOutHeader from "../components/RollOutHeader";
 
@@ -15,9 +13,10 @@ import RollOutHeader from "../components/RollOutHeader";
 export default function JoinPage() {
     const { toasts, addToast } = useToasts()
     const { liveGames, loading } = useAvailableGames()
+    const router = useRouter()
 
-    async function joinGame(){
-        
+    async function joinGame(game_id: string){
+        router.push(`/game/${game_id}`)
     }
 
     console.log("Live Games: ", liveGames)
@@ -71,7 +70,7 @@ export default function JoinPage() {
                                     overflowAutoOn={false}
                                     width="w-75"
                                     className="group hover:cursor-pointer border-black/20 p-4"
-                                    onClick={joinGame}
+                                    onClick={()=> joinGame(game.id)}
                                 >
                                     <div className="flex flex-col gap-4">
                                         <div className="flex flex-row gap-3">

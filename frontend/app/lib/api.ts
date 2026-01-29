@@ -2,7 +2,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_LOCAL || process.env.NEXT_P
 
 import Cookies from 'js-cookie';
 
-export async function apiFetch(endpoint: string, options: RequestInit = {}) {
+interface CustomRequestInit extends RequestInit {
+  redirectAuth?: boolean
+}
+
+export async function apiFetch(endpoint: string, options: CustomRequestInit = {}) {
+  const { redirectAuth = true, ...fetchOptions } = options
   let token: string | undefined
 
   if (typeof window === "undefined") {
@@ -23,12 +28,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     },
   });
 
-  if (response.status === 401) {
+  if (redirectAuth && typeof window !== 'undefined') {
     if (typeof window !== 'undefined') {
       Cookies.remove("login_token");
-      window.location.href = "/login";
+      window.location.href = "/login"
     }
-    throw new Error("Session timed out.");
+    throw new Error("Unauthorized");
   }
 
   if (!response.ok) {
