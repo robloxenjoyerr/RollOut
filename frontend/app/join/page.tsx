@@ -36,7 +36,7 @@ export default function JoinPage() {
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-                            layout={true}
+                            layout={true} 
                             transition={{
                                 type: "spring",
                                 stiffness: 260,
