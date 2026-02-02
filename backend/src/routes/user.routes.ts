@@ -31,7 +31,6 @@ userRouter.post("/register", async (req, res) => {
 })
 
 userRouter.post("/login", async (req, res) => {
-  console.log("AUTH HEADER:", req.headers.authorization)
   try {
     const { username, password } = req.body
     if (!username || !password) {
@@ -39,7 +38,7 @@ userRouter.post("/login", async (req, res) => {
     }
 
     const result = await checkLogin(username, password)
-
+    console.log(result)
     if (result.success) {
       return res.status(201).json({ success: true, message: "Logged in successfully!", token: result.token })
     }

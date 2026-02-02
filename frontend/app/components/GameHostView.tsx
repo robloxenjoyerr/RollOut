@@ -66,6 +66,8 @@ export default function GameHostView({ game_id }: GameHostViewProps) {
         })
 
         if (res.success) {
+            if (socket) socket.emit("gameStopped", { game_id, socket_id: socket.id })
+
             redirect("/host")
         }
     }

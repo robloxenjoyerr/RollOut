@@ -14,6 +14,7 @@ export function useTemplates(owner_id: string | null, addToast: Function) {
         const res = await apiFetch("/api/templates/all", {
             method: "POST",
             body: JSON.stringify({ owner_id: owner_id }),
+            redirectAuth: false,
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
@@ -32,6 +33,7 @@ export function useTemplates(owner_id: string | null, addToast: Function) {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
+            redirectAuth: false,
             body: JSON.stringify({ newTemplate: template, owner_id: user?.id })
         })
 
@@ -53,6 +55,7 @@ export function useTemplates(owner_id: string | null, addToast: Function) {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
+                redirectAuth: false,
                 body: JSON.stringify({updatedTemplate: template, owner_id: user?.id })
             })
         

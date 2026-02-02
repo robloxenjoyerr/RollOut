@@ -181,6 +181,7 @@ export default function Home() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
+                redirectAuth: false,
                 body: JSON.stringify({ template: template, owner_id: user.id, host: true })
             })
             if (res.success) {

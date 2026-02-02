@@ -4,6 +4,8 @@ import { useToasts } from "../hooks/useToasts"
 import ToastContainer from "./ToastContainer"
 import { AnimatePresence } from "framer-motion"
 import { useSocket } from "../hooks/useSocket"
+import { redirect } from "next/navigation"
+
 
 interface GameClientViewProps {
     game_id: string
@@ -25,6 +27,10 @@ export default function GameClientView({ game_id }: GameClientViewProps) {
 
             socket.on("gameStarted", () => {
                 addToast("Rolling has started!", "success")
+            })
+
+            socket.on("gameStopped", ()=> {
+                redirect("/join")
             })
         })
 

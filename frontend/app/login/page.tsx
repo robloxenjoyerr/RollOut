@@ -38,7 +38,8 @@ export default function LoginPage() {
         try {
             const res = await apiFetch("/api/user/login", {
                 method: "POST",
-                body: JSON.stringify({ username: userCredentials.username, password: userCredentials.password })
+                body: JSON.stringify({ username: userCredentials.username, password: userCredentials.password }),
+                redirectAuth: false
             })
 
             if (res.success) {
@@ -49,7 +50,7 @@ export default function LoginPage() {
                     secure: process.env.NODE_ENV === 'production' // Nur über HTTPS in Production
                 });
 
-                console.log("logged in")
+                console.log("pushing host")
                 router.push("/host")
             } else {
                 addToast("Login Credentials are Wrong.", "error")
