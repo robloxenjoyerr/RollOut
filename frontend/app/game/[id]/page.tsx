@@ -1,8 +1,8 @@
 
 import { apiFetch } from "@/app/lib/api"
 import { redirect } from "next/navigation"
-import GameClientView from "@/app/components/GameClientView"
-import GameHostView from "@/app/components/GameHostView"
+import GameClientView from "@/app/components/GameClientLobbyView"
+import GameHostView from "@/app/components/GameHostLobbyView"
 
 
 export default async function Page({ params }: { params: { id: string } }) {
@@ -15,15 +15,15 @@ export default async function Page({ params }: { params: { id: string } }) {
             headers: { "Content-Type": "application/json" },
             cache: "no-store",
             body: JSON.stringify({ game_id_url: id }),
-            redirectAuth: false // Wichtig, damit apiFetch nicht selbst redirectet
+            redirectAuth: false // so apiFetch doesnt redirect by itself
         });
     } catch (error) {
-        // Wenn apiFetch einen Error wirft (z.B. 401), landen wir hier.
-        // Wir tun so, als wäre die Antwort erfolgreich, aber "host" ist false.
+        // Tun als ob Antwort erfolgreich, aber "host" ist false.
         res = { success: true, host: false };
     }
 
     if (!res || !res.success) return redirect("/");
+    console.log("host?: ", res.host)
 
     if (res.host === true) {
         return <GameHostView game_id={id} />;
@@ -32,4 +32,3 @@ export default async function Page({ params }: { params: { id: string } }) {
     }
 }
 
-// BUG => IF NOT LOGGED IN AN JOINING A RUNNING GAME, INSTANTLY GETS REDIRECTED TO /LOGIN

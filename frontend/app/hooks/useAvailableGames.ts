@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { LiveGame } from "../lib/types";
 import { apiFetch } from "../lib/api";
+import { time } from "console";
 
 export function useAvailableGames() {
     const [liveGames, setLiveGames] = useState<LiveGame[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
+    let timer = 1000
     useEffect(() => {
         async function fetchLiveGames() {
             try {
@@ -26,7 +28,14 @@ export function useAvailableGames() {
             }
         }
 
-        fetchLiveGames();
+
+        const timeout = setInterval(fetchLiveGames, timer)
+        return () => {
+            clearInterval(timeout)
+        }
+
+
+
     }, []); // Leeres Array = nur beim Mount ausführen
 
     return {

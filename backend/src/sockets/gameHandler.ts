@@ -1,6 +1,7 @@
 import { Socket, Server } from "socket.io"
-
-
+import { validateToken } from "../lib/services"
+import { addClientToGame } from "../lib/game-manager"
+import { randomBytes } from "node:crypto"
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   let currentGameId: string | null = null
@@ -12,17 +13,16 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   return clientList
 }
 
-  socket.on("joinGame", (data) => {
-    const { game_id, socket_id } = data;
+  socket.on("joinGame", async (data) => {
+    const { game_id, socket_id, host } = data;
     currentGameId = game_id
-    console.log("Data roomCode: ", game_id)
-    socket.join(game_id); // Erstellt/Tritt einem Raum bei
-
     
-    io.to(game_id).emit("playerJoined", { socket_id, current_clients: getCurrentClients() });
-
-
-
+    const res = await addClientToGame({id: randomBytes(4).toString("hex"), socket_id: socket_id, host: host}, game_id)
+    console.log("joingame res: ",res.success) // =>>>>>>>> ALWAYS FALSE
+    if(res.success){
+       socket.join(game_id); // Erstellt/Tritt einem Raum bei
+       io.to(game_id).emit("playerJoined", { socket_id, current_clients: getCurrentClients() });
+    }
 
   });
 
@@ -34,12 +34,21 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   });
 
   socket.on("startGame", (data) => {
-    const { game_id } = data
-    console.log("Starting Game")
-    // Nur der Host sollte das dürfen (Validierung einbauen!)
+    const { game_id, token } = data
+    const info = validateToken(token)
     const roomSockets = io.sockets.adapter.rooms.get(game_id)
-    console.log("Socket in room: ", roomSockets?.size ?? 0)
-    io.to(game_id).emit("gameStarted");
+    console.log(info)
+    if(info) {
+      io.to(game_id).emit("gameStarted");
+    }
+    else {
+      io.to(game_id).emit("gameStartError")
+    }
   });
+
+  socket.on("stopGame", (data)=> {
+    const {game_id } = data
+    socket.to(game_id).emit("gameEnded")
+  })
 
 }

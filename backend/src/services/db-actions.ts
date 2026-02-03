@@ -161,6 +161,3 @@ export async function updateUserTemplate(owner_id: string, templateId: string, u
         return null
     }
 }
-
-
-
