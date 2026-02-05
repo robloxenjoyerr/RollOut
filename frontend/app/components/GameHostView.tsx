@@ -26,7 +26,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ game_id, isNormalClient: false })
     const [clients, setClients] = useState<Client[] | null>(null)
-    const [gameState, setGameState] = useState<GamePhase>(game_phase)
+    const [gameState, setGameState] = useState<GamePhase | string>(game_phase)
     const [gameTemplate, setGameTemplate] = useState<Template | null>(game_template)
     const [newPerson, setNewPerson] = useState("")
 

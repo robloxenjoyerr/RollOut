@@ -55,7 +55,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
   socket.on("rollNext", async (data)=> {
     const {game_id, persons} = data
-    
+    console.log("WADAWDWA")
     const randomIndex = Math.floor(Math.random() * persons.length);
     const selectedPerson = persons[randomIndex];
     io.to(game_id).emit("nextRolled", {person: selectedPerson})
