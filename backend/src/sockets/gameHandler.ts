@@ -47,7 +47,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     }
   });
 
-  socket.on("gameStopped", async (data)=> {
+  socket.on("stopGame", async (data)=> {
     const {game_id} = data
 
     io.to(game_id).emit("gameStopped")

@@ -85,7 +85,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
         })
 
         if (res.success) {
-            if (socket) socket.emit("gameStopped", { game_id, socket_id: socket.id })
+            if (socket) socket.emit("stopGame", { game_id, socket_id: socket.id })
 
             redirect("/host")
         }
@@ -110,7 +110,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
 
     }
 
-    if (gameState.phase === "waiting-lobby") {
+    if (gameState === "waiting-lobby") {
 
         return (
 
@@ -143,7 +143,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
             </div>
         )
     }
-    else if (gameState.phase == "in-progress") {
+    else if (gameState === "in-progress") {
         return (
             <div>
                 <AnimatePresence>

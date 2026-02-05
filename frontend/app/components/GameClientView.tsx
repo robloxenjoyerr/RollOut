@@ -8,6 +8,7 @@ import { redirect } from "next/navigation"
 import { GamePhase } from "../lib/types"
 import { Client } from "../lib/types"
 import { Template } from "../lib/types"
+import { useRouter } from "next/navigation"
 
 interface GameClientViewProps {
     game_id: string
@@ -21,13 +22,14 @@ export default function GameClientView({ game_id, game_phase, game_template }: G
     const [clients, setClients] = useState<Client[] | null>(null)
     const [gameState, setGameState] = useState<GamePhase>(game_phase)
     const [gameTemplate, setGameTemplate] = useState<Template | null>(game_template)
-    
     const [newPerson, setNewPerson] = useState("")
+    const router = useRouter()
 
     useEffect(() => {
         if (!socket) return
 
         socket.on("connect", () => {
+            console.log("dwadw", game_phase)
             socket.emit("joinGame", { game_id, socket_id: socket.id })
             console.log(game_phase)
             socket.on("playerJoined", (data) => {
@@ -44,7 +46,8 @@ export default function GameClientView({ game_id, game_phase, game_template }: G
             })
 
             socket.on("gameStopped", () => {
-                redirect("/join")
+                console.log("SRTOPPED")
+                router.push("/join")
             })
 
             socket.on("nextRolled", (data)=> {
@@ -55,7 +58,7 @@ export default function GameClientView({ game_id, game_phase, game_template }: G
 
     }, [socket, game_id, addToast])
 
-    if (gameState.phase === "waiting-lobby") {
+    if (gameState === "waiting-lobby") {
 
         return (
             <div>
@@ -82,7 +85,7 @@ export default function GameClientView({ game_id, game_phase, game_template }: G
             </div>
         )
     }
-    else if (gameState.phase === "in-progress") {
+    else if (gameState === "in-progress") {
         return (
             <div>
                 <AnimatePresence>
