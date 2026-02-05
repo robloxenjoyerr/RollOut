@@ -1,8 +1,8 @@
 
 import { apiFetch } from "@/app/lib/api"
 import { redirect } from "next/navigation"
-import GameClientView from "@/app/components/GameClientLobbyView"
-import GameHostView from "@/app/components/GameHostLobbyView"
+import GameClientView from "@/app/components/GameClientView"
+import GameHostView from "@/app/components/GameHostView"
 
 
 export default async function Page({ params }: { params: { id: string } }) {
@@ -28,6 +28,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
     
     console.log(res.game_phase)
+    console.log(res.game_template)
     if (res.host === true) {
         return <GameHostView game_id={id} game_phase={res.game_phase} game_template={res.game_template}/>;
     } else {

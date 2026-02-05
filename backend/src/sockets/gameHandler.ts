@@ -5,6 +5,8 @@ import { getTemplateFromGameId, setGamePhase } from "../lib/game-manager";
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   let currentGameId: string | null = null
+  let unrolledPersons: any[] = [];
+  let rolledPersons: any[] = [];
 
   function getCurrentClients() {
     if (!currentGameId) return
@@ -43,21 +45,51 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       const template = await getTemplateFromGameId(game_id)
       if (!template) return io.to(game_id).emit("gameStartError", { message: "Could not get template from game_id. Undefined" })
 
+      unrolledPersons.push(template.persons)
+
       io.to(game_id).emit("gameStarted", { template });
     }
   });
 
-  socket.on("stopGame", async (data)=> {
-    const {game_id} = data
+  socket.on("stopGame", async (data) => {
+    const { game_id } = data
 
-    io.to(game_id).emit("gameStopped")
+    io.to(game_id).emit("gameEnded")
   })
 
-  socket.on("rollNext", async (data)=> {
-    const {game_id, persons} = data
-    console.log("WADAWDWA")
-    const randomIndex = Math.floor(Math.random() * persons.length);
-    const selectedPerson = persons[randomIndex];
-    io.to(game_id).emit("nextRolled", {person: selectedPerson})
-  })
+  socket.on("rollNext", async (data) => {
+    const { game_id } = data;
+
+    // 1. Überprüfen, ob noch Personen zum Ziehen übrig sind.
+    if (unrolledPersons.length === 0) {
+      // Wenn keine Personen mehr übrig sind, informiere die Clients.
+      io.to(game_id).emit("allPersonsRolled", { message: "All persons have been rolled." });
+      return;
+    }
+
+    // 2. Wähle eine zufällige Person aus der Liste der "unrolled".
+    const randomIndex = Math.floor(Math.random() * unrolledPersons.length);
+
+    // WICHTIG: .splice entfernt das Element aus dem Array und gibt es zurück.
+    // Das ist eine atomare Operation: Person wird ausgewählt UND entfernt.
+    const selectedPerson = unrolledPersons.splice(randomIndex, 1)[0];
+
+    // 3. Füge die gezogene Person zur "rolled" Liste hinzu.
+    if (selectedPerson) {
+      rolledPersons.push(selectedPerson);
+    }
+
+    // 4. Sende die gezogene Person an den Game Room.
+    // Es ist auch nützlich, die verbleibende Anzahl mitzuschicken.
+    console.log("slected: ", selectedPerson)
+    io.to(game_id).emit("nextRolled", {
+      person: selectedPerson,
+      remaining: unrolledPersons.length
+    });
+
+    console.log(unrolledPersons.length)
+    console.log(selectedPerson)
+  });
+
+
 }

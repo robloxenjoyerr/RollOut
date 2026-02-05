@@ -1,7 +1,6 @@
 export type Phase = "unstarted" | "waiting-lobby" | "in-progress" | "finished";
 export type Mode = "random" | "wheel" | "plinko" | "casino";
 export type PersonState = "unrolled" | "rolled";
-export type GamePhase = "unstarted" | "waiting-lobby" | "in-progress" | "finished";
 
 export interface Person {
     id: string;
@@ -36,4 +35,12 @@ export interface LiveGame {
     clients: Client[],
     rolled: Person[],
     unrolled: Person[]
+}
+
+export type GamePhaseValue = "unstarted" | "waiting-lobby" | "in-progress" | "finished";
+
+export interface GamePhase {
+  phase: GamePhaseValue;
+  // Hier könntest du weitere Eigenschaften hinzufügen, falls vorhanden
+  // z.B. timestamp: number;
 }
