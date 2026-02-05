@@ -1,3 +1,4 @@
+require('dotenv').config()
 import express from "express"
 import cors from "cors"
 import { Server } from "socket.io"
@@ -5,7 +6,6 @@ import { createServer } from "node:http"
 import { registerGameHandlers } from "./sockets/gameHandler"
 import apiRouter from "./routes/api.routes";
 
-require('dotenv').config()
 const PORT = process.env.PORT || 4000
 const app = express();
 const httpServer = createServer(app)
@@ -26,9 +26,6 @@ app.use(cors({
 app.use(express.json())
 
 app.get("/", (_req, res) => {
-  console.log("test")
-  console.log("test")
-  console.log("test")
   return res.send("Backend läuft 🚀")
 })
 app.use("/api", apiRouter)

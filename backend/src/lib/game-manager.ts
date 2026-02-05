@@ -6,6 +6,7 @@ import { idFromToken } from "./services"
 interface Client {
     id: string,
     socket_id: string,
+    host: boolean
 }
 
 export interface LiveGame {
@@ -29,7 +30,7 @@ export async function getLiveGames() {
 
 export async function startGame(template: Template, user_id: string) {
 
-
+    const initialClients = JSON.stringify([])
     const session_id = randomBytes(8).toString("hex")
     const game_id = randomBytes(8).toString("hex")
 
@@ -70,11 +71,11 @@ export async function checkUserForActiveSession(user_id: string) {
 
 export async function checkIfGameIdExist(id: string) {
     const game = db.prepare(`
-        SELECT id, host_id
+        SELECT id, host_id, clients
         FROM live_games
         WHERE id = ? AND ended_at IS NULL
         LIMIT 1
-    `).get(id) as { id: string; host_id: string } | undefined
+    `).get(id) as { id: string; host_id: string, clients: string } | undefined
 
 
     return game ?? null

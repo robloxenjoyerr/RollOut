@@ -13,8 +13,8 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     return clientList
   }
 
-  socket.on("joinGame", (data) => {
-    const { game_id, socket_id } = data;
+  socket.on("joinGame", async (data) => {
+    const { game_id, socket_id, host } = data;
     currentGameId = game_id
     console.log("Data roomCode: ", game_id)
     socket.join(game_id); // Erstellt/Tritt einem Raum bei
