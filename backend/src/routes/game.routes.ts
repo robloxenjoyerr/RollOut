@@ -2,7 +2,7 @@ import { db } from "../db/database";
 import { Router } from "express";
 import { idFromToken } from "../lib/services";
 import { loginAuthentication } from "../middleware/secureMiddleware";
-import { startGame, checkUserForActiveSession, checkIfGameIdExist, stopGame } from "../lib/game-manager";
+import { startGame, checkUserForActiveSession, checkIfGameIdExist, stopGame, getGamePhaseFromLiveGame, getTemplateFromGameId } from "../lib/game-manager";
 
 
 const gameRouter = Router()
@@ -27,10 +27,13 @@ gameRouter.post("/verify", async (req, res) => {
         if (!info) return res.send({ success: false })
 
         const { id, host_id } = info
+        const game_phase = await getGamePhaseFromLiveGame(id)
+        const game_template = await getTemplateFromGameId(id)
+        if(!game_phase) return res.send({ success: false, message: "Couldnt get a valid GamePhase from DB function."})
 
         if (id) {
-            if (user_id === host_id) return res.send({ success: true, host: true })
-            else return res.send({ success: true, host: false })
+            if (user_id === host_id) return res.send({ success: true, host: true, game_phase: game_phase, game_template: game_template })
+            else return res.send({ success: true, host: false, game_phase: game_phase, game_template: game_template })
         }
         else return res.send({ success: false })
     } catch (err) {

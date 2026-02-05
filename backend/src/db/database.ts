@@ -38,7 +38,7 @@ db.exec(`
   host_id TEXT NOT NULL,
   session_id TEXT UNIQUE NOT NULL,
   phase TEXT NOT NULL,
-  mode TEXT NOT NULL,
+  template_id TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   ended_at DATETIME
 );

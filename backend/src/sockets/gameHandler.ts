@@ -1,16 +1,17 @@
 import { Socket, Server } from "socket.io"
+import { getTemplateFromGameId, setGamePhase } from "../lib/game-manager";
 
 
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   let currentGameId: string | null = null
 
-  function getCurrentClients(){
-  if(!currentGameId) return 
-  const room = io.sockets.adapter.rooms.get(currentGameId);
-  const clientList = room ? Array.from(room).map(id => ({ socket_id: id })) : [];
-  return clientList
-}
+  function getCurrentClients() {
+    if (!currentGameId) return
+    const room = io.sockets.adapter.rooms.get(currentGameId);
+    const clientList = room ? Array.from(room).map(id => ({ socket_id: id })) : [];
+    return clientList
+  }
 
   socket.on("joinGame", (data) => {
     const { game_id, socket_id } = data;
@@ -18,7 +19,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     console.log("Data roomCode: ", game_id)
     socket.join(game_id); // Erstellt/Tritt einem Raum bei
 
-    
+
     io.to(game_id).emit("playerJoined", { socket_id, current_clients: getCurrentClients() });
 
 
@@ -27,19 +28,36 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   });
 
   socket.on("disconnect", (data) => {
-    if(!currentGameId) return
+    if (!currentGameId) return
     console.log("User disconnected fully from GameID: ", currentGameId)
 
-    io.to(currentGameId).emit("playerDisconnected", {socket_id: socket.id, current_clients: getCurrentClients()})
+    io.to(currentGameId).emit("playerDisconnected", { socket_id: socket.id, current_clients: getCurrentClients() })
   });
 
-  socket.on("startGame", (data) => {
+  socket.on("startGame", async (data) => {
     const { game_id } = data
-    console.log("Starting Game")
-    // Nur der Host sollte das dürfen (Validierung einbauen!)
-    const roomSockets = io.sockets.adapter.rooms.get(game_id)
-    console.log("Socket in room: ", roomSockets?.size ?? 0)
-    io.to(game_id).emit("gameStarted");
+
+    // Only Host => need validation
+    const changedGamePhase = await setGamePhase("in-progress", game_id)
+    if (changedGamePhase) {
+      const template = await getTemplateFromGameId(game_id)
+      if (!template) return io.to(game_id).emit("gameStartError", { message: "Could not get template from game_id. Undefined" })
+
+      io.to(game_id).emit("gameStarted", { template });
+    }
   });
 
+  socket.on("gameStopped", async (data)=> {
+    const {game_id} = data
+
+    io.to(game_id).emit("gameStopped")
+  })
+
+  socket.on("rollNext", async (data)=> {
+    const {game_id, persons} = data
+    
+    const randomIndex = Math.floor(Math.random() * persons.length);
+    const selectedPerson = persons[randomIndex];
+    io.to(game_id).emit("nextRolled", {person: selectedPerson})
+  })
 }

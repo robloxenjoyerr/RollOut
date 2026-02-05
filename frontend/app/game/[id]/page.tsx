@@ -7,6 +7,7 @@ import GameHostView from "@/app/components/GameHostView"
 
 export default async function Page({ params }: { params: { id: string } }) {
     const { id } = await params;
+
     let res;
 
     try {
@@ -25,10 +26,12 @@ export default async function Page({ params }: { params: { id: string } }) {
 
     if (!res || !res.success) return redirect("/");
 
+    
+    console.log(res.game_phase)
     if (res.host === true) {
-        return <GameHostView game_id={id} />;
+        return <GameHostView game_id={id} game_phase={res.game_phase} game_template={res.game_template}/>;
     } else {
-        return <GameClientView game_id={id} />;
+        return <GameClientView game_id={id} game_phase={res.game_phase} game_template={res.game_template} />;
     }
 }
 

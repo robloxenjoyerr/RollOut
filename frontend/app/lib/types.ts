@@ -10,7 +10,9 @@ export interface Person {
     avatar?: string;
 }
 
-interface Client {
+
+
+export interface Client {
     id: string,
     socket_id: string,
 }
