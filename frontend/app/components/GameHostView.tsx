@@ -143,7 +143,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
             </div>
         )
     }
-    else if (gameState === "in-progress") {
+    else if (game_phase === "in-progress") {
         return (
             <div>
                 <AnimatePresence>
