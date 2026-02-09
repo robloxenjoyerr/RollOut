@@ -31,7 +31,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
     const [currentPhase, setCurrentPhase] = useState<GamePhase>(game_phase);
     const [currentGameTemplate, setCurrentGameTemplate] = useState<Template>(game_template)
     const router = useRouter()
-
+    const [currentRolled, setCurrentRolled] = useState(null)
     const [clients, setClients] = useState<Client[]>([]) // Initialize with an empty array
 
     useEffect(() => {
@@ -75,6 +75,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
         const onNextRolled = (data: any) => {
             const {person} = data
             console.log(person)
+            setCurrentRolled(person)
         }
 
         // --- Registering Listeners ---
@@ -191,6 +192,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
                             {Array.isArray(currentGameTemplate) && currentGameTemplate.persons.map((person)=> (
                                 <span key={person.id} className="text-black">{person.name}</span>
                             ))}
+                            <span className="text-black">{currentRolled}</span>
                         </div>
                     </div>
                 </AnimatePresence>
