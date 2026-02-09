@@ -24,11 +24,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     }
 
     if (!res || !res.success) return redirect("/");
-    console.log("host?: ", res.host)
-
-    
-    console.log(res.game_phase)
-    console.log(res.game_template)
+  
     if (res.host === true) {
         return <GameHostView game_id={id} game_phase={res.game_phase} game_template={res.game_template}/>;
     } else {

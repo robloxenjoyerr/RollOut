@@ -2,11 +2,13 @@
 import Button from "./components/Button";
 import Card from "./components/Card";
 import { motion } from "framer-motion";
+import Cookies from 'js-cookie';
 
 export default function Home() {
+  const userName = Cookies.get("userName")
   return (
     <div className="flex flex-col gap-8 h-120">
-      <span className="text-black font-bold left-5 top-5 text-5xl absolute">.</span>
+      {/* <span className=" font-bold left-5 text-black/40 top-5 text-3xl absolute">Welcome {userName && userName}!</span> */}
       <span className="select-none self-center text-6xl hover:scale-110 transition-all duration-200 ease-in-out hover:rotate-1 bg-linear-to-r from-pink-500 via-yellow-500 to-blue-500 bg-size-[200%_200%] animate-gradient text-transparent bg-clip-text font-extrabold">RollOut</span>
       <div className="flex flex-row gap-15">
         <motion.div

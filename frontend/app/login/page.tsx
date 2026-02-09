@@ -50,6 +50,9 @@ export default function LoginPage() {
                     secure: process.env.NODE_ENV === 'production' // Nur über HTTPS in Production
                 });
 
+                Cookies.set("userName", res.name, {
+                    expires: 7
+                })
                 console.log("pushing host")
                 router.push("/host")
             } else {

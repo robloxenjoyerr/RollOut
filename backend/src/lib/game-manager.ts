@@ -88,9 +88,14 @@ export async function getTemplateFromGameId(game_id: string) {
         JOIN live_games lg ON lg.template_id = t.id
         WHERE lg.id = ? AND lg.ended_at IS NULL
         LIMIT 1
-    `).get(game_id) as { id: string, owner_id: string, name: string, persons: string, mode: Mode } | undefined;
+    `).get(game_id) as { id: string, owner_id: string, name: string, persons: Person, mode: Mode } | undefined;
 
-    return template || null;
+    return {
+        ...template,
+        persons: typeof template?.persons === "string"
+        ? JSON.parse(template.persons)
+        : template?.persons
+    } as Template
 }
 
 export async function getGamePhaseFromLiveGame(game_id: string){
