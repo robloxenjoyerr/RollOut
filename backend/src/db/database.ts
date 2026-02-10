@@ -1,15 +1,8 @@
-import Database from "better-sqlite3";
-import path from "path";
+import Database from "better-sqlite3"
+import path from "path"
 
-const dbPath = path.join(process.cwd(), "rollout.db");
-export const db = new Database(dbPath);
-
-type User = {
-  username: string,
-  password_hash: string
-  created_at: Date
-}
-
+const dbPath = path.join(process.cwd(), "rollout.db")
+export const db = new Database(dbPath)
 
 
 db.exec(`
@@ -37,7 +30,8 @@ db.exec(`
   name TEXT NOT NULL,
   host_id TEXT NOT NULL,
   session_id TEXT UNIQUE NOT NULL,
-  clients TEXT,
+  persons TEXT,
+  mode TEST,
   phase TEXT NOT NULL,
   template_id TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

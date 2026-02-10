@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion"
 
 import { apiFetch } from "../lib/api"
 import { GamePhase, Template } from "../lib/types"
+import { Person } from "../lib/types"
 import { useAuth } from "../hooks/useAuth"
 import { useSocket } from "../hooks/useSocket"
 import { useToasts } from "../hooks/useToasts"
@@ -13,6 +14,7 @@ import { useToasts } from "../hooks/useToasts"
 import Button from "./Button"
 import ToastContainer from "./ToastContainer"
 import Wheel from "./Wheel"
+import Loading from "./Loading"
 
 interface GameHostViewProps {
     game_id: string
@@ -28,26 +30,35 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ game_id, isNormalClient: false })
     const { token } = useAuth()
-    const [currentPhase, setCurrentPhase] = useState<GamePhase>(game_phase);
-    const [currentGameTemplate, setCurrentGameTemplate] = useState<Template>(game_template)
     const router = useRouter()
-    const [currentRolled, setCurrentRolled] = useState(null)
-    const [clients, setClients] = useState<Client[]>([]) // Initialize with an empty array
-    const [pendingUpdate, setPendingUpdate] = useState<any>(null);
-    const [rotation, setRotation] = useState(0);
-const [availablePersons, setAvailablePersons] = useState<any[]>(
-    game_template.persons?.filter((p: any) => p.state === "unrolled") || []
-);
+    const [clients, setClients] = useState<Client[]>([])
+    const [rotation, setRotation] = useState(0)
+    const [pendingUpdate, setPendingUpdate] = useState<any>(null)
+    const [currentPhase, setCurrentPhase] = useState<GamePhase>(game_phase)
+    const [currentGameTemplate, setCurrentGameTemplate] = useState<Template>(game_template)
+    const [currentRolled, setCurrentRolled] = useState<null | Person>(null)
+    const [availablePersons, setAvailablePersons] = useState<any[]>(
+        game_template.persons?.filter((p: any) => p.state === "unrolled") || []
+    )
+    const [isSpinning, setIsSpinning] = useState<boolean>(false)
+
+
     useEffect(() => {
         if (!socket) return
 
-        // --- Event Handlers ---
-        // It's good practice to define handlers outside the listener setup
-        // so they can be easily referenced for removal.
         const onConnect = () => {
             console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
-            setCurrentPhase({ phase: game_phase.phase })
+            socket.emit("getGameState", game_id)
             socket.emit("joinGame", { game_id, socket_id: socket.id })
+        }
+
+        const onGameStateUpdate = (data: any) => {
+            const parsedPersons: Person[] = data.persons || []
+            const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
+            
+            setCurrentPhase({ phase: data.phase })
+            setPendingUpdate(unrolledPersons)
+            setAvailablePersons(parsedPersons)
         }
 
         const onPlayerJoined = (data: { current_clients: Client[] }) => {
@@ -64,7 +75,6 @@ const [availablePersons, setAvailablePersons] = useState<any[]>(
             addToast("Game has started!", "success")
             setCurrentPhase({ phase: "in-progress" })
             console.log("persons: ", currentGameTemplate.persons)
-            // Potentially update game phase state here if needed
         }
 
         const onGameStartError = () => {
@@ -76,35 +86,46 @@ const [availablePersons, setAvailablePersons] = useState<any[]>(
             router.push('/host')
         }
 
-        const onNextRolled = (data: any) => {
-            const { unrolledPersons, nextRolled } = data;
 
-            // 1. Wir berechnen die Drehung basierend auf der AKTUELLEN Anzeige (availablePersons)
-            const winnerIndex = availablePersons.findIndex(p => p.id === nextRolled.id);
+        const onNextRolled = (data: any) => {
+            const { unrolledPersons, nextRolled } = data
+
+            const effectivePersons = pendingUpdate ? pendingUpdate : availablePersons
+
+            const winnerIndex = effectivePersons.findIndex((p: Person) => p.id === nextRolled.id)
 
             if (winnerIndex !== -1) {
-                const segmentAngle = 360 / availablePersons.length;
-                const extraSpins = 360 * 5;
-                const currentNormalized = rotation % 360;
-                const targetAngle = 270 - (winnerIndex * segmentAngle) - (segmentAngle / 2);
+                setIsSpinning(true)
+                const segmentAngle = 360 / effectivePersons.length
+                const extraSpins = 360 * 5
+                const currentNormalized = rotation % 360
+                const targetAngle = 270 - (winnerIndex * segmentAngle) - (segmentAngle / 2)
+                let diff = (targetAngle - currentNormalized)
+                const finalRotation = rotation + extraSpins + (diff < 0 ? diff + 360 : diff)
 
-                let diff = (targetAngle - currentNormalized);
-                const finalRotation = rotation + extraSpins + (diff < 0 ? diff + 360 : diff);
-                setRotation(finalRotation);
+                if (pendingUpdate) {
+                    setAvailablePersons(pendingUpdate)
+                }
+                setRotation(finalRotation)
+
+                setTimeout(() => {
+                    // Und wir zeigen den Namen des Gewinners an.
+                    setCurrentRolled(nextRolled);
+                    // Erlaube den nächsten Klick
+                    setIsSpinning(false);
+                }, 4000);
             }
 
-            // 2. Wir speichern die neuen Personen-Daten nur im "Hintergrund" (pendingUpdate)
-            // Aber wir filtern sie noch NICHT aus dem verfügbaren Rad-State.
-            setPendingUpdate(unrolledPersons.filter((p: any) => p.state === "unrolled"));
-
-            // 3. Nach der Animation zeigen wir nur den Namen an
+            setPendingUpdate(unrolledPersons.filter((p: any) => p.state === "unrolled"))
+            setCurrentRolled(null)
             setTimeout(() => {
-                setCurrentRolled(nextRolled);
-            }, 3000);
-        };
+                setCurrentRolled(nextRolled)
+            }, 3000)
+        }
+
 
         const onAllRolled = (data: any) => {
-            addToast("All persons have been rolled! Game is getting closed in 5 seconds.", "info")
+            addToast("All persons have been rolled! Game is getting closed in 5 seconds.", "success")
 
             setTimeout(async () => {
                 const info = await stopGame()
@@ -117,8 +138,8 @@ const [availablePersons, setAvailablePersons] = useState<any[]>(
             setCurrentRolled(null)
         }
 
-        // --- Registering Listeners ---
         socket.on("connect", onConnect)
+        socket.on("gameStateUpdate", onGameStateUpdate)
         socket.on("playerJoined", onPlayerJoined)
         socket.on("playerDisconnected", onPlayerDisconnected)
         socket.on("gameStarted", onGameStarted)
@@ -127,21 +148,28 @@ const [availablePersons, setAvailablePersons] = useState<any[]>(
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
 
-        // --- CRITICAL: Cleanup Function ---
-        // This function runs when the component unmounts or dependencies change.
-        // It's crucial to remove ALL listeners to prevent memory leaks.
+
+        //  runs when the component unmounts or dependencies change
+        // removing ALL listeners to prevent memory leaks
         return () => {
             console.log("Cleaning up socket listeners...")
             socket.off("connect", onConnect)
+            socket.off("gameStateUpdate", onGameStateUpdate)
             socket.off("playerJoined", onPlayerJoined)
             socket.off("playerDisconnected", onPlayerDisconnected)
             socket.off("gameStarted", onGameStarted)
             socket.off("gameStartError", onGameStartError)
             socket.off("gameEnded", onGameEnded)
         }
-        // The dependency array should only include values that, when changed,
-        // require the effect to be re-run.
-    }, [socket, game_id, addToast, router, game_phase])
+        // The dependency array should only include values that when changed require the effect to be re-run.
+    }, [socket, game_id, addToast, router, game_phase, availablePersons, rotation])
+
+    const rollNext = () => {
+        if (!socket || isSpinning) return
+        setCurrentRolled(null)
+        socket.emit("rollNext", { game_id })
+    }
+
 
     async function stopGame() {
         const res = await apiFetch("/api/game/stop", {
@@ -154,7 +182,6 @@ const [availablePersons, setAvailablePersons] = useState<any[]>(
         if (res.success && socket) {
             socket.emit("stopGame", { game_id })
             addToast("Game stopped", "info")
-
 
             socket.on("gameEnded", () => {
                 console.log("ENDD")
@@ -171,26 +198,12 @@ const [availablePersons, setAvailablePersons] = useState<any[]>(
         socket.emit("startGame", { game_id, token })
     }
 
-    const rollNext = () => {
-        if (!socket) return;
-
-        // Falls wir noch ein Update aus dem letzten Wurf offen haben:
-        // Jetzt ist der Moment, die alte Person aus dem Rad zu löschen!
-        if (pendingUpdate) {
-            setAvailablePersons(pendingUpdate);
-            setPendingUpdate(null);
-        }
-
-        setCurrentRolled(null); // Namen ausblenden
-        socket.emit("rollNext", { game_id });
-    };
     if (!currentPhase) redirect(`/game/${game_id}`)
 
     if (currentPhase.phase === "waiting-lobby") {
 
         return (
             <div>
-                {/* AnimatePresence is only needed for components that will be removed from the DOM */}
                 <AnimatePresence>
                     <ToastContainer toasts={toasts} />
                 </AnimatePresence>
@@ -246,21 +259,12 @@ const [availablePersons, setAvailablePersons] = useState<any[]>(
 
                             <div className="flex flex-col items-center gap-10">
                                 <Wheel persons={availablePersons} rotation={rotation} />
-                                {currentRolled && (
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1.2 }}
-                                        className="text-4xl font-black text-black bg-yellow-400 p-4 rounded-xl shadow-lg"
-                                    >
-                                        🎉 {currentRolled.name}
-                                    </motion.div>
-                                )}
                             </div>
                         </div>
                     </div>
                 </AnimatePresence>
                 <div className="absolute bottom-5 left-5 flex gap-5">
-                    <Button onClick={rollNext}>Roll Next</Button>
+                    <Button disabled={isSpinning} onClick={rollNext}>Roll Next</Button>
                     <Button onClick={stopGame}>Stop Game</Button>
                 </div>
             </ >
@@ -270,7 +274,7 @@ const [availablePersons, setAvailablePersons] = useState<any[]>(
     else {
         return (
             <div className="text-black">
-                123123
+                <Loading></Loading>
             </div>
         )
     }

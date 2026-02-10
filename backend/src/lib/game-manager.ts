@@ -1,7 +1,6 @@
 import { randomBytes } from "node:crypto"
 import { GamePhase, Person, Mode, Template } from "../services/db-actions"
 import { db } from "../db/database"
-import { idFromToken } from "./services"
 
 interface Client {
     id: string,
@@ -28,19 +27,46 @@ export async function getLiveGames() {
         `).all()
 }
 
+// in game-manager.ts
+
+export async function getLiveGameById(game_id: string) {
+    try {
+        const gameRow = db.prepare(`
+            SELECT * 
+            FROM live_games 
+            WHERE id = ? AND ended_at IS NULL
+        `).get(game_id) as { phase: GamePhase, mode: Mode, persons: string } | undefined;
+
+        if (!gameRow) {
+            console.error(`getLiveGameById: Spiel mit ID ${game_id} nicht gefunden.`);
+            return null;
+        }
+
+
+        return {
+            phase: gameRow.phase,
+            mode: gameRow.mode,
+            persons: JSON.parse(gameRow.persons)
+        };
+
+    } catch (error) {
+        console.error("Fehler in getLiveGameById:", error);
+        return null;
+    }
+}
+
+
 export async function startGame(template: Template, user_id: string) {
 
-    const initialClients = JSON.stringify([])
     const session_id = randomBytes(8).toString("hex")
     const game_id = randomBytes(8).toString("hex")
 
     const stmt = db.prepare(`
-        INSERT INTO live_games (id, name, host_id, session_id, phase, template_id, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO live_games (id, name, host_id, session_id, persons, mode, phase, template_id, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
 
-    stmt.run(game_id, template.name, user_id, session_id, "waiting-lobby", template.id, Date.now())
-
+    stmt.run(game_id, template.name, user_id, session_id, JSON.stringify(template.persons), template.mode, "waiting-lobby", template.id, Date.now())
     return { success: true, game_id: game_id, session_id: session_id }
 }
 
@@ -71,7 +97,7 @@ export async function checkUserForActiveSession(user_id: string) {
 
 export async function checkIfGameIdExist(id: string) {
     const game = db.prepare(`
-        SELECT id, host_id, clients
+        SELECT id, host_id, persons
         FROM live_games
         WHERE id = ? AND ended_at IS NULL
         LIMIT 1
@@ -93,20 +119,9 @@ export async function getTemplateFromGameId(game_id: string) {
     return {
         ...template,
         persons: typeof template?.persons === "string"
-        ? JSON.parse(template.persons)
-        : template?.persons
+            ? JSON.parse(template.persons)
+            : template?.persons
     } as Template
-}
-
-export async function getGamePhaseFromLiveGame(game_id: string){
-    const info = await checkIfGameIdExist(game_id)
-    if(!info) return null
-    const game_phase = db.prepare(`
-            SELECT phase FROM live_games WHERE id = ? AND ended_at IS NULL LIMIT 1
-        `).get(info.id) as {game_phase: GamePhase}
-
-    if(!game_phase) return null
-    return game_phase
 }
 
 export async function setGamePhase(game_phase: GamePhase, game_id: string) {
@@ -119,14 +134,36 @@ export async function setGamePhase(game_phase: GamePhase, game_id: string) {
             `).run(game_phase, game_id);
         }
 
-   
+
         return db.prepare(`
             UPDATE live_games SET phase = ? WHERE id = ?
         `).run(game_phase, game_id);
-        return true
+
     } catch (error) {
         console.error("Failed to update game phase:", error);
         return false
-        throw error;
+    }
+}
+
+export async function updateLiveGame(game_id: string, personList: Person[]) {
+    try {
+        if (!game_id || !personList) return null
+
+        const stmt = db.prepare(`
+                UPDATE live_games
+                SET persons = ?
+                WHERE ended_at IS  NULL
+            `)
+
+        const info = stmt.run(JSON.stringify(personList))
+
+        if (info.changes === 1) {
+            console.log(info.changes)
+            return true
+        }
+        else return null
+    } catch (err) {
+        console.error("game-manager updateLiveGame: ", err)
+        return null
     }
 }
