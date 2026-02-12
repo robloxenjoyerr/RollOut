@@ -55,7 +55,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
         const onGameStateUpdate = (data: any) => {
             const parsedPersons: Person[] = data.persons || []
             const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
-            
+
             setCurrentPhase({ phase: data.phase })
             setPendingUpdate(unrolledPersons)
             setAvailablePersons(parsedPersons)
@@ -123,20 +123,33 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
             }, 3000)
         }
 
-
         const onAllRolled = (data: any) => {
-            addToast("All persons have been rolled! Game is getting closed in 5 seconds.", "success")
 
-            setTimeout(async () => {
-                const info = await stopGame()
+            setTimeout(() => {
+                addToast("All persons have been rolled! Game is getting closed in 5 seconds.", "success")
+                setCurrentRolled(null)
 
-                if (info) {
-                    addToast("Game ended.", "info")
-                    router.push('/host')
-                }
-            }, 5000)
-            setCurrentRolled(null)
+                let secondsLeft = 5
+                const countdownInterval = setInterval(() => {
+                    if (secondsLeft > 0) {
+                        addToast(`Game closing in: ${secondsLeft}`, "info")
+                    }
+
+                    if (secondsLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        stopGame().then(info => {
+                            if (info) {
+                                addToast("Game ended.", "info");
+                                router.push('/host');
+                            }
+                        });
+                    }
+                    secondsLeft--;
+                }, 1000)
+
+            }, 3000)
         }
+
 
         socket.on("connect", onConnect)
         socket.on("gameStateUpdate", onGameStateUpdate)
@@ -160,6 +173,8 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
             socket.off("gameStarted", onGameStarted)
             socket.off("gameStartError", onGameStartError)
             socket.off("gameEnded", onGameEnded)
+            socket.off("nextRolled", onNextRolled)
+            socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
     }, [socket, game_id, addToast, router, game_phase, availablePersons, rotation])
@@ -250,7 +265,7 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
                     <ToastContainer toasts={toasts}></ToastContainer>
                 </AnimatePresence>
                 <AnimatePresence>
-                    <div className="flex flex-col gap-10 absolute items-center justify-center w-screen h-screen ">
+                    <div className="flex flex-col gap-10 absolute items-center justify-center w-screen h-screen box-content overflow-hidden m-0 p-0">
                         <div className="flex flex-col">
                             <span className="text-black font-bold text-7xl select-none ">Game is running!</span>
                         </div>

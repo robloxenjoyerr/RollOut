@@ -9,16 +9,22 @@ import apiRouter from "./routes/api.routes";
 const PORT = process.env.PORT || 4000
 const app = express();
 const httpServer = createServer(app)
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL_LOCAL,
+  process.env.FRONTEND_URL_NETWORK
+].filter((origin): origin is string => typeof origin === "string" && origin.length > 0)
+
 const io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL_LOCAL  ||  process.env.FRONTEND_URL_NETWORK,
+      origin: allowedOrigins,
       methods: ["GET", "POST"]
     }
 })
 
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL_LOCAL  ||  process.env.FRONTEND_URL_NETWORK, // Nur dein echtes Frontend darf anfragen
+  origin: allowedOrigins, 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
@@ -31,9 +37,10 @@ app.get("/", (_req, res) => {
 app.use("/api", apiRouter)
 
 
-httpServer.listen({port: PORT}, () => {
+httpServer.listen({port: PORT, host: "0.0.0.0"}, () => {
   console.log("Backend listening on http://localhost:4000")
 })
+
 
 io.on("connection", (socket) => {
   registerGameHandlers(io, socket)

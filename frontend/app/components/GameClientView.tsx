@@ -8,6 +8,7 @@ import { useToasts } from "../hooks/useToasts"
 import { useSocket } from "../hooks/useSocket"
 import { GamePhase, Template } from "../lib/types"
 import Wheel from "./Wheel"
+import { Person } from "../lib/types"
 
 import ToastContainer from "./ToastContainer"
 
@@ -35,83 +36,130 @@ export default function GameClientView({ game_id, game_phase, game_template }: G
     useEffect(() => {
         if (!socket) return
 
-        // --- Event Handlers ---
         const onConnect = () => {
-            console.log("Connected with socket ID:", socket.id);
-            socket.emit("joinGame", { game_id, socket_id: socket.id });
-            setCurrentPhase(game_phase)
+            console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
+            socket.emit("getGameState", game_id)
+            socket.emit("joinGame", { game_id, socket_id: socket.id })
         }
 
+        const onGameStateUpdate = (data: any) => {
+            const parsedPersons: Person[] = data.persons || []
+            const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
-        const onPlayerJoined = () => {
+            setCurrentPhase({ phase: data.phase })
+            setPendingUpdate(unrolledPersons)
+            setAvailablePersons(parsedPersons)
+        }
 
-            addToast("Another client connected!", "info");
+        const onPlayerJoined = (data: { current_clients: Client[] }) => {
+            setClients(data.current_clients || [])
+            addToast("New Client connected!", "info")
+        }
+
+        const onPlayerDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
+            addToast(`Client with ID: ${data.socket_id} disconnected.`, "info")
+            setClients(data.current_clients || [])
         }
 
         const onGameStarted = () => {
-            addToast("The game has started!", "success");
+            addToast("Game has started!", "success")
+            setCurrentPhase({ phase: "in-progress" })
 
-            setCurrentPhase({ phase: "in-progress" });
+        }
+
+        const onGameStartError = () => {
+            addToast("Error starting the game.", "error")
         }
 
         const onGameEnded = () => {
-            addToast("Game ended", "info")
-            console.log("ENDED")
-            router.push('/join');
-        };
+            addToast("Game ended.", "info")
+            router.push('/join')
+        }
+
 
         const onNextRolled = (data: any) => {
-            const { unrolledPersons, nextRolled } = data;
+            const { unrolledPersons, nextRolled } = data
 
-            const effectivePersons = pendingUpdate ? pendingUpdate : availablePersons;
+            const effectivePersons = pendingUpdate ? pendingUpdate : availablePersons
 
-            const winnerIndex = effectivePersons.findIndex((p: any) => p.id === nextRolled.id);
+            const winnerIndex = effectivePersons.findIndex((p: Person) => p.id === nextRolled.id)
 
             if (winnerIndex !== -1) {
-                const segmentAngle = 360 / effectivePersons.length;
-                const extraSpins = 360 * 5;
-                const currentNormalized = rotation % 360;
-
-
-                const targetAngle = 270 - (winnerIndex * segmentAngle) - (segmentAngle / 2);
-
-                let diff = (targetAngle - currentNormalized);
-                const finalRotation = rotation + extraSpins + (diff < 0 ? diff + 360 : diff);
+                const segmentAngle = 360 / effectivePersons.length
+                const extraSpins = 360 * 5
+                const currentNormalized = rotation % 360
+                const targetAngle = 270 - (winnerIndex * segmentAngle) - (segmentAngle / 2)
+                let diff = (targetAngle - currentNormalized)
+                const finalRotation = rotation + extraSpins + (diff < 0 ? diff + 360 : diff)
 
                 if (pendingUpdate) {
-                    setAvailablePersons(pendingUpdate);
+                    setAvailablePersons(pendingUpdate)
                 }
+                setRotation(finalRotation)
 
-
-                setRotation(finalRotation);
+                setTimeout(() => {
+                    // Und wir zeigen den Namen des Gewinners an.
+                    setCurrentRolled(nextRolled);
+                    // Erlaube den nächsten Klick
+                }, 4000);
             }
 
-
-            setPendingUpdate(unrolledPersons.filter((p: any) => p.state === "unrolled"));
-
-            setCurrentRolled(null);
+            setPendingUpdate(unrolledPersons.filter((p: any) => p.state === "unrolled"))
+            setCurrentRolled(null)
             setTimeout(() => {
-                setCurrentRolled(nextRolled);
-            }, 3000);
-        };
+                setCurrentRolled(nextRolled)
+            }, 3000)
+        }
+
+        const onAllRolled = (data: any) => {
+
+            setTimeout(() => {
+                addToast("All persons have been rolled! Game is getting closed in 5 seconds.", "success")
+                setCurrentRolled(null)
+
+                let secondsLeft = 5
+                const countdownInterval = setInterval(() => {
+                    if (secondsLeft > 0) {
+                        addToast(`Game closing in: ${secondsLeft}`, "info")
+                    }
+
+                    if (secondsLeft <= 0) {
+                        clearInterval(countdownInterval);
+                    }
+                    secondsLeft--;
+                }, 1000)
+
+            }, 3000)
+        }
 
 
-        socket.on("connect", onConnect);
-        socket.on("playerJoined", onPlayerJoined);
-        socket.on("gameStarted", onGameStarted);
-        socket.on("gameEnded", onGameEnded);
-        socket.on("nextRolled", onNextRolled);
+        socket.on("connect", onConnect)
+        socket.on("gameStateUpdate", onGameStateUpdate)
+        socket.on("playerJoined", onPlayerJoined)
+        socket.on("playerDisconnected", onPlayerDisconnected)
+        socket.on("gameStarted", onGameStarted)
+        socket.on("gameStartError", onGameStartError)
+        socket.on("gameEnded", onGameEnded)
+        socket.on("nextRolled", onNextRolled)
+        socket.on("allPersonsRolled", onAllRolled)
 
 
+        //  runs when the component unmounts or dependencies change
+        // removing ALL listeners to prevent memory leaks
         return () => {
-            console.log("Cleaning up client listeners...");
-            socket.off("connect", onConnect);
-            socket.off("playerJoined", onPlayerJoined);
-            socket.off("gameStarted", onGameStarted);
-            socket.off("gameEnded", onGameEnded);
+            console.log("Cleaning up socket listeners...")
+            socket.off("connect", onConnect)
+            socket.off("gameStateUpdate", onGameStateUpdate)
+            socket.off("playerJoined", onPlayerJoined)
+            socket.off("playerDisconnected", onPlayerDisconnected)
+            socket.off("gameStarted", onGameStarted)
+            socket.off("gameStartError", onGameStartError)
+            socket.off("gameEnded", onGameEnded)
             socket.off("nextRolled", onNextRolled)
-        };
-    }, [socket, game_id, addToast, router, game_phase, availablePersons, rotation]);
+            socket.off("allPersonsRolled", onAllRolled)
+        }
+        // The dependency array should only include values that when changed require the effect to be re-run.
+    }, [socket, game_id, addToast, router, game_phase, availablePersons, rotation])
 
     if (currentPhase.phase === "waiting-lobby") {
         return (
@@ -119,12 +167,32 @@ export default function GameClientView({ game_id, game_phase, game_template }: G
                 <AnimatePresence>
                     <ToastContainer toasts={toasts} />
                 </AnimatePresence>
+
                 <div className="flex flex-col gap-10 absolute top-25 left-45 ">
                     <div className="flex flex-col">
-                        <span className="text-black font-bold text-7xl select-none ">Game Lobby</span>
-                        <span className="text-gray-500 font-light text-2xl select-none">Waiting for the host to start the game...</span>
+                        <span className="text-black font-bold text-7xl select-none ">Waiting Lobby</span>
+                        <span className="text-gray-500 font-light text-2xl select-none">
+                            Clients currently connected – waiting for the host to start rolling!                                </span>
                     </div>
 
+                    <div className="flex flex-row gap-4 flex-wrap">
+                        {/* AnimatePresence correctly wraps the list of items that will be added/removed */}
+                        <AnimatePresence>
+                            {clients.map((client) => (
+                                <motion.span
+                                    className="text-black font-bold rounded-2xl border-2 border-black/20 p-3 select-none bg-black/5"
+                                    key={client.socket_id}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                                >
+                                    {`Client ID: ${client.socket_id}`}
+                                </motion.span>
+                            ))}
+                        </AnimatePresence>
+                    </div>
                 </div>
             </div>
         )

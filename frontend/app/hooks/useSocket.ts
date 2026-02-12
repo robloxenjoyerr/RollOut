@@ -12,11 +12,11 @@ export function useSocket({ game_id, isNormalClient = true }: useSocketProps) {
 
     useEffect(() => {
         // Wir holen das Token direkt aus dem Cookie. 
-        // Wenn es nicht da ist, ist es halt undefined, aber niemand redirectet uns!
+        // Wenn es nicht da ist, ist es halt undefined, aber kein redirect
         const token = Cookies.get("login_token");
 
         // IP Adresse bestimmen
-        const url = process.env.NEXT_PUBLIC_API_URL_LOCAL || process.env.NEXT_PUBLIC_API_URL_NETWORK;
+        const url = process.env.NEXT_PUBLIC_API_URL!
 
         // Verbindung aufbauen
         const newSocket = io(url!, {

@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_LOCAL || process.env.NEXT_PUBLIC_API_URL_NETWORK;
+const API_URL = process.env.NEXT_PUBLIC_API_URL!
 
 import Cookies from 'js-cookie';
 
@@ -19,7 +19,7 @@ export async function apiFetch(endpoint: string, options: CustomRequestInit = {}
     token = Cookies.get("login_token")
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

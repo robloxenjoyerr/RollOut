@@ -80,7 +80,7 @@ export default function Home() {
                 return { ...prev, name: newName };
             })
 
-            
+
         } else {
             if (!draftTemplate) return;
             setDraftTemplate((prev) => {
@@ -285,7 +285,7 @@ export default function Home() {
                                                     transition={{ type: "spring", stiffness: 200, damping: 25 }}
                                                 >
                                                     <input
-                                                        className="flex-1 text-center focus:outline-none focus:cursor-pointer hover:cursor-pointer"
+                                                        className="flex-1 text-center focus:outline-none focus:text-green-200 focus:cursor-pointer hover:cursor-pointer"
                                                         value={person.name}
                                                         onChange={(e) => handlePersonNameChange(index, e.target.value)}
                                                     />
@@ -404,7 +404,7 @@ export default function Home() {
                                         <div className="flex flex-row gap-3">
                                             <div className="flex flex-row gap-2 rounded-sm bg-blue-200 w-fit p-1">
                                                 <img className="w-5 h-5" src="/Persons.svg" alt="" />
-                                                <p className="text-gray-500 select-none">{template.persons.length} {template.persons.length > 1 ? "persons" : "person"}</p>
+                                                <p className="text-gray-500 select-none pr-0.5">{template.persons.length}</p>
                                             </div>
                                             <div className="rounded-sm bg-blue-200 w-fit p-1 select-none text-gray-500">
                                                 {template.mode}
