@@ -12,7 +12,7 @@ import ToastContainer from "../components/ToastContainer";
 import { useToasts } from "../hooks/useToasts";
 import { useEffect } from "react"
 import RollOutHeader from "../components/RollOutHeader"
-
+import Cookies from "js-cookie"
 
 interface UserCredentials {
     username: string,
@@ -24,10 +24,10 @@ export default function RegisterPage() {
     const { toasts, addToast } = useToasts()
     const router = useRouter()
     const [userCredentials, setUserCredentials] = useState<UserCredentials>({ username: "", password: "", password_validity: "" })
-    const token = localStorage.getItem("login_token")
+    const token = Cookies.get("login_token")
 
     useEffect(() => {
-            const token = localStorage.getItem("login_token")
+            const token = Cookies.get("login_token")
             if (token){
                 window.location.href = "/host"
             }
@@ -48,7 +48,7 @@ export default function RegisterPage() {
                 console.log("Successfully registered.")
                 console.log("Login Token: ", res.token)
                 setUserCredentials({ username: "", password: "", password_validity: "" })
-                localStorage.setItem("login_token", res.token)
+                Cookies.set("login_token", res.token)
                 router.push("/host")
 
             } else {
