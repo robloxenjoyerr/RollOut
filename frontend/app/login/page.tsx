@@ -43,7 +43,6 @@ export default function LoginPage() {
             })
 
             if (res.success) {
-                // 3. Cookie setzen statt localStorage
                 Cookies.set("login_token", res.token, { 
                     expires: 7, // 7 Tage gültig
                     sameSite: 'strict',

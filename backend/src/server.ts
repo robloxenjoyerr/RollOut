@@ -6,13 +6,12 @@ import { createServer } from "node:http"
 import { registerGameHandlers } from "./sockets/gameHandler"
 import apiRouter from "./routes/api.routes";
 
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 5000
 const app = express();
 const httpServer = createServer(app)
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL_LOCAL,
-  process.env.FRONTEND_URL_NETWORK
+  process.env.CORS_ORIGIN,
 ].filter((origin): origin is string => typeof origin === "string" && origin.length > 0)
 
 const io = new Server(httpServer, {
