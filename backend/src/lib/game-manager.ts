@@ -22,12 +22,14 @@ export interface LiveGame {
 
 
 export async function getLiveGames() {
-    return db.prepare(`
-            SELECT * FROM live_games WHERE ended_at IS NULL ORDER BY created_at DESC
-        `).all()
+    try{
+        return db.prepare(`
+                SELECT * FROM live_games WHERE ended_at IS NULL ORDER BY created_at DESC
+            `).all()
+    } catch(err){
+        console.error("Game-Manager ERROR: ", err)
+    }
 }
-
-// in game-manager.ts
 
 export async function getLiveGameById(game_id: string) {
     try {
@@ -41,7 +43,6 @@ export async function getLiveGameById(game_id: string) {
             console.error(`getLiveGameById: Spiel mit ID ${game_id} nicht gefunden.`);
             return null;
         }
-
 
         return {
             phase: gameRow.phase,
