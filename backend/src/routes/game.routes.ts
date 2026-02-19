@@ -29,7 +29,7 @@ gameRouter.post("/verify", async (req, res) => {
         const { id, host_id } = info
         const game = await getLiveGameById(id)
         const game_template = await getTemplateFromGameId(id)
-        if(!game) return res.send({ success: false, message: "Couldnt get a valid GamePhase from DB function."})
+        if (!game) return res.send({ success: false, message: "Couldnt get a valid GamePhase from DB function." })
 
         if (id) {
             if (user_id === host_id) return res.send({ success: true, host: true, game_phase: game.phase, game_template: game_template })
@@ -41,13 +41,7 @@ gameRouter.post("/verify", async (req, res) => {
     }
 })
 
-gameRouter.post("/start", loginAuthentication, async (req, res) => {
-    const { template, owner_id, host } = req.body
-    const alreadyStarted = await checkUserForActiveSession(owner_id)
-    console.log("Host already started a game with ID: ", alreadyStarted)
-
-    if (alreadyStarted) return res.send({ success: false, message: "User already started a game.", game_id: alreadyStarted })
-
+gameRouter.post("/start", async (req, res) => {
     try {
         const info = await startGame(template, owner_id)
         if (info.success) {

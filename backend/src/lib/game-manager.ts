@@ -12,12 +12,10 @@ export interface LiveGame {
     id: string,
     name: string,
     host_id: string,
-    session_id: string,
-    phase: GamePhase,
-    mode: Mode,
     clients: Client[],
-    rolled: Person[],
-    unrolled: Person[]
+    mode: Mode,
+    phase: GamePhase,
+    creted_at: string
 }
 
 
@@ -57,18 +55,17 @@ export async function getLiveGameById(game_id: string) {
 }
 
 
-export async function startGame(template: Template, user_id: string) {
+export async function startGame(roomConfig: any) {
 
-    const session_id = randomBytes(8).toString("hex")
     const game_id = randomBytes(8).toString("hex")
 
     const stmt = db.prepare(`
-        INSERT INTO live_games (id, name, host_id, session_id, persons, mode, phase, template_id, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO live_games (id, name, mode, phase, created_at)
+        VALUES (?, ?, ?, ?, ?)
         `)
 
-    stmt.run(game_id, template.name, user_id, session_id, JSON.stringify(template.persons), template.mode, "waiting-lobby", template.id, Date.now())
-    return { success: true, game_id: game_id, session_id: session_id }
+    stmt.run(game_id, roomConfig.name, roomConfig.mode, "waiting-lobby", Date.now())
+    return { success: true, game_id: game_id}
 }
 
 export async function stopGame(game_id: string) {

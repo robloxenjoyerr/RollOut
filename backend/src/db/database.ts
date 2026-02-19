@@ -4,7 +4,6 @@ import path from "path"
 const dbPath = path.join(process.cwd(), "rollout.db")
 export const db = new Database(dbPath)
 
-
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -29,11 +28,9 @@ db.exec(`
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   host_id TEXT NOT NULL,
-  session_id TEXT UNIQUE NOT NULL,
-  persons TEXT,
-  mode TEST,
+  clients TEXT,
+  mode TEXT NOT NULL,
   phase TEXT NOT NULL,
-  template_id TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   ended_at DATETIME
 );

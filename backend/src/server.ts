@@ -1,4 +1,5 @@
-require('dotenv').config()
+import dotenv from "dotenv"
+dotenv.config()
 import express from "express"
 import cors from "cors"
 import { Server } from "socket.io"
@@ -6,7 +7,7 @@ import { createServer } from "node:http"
 import { registerGameHandlers } from "./sockets/gameHandler"
 import apiRouter from "./routes/api.routes";
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 4000
 const app = express();
 const httpServer = createServer(app)
 
@@ -35,10 +36,10 @@ app.get("/", (_req, res) => {
 })
 app.use("/api", apiRouter)
 
-
 httpServer.listen({port: PORT, host: "0.0.0.0"}, () => {
   console.log("Backend listening on http://localhost:4000")
 })
+
 
 
 io.on("connection", (socket) => {
