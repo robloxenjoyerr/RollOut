@@ -13,31 +13,41 @@ const httpServer = createServer(app)
 
 const allowedOrigins = [
   process.env.CORS_ORIGIN,
+  "https://rollout.live",
+  "https://www.rollout.live"
 ].filter((origin): origin is string => typeof origin === "string" && origin.length > 0)
 
-const io = new Server(httpServer, {
-    cors: {
-      origin: allowedOrigins,
-      methods: ["GET", "POST"]
-    }
-})
-
-
 app.use(cors({
-  origin: allowedOrigins, 
+  origin: (origin, callback) => {
+    if(!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      console.log("CORS blocked for Origin: ", origin)
+      callback(new Error("Not allowed by CORS."))
+    }
+  }, 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
 app.use(express.json())
 
+const io = new Server(httpServer, {
+    cors: {
+      origin: allowedOrigins,
+      methods: ["GET", "POST"],
+      credentials: true
+    }
+})
+
 app.get("/", (_req, res) => {
-  return res.send("Backend läuft 🚀")
+  return res.send("This is the RollOut Backend-API.")
 })
 app.use("/api", apiRouter)
 
 httpServer.listen({port: PORT, host: "0.0.0.0"}, () => {
-  console.log("Backend listening on http://localhost:4000")
+  console.log(`Backend is listening on Port ${PORT}`)
 })
 
 
