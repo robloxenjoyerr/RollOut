@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto"
-import { GamePhase, Person, Mode, Template } from "../services/db-actions"
-import { db } from "../db/database"
+import { GamePhase, Person, Mode, Template } from "../services/db-actions.js"
+import { db } from "../db/database.js"
 
 interface Client {
     id: string,

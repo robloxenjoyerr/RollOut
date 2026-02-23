@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { stopGame } from "../lib/game-manager";
+import { stopGame } from "../lib/game-manager.js";
 
 
 const gameRouter = Router()

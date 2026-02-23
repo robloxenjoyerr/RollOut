@@ -1,4 +1,4 @@
-import { db } from "../db/database"
+import { db } from "../db/database.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 

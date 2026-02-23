@@ -1,8 +1,8 @@
 import { Router } from "express"
-import { getLiveGames } from "../lib/game-manager"
-import gameRouter from "./game.routes"
-import userRouter from "./user.routes"
-import templateRouter from "./templates.routes"
+import { getLiveGames } from "../lib/game-manager.js"
+import gameRouter from "./game.routes.js"
+import userRouter from "./user.routes.js"
+import templateRouter from "./templates.routes.js"
 
 const apiRouter = Router()
 

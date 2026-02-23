@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { createNewUser } from "../services/db-actions";
+import { createNewUser } from "../services/db-actions.js";
 import { randomBytes } from "node:crypto";
-import { checkLogin } from "../services/db-actions";
+import { checkLogin } from "../services/db-actions.js";
 
 const userRouter = Router()
 

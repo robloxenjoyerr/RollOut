@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { loginAuthentication } from "../middleware/secureMiddleware";
-import { fetchAllTemplates } from "../services/db-actions";
+import { loginAuthentication } from "../middleware/secureMiddleware.js";
+import { fetchAllTemplates } from "../services/db-actions.js";
 import { randomBytes } from "node:crypto";
-import { updateUserTemplate } from "../services/db-actions";
-import { createNewUserTemplate } from "../services/db-actions";
-import { deleteTemplateById } from "../services/db-actions";
+import { updateUserTemplate } from "../services/db-actions.js";
+import { createNewUserTemplate } from "../services/db-actions.js";
+import { deleteTemplateById } from "../services/db-actions.js";
 
 const templateRouter = Router()
 

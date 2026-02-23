@@ -1,6 +1,6 @@
 import { Socket, Server } from "socket.io";
-import { setGamePhase,  updateLiveGame,  getLiveGameById } from "../lib/game-manager";
-import { PersonState, Person } from "../services/db-actions";
+import { setGamePhase,  updateLiveGame,  getLiveGameById } from "../lib/game-manager.js";
+import { PersonState, Person } from "../services/db-actions.js";
 
 async function rollNextPersonAndUpdateDB(game_id: string) {
   try {
