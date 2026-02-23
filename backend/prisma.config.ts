@@ -9,6 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env['postgresql://rollout_user:wdakdq0991951adhwaudslknuja@central-postgres:5432/rollout_db'],
+    url: process.env.DATABASE_URL,
   },
 });
