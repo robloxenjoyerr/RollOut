@@ -16,9 +16,10 @@ gameRouter.post("/verify", async (req, res) => {
 })
 
 gameRouter.post("/start", async (req, res) => {
+    const { roomConfig} = req.body
     try {
 
-        const info = await createRoom("TestRoom", "random")
+        const info = await createRoom(roomConfig)
 
         console.log(info)
     } catch (err) {

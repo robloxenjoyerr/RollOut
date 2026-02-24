@@ -6,17 +6,27 @@ export type GamePhase = "unstarted" | "waiting-lobby" | "in-progress" | "finishe
 export type Mode = "random" | "wheel" | "plinko" | "casino";
 export type PersonState = "unrolled" | "rolled";
 export type Person = {
-    id: string,
-    name: string,
-    state: PersonState
+  id: string,
+  name: string,
+  state: PersonState
 
 }
 
+export interface roomConfig {
+  id: number;
+  roomName: string;
+  mode: string;
+  clients: string;
+}
 
-export async function createRoom(roomName: string, mode: Mode){
-    return await prisma.liveGames.create({
-        data: { roomName, mode, clients: ""}
-    })
+export async function createRoom(roomConfig: roomConfig) {
+  return await prisma.liveGames.create({
+    data: {
+      roomName: roomConfig.roomName,
+      mode: roomConfig.mode,
+      clients: roomConfig.clients
+     }
+  })
 }
 
 export async function deleteGame(id: number) {

@@ -40,7 +40,7 @@ export default function Host() {
                     "Content-Type": "application/json"
                 },
                 redirectAuth: false,
-                body: JSON.stringify({ currentRoomConfig })
+                body: JSON.stringify({ roomConfig: currentRoomConfig })
             })
             if (res.success) {
                 console.log("New Game started successfully. Rederecting now.")
