@@ -1,11 +1,8 @@
 import { Router } from "express";
 import { stopGame } from "../lib/game-manager.js";
-
+import { createRoom } from "../services/db-actions.js";
 
 const gameRouter = Router()
-
-
-
 
 gameRouter.post("/verify", async (req, res) => {
     const { game_id_url } = req.body
@@ -22,6 +19,9 @@ gameRouter.post("/verify", async (req, res) => {
 gameRouter.post("/start", async (req, res) => {
     try {
 
+        const info = await createRoom("TestRoom", "random")
+
+        console.log(info)
     } catch (err) {
 
     }
