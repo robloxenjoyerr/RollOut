@@ -16,6 +16,7 @@ export interface roomConfig {
   id: number;
   roomName: string;
   mode: string;
+  isPrivate: boolean;
   clients: string;
 }
 
@@ -24,7 +25,8 @@ export async function createRoom(roomConfig: roomConfig) {
     data: {
       roomName: roomConfig.roomName,
       mode: roomConfig.mode,
-      clients: roomConfig.clients
+      isPrivate: roomConfig.isPrivate,
+      clients: ""
      }
   })
 }

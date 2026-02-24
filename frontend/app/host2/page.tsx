@@ -28,8 +28,8 @@ export default function Host() {
         try {
             const currentRoomConfig = {
                 roomName: roomNameRef.current?.value,
+                gameMode: selectedMode,
                 privateRoom: privateRoomRef.current?.checked,
-                gameMode: selectedMode
             }
 
             console.log("Starting with config: ", currentRoomConfig)
