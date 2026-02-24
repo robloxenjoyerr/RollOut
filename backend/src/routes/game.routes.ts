@@ -23,7 +23,7 @@ gameRouter.post("/start", async (req, res) => {
 
         console.log(info)
     } catch (err) {
-
+        console.log(err)
     }
 })
 
