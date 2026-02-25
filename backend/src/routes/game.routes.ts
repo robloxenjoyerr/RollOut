@@ -30,22 +30,24 @@ gameRouter.post("/start", async (req, res) => {
 
     const { roomConfig } = req.body
     const hostIdCookie = req.cookies?.hostId
-    
-    const alreadyInRoom = await findRoomByClient(hostIdCookie)
+    console.log("hostIdCookie:", hostIdCookie)
 
-    if(alreadyInRoom){
-        return res.send({roomId: alreadyInRoom.id})
+    const alreadyInRoom = await findRoomByClient(hostIdCookie)
+    console.log("alreadyInRoom:", alreadyInRoom)
+
+    if (alreadyInRoom) {
+        return res.send({ roomId: alreadyInRoom.id })
     }
 
     const hostId = randomBytes(8).toString("hex")
     try {
         const info = await createRoom(roomConfig, hostId)
-        if(!info) return res.status(500).send({error: true})
+        if (!info) return res.status(500).send({ error: true })
 
         if (info) {
             res.cookie("hostId", hostId, {
                 httpOnly: true,
-                secure: true, 
+                secure: true,
                 sameSite: "none", // ← none statt strict für cross-domain
                 domain: ".rollout.live",  // ← auf Hauptdomain setzen
                 maxAge: 1000 * 60 * 60 * 1
