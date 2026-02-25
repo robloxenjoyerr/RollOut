@@ -173,7 +173,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, game_id, addToast, router, game_phase, availablePersons, rotation])
+    }, [socket, game_id, addToast, router, game_phase])
 
     const rollNext = () => {
         if (!socket || isSpinning) return

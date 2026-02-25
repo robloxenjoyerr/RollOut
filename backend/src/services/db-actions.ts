@@ -35,6 +35,7 @@ export async function verifyRoom(roomId: string){
 }
 
 export async function findRoomByClient(clientId: string){
+    console.log("searching for clientId:", clientId)
   if(!clientId) return null
 
   return await prisma.liveGames.findFirst({
