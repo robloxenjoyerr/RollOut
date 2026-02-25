@@ -11,7 +11,7 @@ type LiveGameType = Awaited<ReturnType<typeof prisma.liveGames.findUnique>>;
 
 
 
-export async function createRoom(roomConfig: LiveGameType) {
+export async function createRoom(roomConfig: LiveGameType, hostId: string) {
   if(!roomConfig) return null
 
   return await prisma.liveGames.create({
@@ -20,7 +20,7 @@ export async function createRoom(roomConfig: LiveGameType) {
       mode: roomConfig.mode,
       isPrivate: roomConfig.isPrivate,
       status: "waiting-lobby",
-      hostId: roomConfig.hostId,
+      hostId: hostId,
       gameCode: roomConfig.isPrivate ? randomBytes(6).toString("hex").toUpperCase() : null
     }
   })

@@ -32,8 +32,6 @@ export default function Host() {
                 isPrivate: privateRoomRef.current?.checked,
             }
 
-            console.log("Starting with config: ", currentRoomConfig)
-
             const res = await apiFetch("/api/game/start", {
                 method: "POST",
                 headers: {
@@ -42,22 +40,19 @@ export default function Host() {
                 redirectAuth: false,
                 body: JSON.stringify({ roomConfig: currentRoomConfig })
             })
-            if (res.success) {
+            if (res) {
                 console.log("New Game started successfully. Rederecting now.")
-                Cookies.set("session_id", res.session_id)
-                router.push(`/game/${res.game_id}`)
+                router.push(`/game/${res.roomId}`)
             }
             else {
                 console.log("Could not start new Game. You have already started one. Rederecting now.")
-                Cookies.set("session_id", res.session_id)
-                router.push(`/game/${res.game_id}`)
+                router.push(`/game/${res.roomId}`)
             }
 
         }
         catch (err) {
             console.log(err)
         }
-
     }
 
     return (

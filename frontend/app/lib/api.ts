@@ -7,7 +7,7 @@ interface CustomRequestInit extends RequestInit {
 }
 
 export async function apiFetch(endpoint: string, options: CustomRequestInit = {}) {
-  const { redirectAuth = true, ...fetchOptions } = options
+  const { redirectAuth = false, ...fetchOptions } = options
   let token: string | undefined
 
   if (typeof window === "undefined") {
@@ -20,7 +20,8 @@ export async function apiFetch(endpoint: string, options: CustomRequestInit = {}
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
+    ...fetchOptions,
+    credentials: "include",// damit cookies gesetzt und mitgeschickt werden
     headers: {
       "Content-Type": "application/json",
       ...(token ? { "Authorization": `Bearer ${token}` } : {}),
@@ -28,6 +29,7 @@ export async function apiFetch(endpoint: string, options: CustomRequestInit = {}
     },
   });
 
+  // not needed
   if (redirectAuth && typeof window !== 'undefined') {
     if (typeof window !== 'undefined') {
       Cookies.remove("login_token");
