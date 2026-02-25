@@ -42,6 +42,7 @@ export default function Host() {
             })
             if (res) {
                 console.log("New Game started successfully. Rederecting now.")
+                console.log(res.roomId)
                 router.push(`/game/${res.roomId}`)
             }
             else {
