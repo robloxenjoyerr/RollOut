@@ -25,7 +25,10 @@ export default async function Page({ params }: { params: { roomId: string } }) {
 
         console.log("RES: ", res)
 
-        if (!res.valid) return redirect("/host");
+        if (!res.valid) {
+            console.log("REDERECTING TO /HOST")
+            return redirect("/host");
+        } 
 
         if (res.isHost) {
             return <GameHostView game_id={roomId} game_phase={res.game_phase} />;
@@ -35,6 +38,7 @@ export default async function Page({ params }: { params: { roomId: string } }) {
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen
         console.error("game/id ERROR : ", error)
+        console.log("REDERECTING TO /")
         return redirect("/")
     }
 
