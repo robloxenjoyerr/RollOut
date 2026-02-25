@@ -31,9 +31,9 @@ export default async function Page({ params }: { params: { roomId: string } }) {
         } 
 
         if (res.isHost) {
-            return <GameHostView game_id={roomId} game_phase={res.game_phase} />;
+            return <GameHostView game_id={roomId} game_phase={res.status} />;
         } else {
-            return <GameClientView game_id={roomId} game_phase={res.game_phase} />;
+            return <GameClientView game_id={roomId} game_phase={res.status} />;
         }
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen

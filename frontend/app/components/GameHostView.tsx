@@ -211,7 +211,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
     if (!currentPhase) redirect(`/game/${game_id}`)
 
-    if (currentPhase.phase === "waiting-lobby") {
+    if (currentPhase.phase === "waiting") {
 
         return (
             <div>
