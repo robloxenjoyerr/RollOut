@@ -161,7 +161,7 @@ export default function GameClientView({ game_id, game_phase }: GameClientViewPr
         // The dependency array should only include values that when changed require the effect to be re-run.
     }, [socket, game_id, addToast, router, game_phase])
 
-    if (currentPhase.phase === "waiting-lobby") {
+    if (currentPhase.phase === "waiting") {
         return (
             <div>
                 <AnimatePresence>
