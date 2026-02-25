@@ -237,8 +237,8 @@ export default function GameClientView({ game_id, game_phase }: GameClientViewPr
     }
 
     return (
-        <div className="text-black">
-            ...Waiting
+        <div className="text-red-500">
+            ERROR
         </div>
     )
 }

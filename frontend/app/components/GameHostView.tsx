@@ -284,8 +284,9 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
     }
     else {
         return (
-            <div className="text-black">
+            <div className="text-red-600">
                 <Loading></Loading>
+                ERROR
             </div>
         )
     }
