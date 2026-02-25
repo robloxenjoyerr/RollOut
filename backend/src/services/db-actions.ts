@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import prisma from "../lib/prisma-client.js";
+import { randomBytes } from "node:crypto";
 
 export type GamePhase = "unstarted" | "waiting-lobby" | "in-progress" | "finished";
 export type Mode = "random" | "wheel" | "plinko" | "casino";
@@ -13,7 +14,7 @@ export type Person = {
 }
 
 export interface roomConfig {
-  id: number;
+  id: string;
   roomName: string;
   mode: string;
   isPrivate: boolean;
@@ -21,6 +22,8 @@ export interface roomConfig {
 }
 
 export async function createRoom(roomConfig: roomConfig) {
+  const gameId = randomBytes(8).toString("hex")
+
   return await prisma.liveGames.create({
     data: {
       roomName: roomConfig.roomName,

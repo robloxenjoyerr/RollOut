@@ -13,11 +13,21 @@ datasource db {
   provider = "postgresql"
 }
 
+model Client {
+  id String @id @default(uuid())
+  name String
+  gameId String
+  game liveGames @relation(fields: [gameId], references: [id])
+  isHost Boolean @default(false)
+}
 
 model liveGames {
-  id Int @id @default(autoincrement())
+  id String  @id @default(uuid())
+  gameCode String @unique
   roomName String
   mode String
   isPrivate Boolean
-  clients String
+  status String @default("waiting")
+  hostId String
+  clients Client[]
 }

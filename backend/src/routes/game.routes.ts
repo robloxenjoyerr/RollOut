@@ -21,7 +21,6 @@ gameRouter.post("/start", async (req, res) => {
 
         const info = await createRoom(roomConfig)
 
-        console.log(info)
     } catch (err) {
         console.log(err)
     }
