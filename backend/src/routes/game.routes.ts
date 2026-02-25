@@ -1,15 +1,26 @@
 import { Router } from "express";
-import { createRoom } from "../services/db-actions.js";
+import { createRoom, verifyRoom } from "../services/db-actions.js";
 import { randomBytes } from "node:crypto";
+import { isTokenHeader } from "hono/utils/jwt/jwt";
 
 const gameRouter = Router()
 
-gameRouter.post("/verify", async (req, res) => {
-   
+gameRouter.post("/verify/:roomId", async (req, res) => {
+    const { roomId } = req.params
     try {
+        const info = await verifyRoom(roomId)
 
+        if(info){
+            const hostId = req.cookies?.hostId
+            const isHost = hostId && hostId === info.hostId
+            return res.send({valid: true, isHost: !!isHost})
+        }
+        else {
+            return res.send({valid: false, isHost: false})
+        }
     } catch (err) {
-
+        console.error("gameRouter ERROR : /verify : ", err)
+        return res.status(500).send({valid: false, isHost: false})
     }
 })
 
@@ -29,7 +40,7 @@ gameRouter.post("/start", async (req, res) => {
             return res.send({ roomId: info.id})
         }
     } catch (err) {
-        console.log(err)
+         console.error("gameRouter ERROR : /start : ", err)
     }
 })
 

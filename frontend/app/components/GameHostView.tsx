@@ -19,14 +19,13 @@ import Loading from "./Loading"
 interface GameHostViewProps {
     game_id: string
     game_phase: GamePhase
-    game_template: Template
 }
 
 interface Client {
     socket_id: string
 }
 
-export default function GameHostView({ game_id, game_phase, game_template }: GameHostViewProps) {
+export default function GameHostView({ game_id, game_phase }: GameHostViewProps) {
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ game_id, isNormalClient: false })
     const { token } = useAuth()
@@ -35,11 +34,8 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
     const [rotation, setRotation] = useState(0)
     const [pendingUpdate, setPendingUpdate] = useState<any>(null)
     const [currentPhase, setCurrentPhase] = useState<GamePhase>(game_phase)
-    const [currentGameTemplate, setCurrentGameTemplate] = useState<Template>(game_template)
     const [currentRolled, setCurrentRolled] = useState<null | Person>(null)
-    const [availablePersons, setAvailablePersons] = useState<any[]>(
-        game_template.persons?.filter((p: any) => p.state === "unrolled") || []
-    )
+    const [availablePersons, setAvailablePersons] = useState<any[]>([])
     const [isSpinning, setIsSpinning] = useState<boolean>(false)
 
 
@@ -74,7 +70,6 @@ export default function GameHostView({ game_id, game_phase, game_template }: Gam
         const onGameStarted = () => {
             addToast("Game has started!", "success")
             setCurrentPhase({ phase: "in-progress" })
-            console.log("persons: ", currentGameTemplate.persons)
         }
 
         const onGameStartError = () => {

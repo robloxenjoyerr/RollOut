@@ -5,30 +5,29 @@ import GameClientView from "@/app/components/GameClientView"
 import GameHostView from "@/app/components/GameHostView"
 
 
-export default async function Page({ params }: { params: { id: string } }) {
-    const { id } = await params;
-
-    let res;
+export default async function Page({ params }: { params: { roomId: string } }) {
+    const { roomId } = await params;
 
     try {
-        res = await apiFetch("/api/game/verify", {
+        const res = await apiFetch(`/api/game/verify/${roomId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             cache: "no-store",
-            body: JSON.stringify({ game_id_url: id }),
             redirectAuth: false // so apiFetch doesnt redirect by itself
         });
+
+        if (!res.valid) return redirect("/");
+
+        if (res.isHost) {
+            return <GameHostView game_id={roomId} game_phase={res.game_phase}  />;
+        } else {
+            return <GameClientView game_id={roomId} game_phase={res.game_phase}  />;
+        }
     } catch (error) {
         // Tun als ob Antwort erfolgreich, aber "host" ist false.
-        res = { success: true, host: false };
+        console.error("game/id ERROR : ", error)
     }
 
-    if (!res || !res.success) return redirect("/");
-  
-    if (res.host === true) {
-        return <GameHostView game_id={id} game_phase={res.game_phase} game_template={res.game_template}/>;
-    } else {
-        return <GameClientView game_id={id} game_phase={res.game_phase} game_template={res.game_template} />;
-    }
+
 }
 

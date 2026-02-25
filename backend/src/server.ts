@@ -6,6 +6,7 @@ import { Server } from "socket.io"
 import { createServer } from "node:http"
 import { registerGameHandlers } from "./sockets/gameHandler.js"
 import apiRouter from "./routes/api.routes.js";
+import cookieParser from "cookie-parser"
 
 const PORT = process.env.PORT || 4000
 const app = express();
@@ -35,6 +36,7 @@ app.use(cors({
 
 
 app.use(express.json())
+app.use(cookieParser())
 
 const io = new Server(httpServer, {
     cors: {

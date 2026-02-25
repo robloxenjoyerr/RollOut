@@ -26,6 +26,14 @@ export async function createRoom(roomConfig: LiveGameType, hostId: string) {
   })
 }
 
+export async function verifyRoom(roomId: string){
+  if(!roomId) return null
+
+  return await prisma.liveGames.findUnique({
+    where: { id: roomId }
+  })
+}
+
 export async function deleteGame(id: string) {
   return await prisma.liveGames.delete({
     where: { id }

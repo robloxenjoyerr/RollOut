@@ -15,21 +15,19 @@ import ToastContainer from "./ToastContainer"
 interface GameClientViewProps {
     game_id: string
     game_phase: GamePhase
-    game_template: Template
 }
 
 interface Client {
     socket_id: string
 }
 
-export default function GameClientView({ game_id, game_phase, game_template }: GameClientViewProps) {
+export default function GameClientView({ game_id, game_phase }: GameClientViewProps) {
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ game_id })
     const router = useRouter()
     const [rotation, setRotation] = useState(0);
-    const [availablePersons, setAvailablePersons] = useState<any[]>(
-        game_template.persons?.filter((p: any) => p.state === "unrolled") || []
-    ); const [currentPhase, setCurrentPhase] = useState<GamePhase>(game_phase);
+    const [availablePersons, setAvailablePersons] = useState<any[]>([])
+    const [currentPhase, setCurrentPhase] = useState<GamePhase>(game_phase);
     const [clients, setClients] = useState<Client[]>([]);
     const [currentRolled, setCurrentRolled] = useState<any>(null);
     const [pendingUpdate, setPendingUpdate] = useState<any>(null);
