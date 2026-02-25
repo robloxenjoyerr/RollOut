@@ -11,6 +11,8 @@ export default async function Page({ params }: { params: { roomId: string } }) {
     const cookieStore = await cookies()
     const hostId = cookieStore.get("hostId")?.value
 
+    console.log("hostID page.tsx roomId: ", hostId)
+
     try {
         const res = await apiFetch(`/api/game/verify/${roomId}`, {
             method: "POST",
@@ -23,7 +25,7 @@ export default async function Page({ params }: { params: { roomId: string } }) {
 
         console.log("RES: ", res)
 
-        if (!res.valid) return redirect("/");
+        if (!res.valid) return redirect("/host");
 
         if (res.isHost) {
             return <GameHostView game_id={roomId} game_phase={res.game_phase} />;

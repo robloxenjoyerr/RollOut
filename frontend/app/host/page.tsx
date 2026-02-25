@@ -41,15 +41,11 @@ export default function Host() {
                 body: JSON.stringify({ roomConfig: currentRoomConfig })
             })
             if (res) {
-                console.log("New Game started successfully. Rederecting now.")
-                console.log(res.roomId)
                 router.push(`/game/${res.roomId}`)
             }
-            else {
-                console.log("Could not start new Game. You have already started one. Rederecting now.")
-                router.push(`/game/${res.roomId}`)
+            else{
+                router.push("/join")
             }
-
         }
         catch (err) {
             console.log(err)

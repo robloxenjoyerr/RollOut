@@ -14,6 +14,7 @@ gameRouter.post("/verify/:roomId", async (req, res) => {
 
         if (info) {
             const hostId = req.cookies?.hostId
+            console.log("hostID from req.cookies.hostiD: ", hostId)
             const isHost = hostId && hostId === info.hostId
             return res.send({ valid: true, isHost: !!isHost })
         }
@@ -27,16 +28,14 @@ gameRouter.post("/verify/:roomId", async (req, res) => {
 })
 
 gameRouter.post("/start", async (req, res) => {
-
     const { roomConfig } = req.body
-    
     const hostIdCookie = req.cookies?.hostId
 
     if(hostIdCookie){
         const alreadyInRoom = await findRoomByClient(hostIdCookie)
 
         if (alreadyInRoom) {
-            return res.send({ roomId: alreadyInRoom.id })
+            return res.send({ roomId: alreadyInRoom.id, alreadyInRoom: true })
         }
     }
 
