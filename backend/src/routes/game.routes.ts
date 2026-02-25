@@ -38,3 +38,5 @@ gameRouter.post("/stop", async (req, res) => {
 })
 
 export default gameRouter
+
+// npx prisma generate
