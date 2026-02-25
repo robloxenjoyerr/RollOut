@@ -34,6 +34,20 @@ export async function verifyRoom(roomId: string){
   })
 }
 
+export async function findRoomByClient(clientId: string){
+  if(!clientId) return null
+
+  return await prisma.liveGames.findFirst({
+    where: { 
+      OR: [
+        { hostId: clientId},
+        { clients: { some: {id: clientId}}}
+      ]
+    },
+    include: { clients: true}
+  })
+}
+
 export async function deleteGame(id: string) {
   return await prisma.liveGames.delete({
     where: { id }

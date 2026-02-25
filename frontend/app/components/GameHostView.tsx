@@ -42,6 +42,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
     useEffect(() => {
         if (!socket) return
 
+        console.log("HOST PAGE")
         const onConnect = () => {
             console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
             socket.emit("getGameState", game_id)

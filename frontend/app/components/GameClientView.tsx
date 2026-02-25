@@ -34,6 +34,8 @@ export default function GameClientView({ game_id, game_phase }: GameClientViewPr
     useEffect(() => {
         if (!socket) return
 
+         console.log("CLIENT PAGE")
+
         const onConnect = () => {
             console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
             socket.emit("getGameState", game_id)
