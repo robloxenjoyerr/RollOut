@@ -12,7 +12,7 @@ type LiveGameType = Awaited<ReturnType<typeof prisma.liveGames.findUnique>>;
 
 
 export async function createRoom(roomConfig: LiveGameType, hostId: string) {
-  if(!roomConfig) return null
+  if (!roomConfig) return null
 
   return await prisma.liveGames.create({
     data: {
@@ -26,27 +26,30 @@ export async function createRoom(roomConfig: LiveGameType, hostId: string) {
   })
 }
 
-export async function verifyRoom(roomId: string){
-  if(!roomId) return null
+export async function verifyRoom(roomId: string) {
+  if (!roomId) return null
 
   return await prisma.liveGames.findUnique({
     where: { id: roomId }
   })
 }
 
-export async function findRoomByClient(clientId: string){
-    console.log("searching for clientId:", clientId)
-  if(!clientId) return null
+export async function findRoomByClient(clientId: string) {
+  console.log("searching for clientId:", clientId)
+  if (!clientId) return null
 
-  return await prisma.liveGames.findFirst({
-    where: { 
+  const result = await prisma.liveGames.findFirst({
+    where: {
       OR: [
-        { hostId: clientId},
-        { clients: { some: {id: clientId}}}
+        { hostId: clientId },
+        { clients: { some: { id: clientId } } }
       ]
     },
-    include: { clients: true}
+    include: { clients: true }
   })
+
+  console.log("findRoomByClient result:", result)
+  return result
 }
 
 export async function deleteGame(id: string) {
