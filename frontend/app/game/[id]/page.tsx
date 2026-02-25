@@ -31,8 +31,8 @@ export default async function Page({ params }: { params: { roomId: string } }) {
         } else {
             return <GameClientView game_id={roomId} game_phase={res.game_phase} />;
         }
-    } catch (error) {
-        // Tun als ob Antwort erfolgreich, aber "host" ist false.
+    } catch (error: any) {
+        if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen
         console.error("game/id ERROR : ", error)
         return redirect("/")
     }

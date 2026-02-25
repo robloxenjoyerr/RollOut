@@ -7,6 +7,8 @@ const gameRouter = Router()
 
 gameRouter.post("/verify/:roomId", async (req, res) => {
     const { roomId } = req.params
+    console.log("roomId:", roomId)
+    console.log("cookies:", req.cookies)
     try {
         const info = await verifyRoom(roomId)
 
