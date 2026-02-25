@@ -14,8 +14,10 @@ export default async function Page({ params }: { params: { roomId: string } }) {
     try {
         const res = await apiFetch(`/api/game/verify/${roomId}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            ...(hostId ? { "Cookie: ": `hostId=${hostId}`} : {}),
+            headers: {
+                "Content-Type": "application/json",
+                ...(hostId ? { "Cookie: ": `hostId=${hostId}` } : {})
+            },
             cache: "no-store",
             redirectAuth: false // so apiFetch doesnt redirect by itself
         });
@@ -25,9 +27,9 @@ export default async function Page({ params }: { params: { roomId: string } }) {
         if (!res.valid) return redirect("/");
 
         if (res.isHost) {
-            return <GameHostView game_id={roomId} game_phase={res.game_phase}  />;
+            return <GameHostView game_id={roomId} game_phase={res.game_phase} />;
         } else {
-            return <GameClientView game_id={roomId} game_phase={res.game_phase}  />;
+            return <GameClientView game_id={roomId} game_phase={res.game_phase} />;
         }
     } catch (error) {
         // Tun als ob Antwort erfolgreich, aber "host" ist false.
