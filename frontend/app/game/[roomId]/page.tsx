@@ -18,7 +18,6 @@ export default async function Page({ params }: { params: { roomId: string } }) {
                 "Content-Type": "application/json",
                 ...(hostId ? { "Cookie": `hostId=${hostId}` } : {})
             },
-            cache: "no-store",
             redirectAuth: false // so apiFetch doesnt redirect by itself
         });
 
