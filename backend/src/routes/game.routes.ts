@@ -5,12 +5,12 @@ import { isTokenHeader } from "hono/utils/jwt/jwt";
 
 const gameRouter = Router()
 
-gameRouter.post("/verify/:id", async (req, res) => {
-    const { id } = req.params
-    console.log("roomId:", id)
+gameRouter.post("/verify/:roomId", async (req, res) => {
+    const { roomId } = req.params
+    console.log("roomId:", roomId)
     console.log("cookies:", req.cookies)
     try {
-        const info = await verifyRoom(id)
+        const info = await verifyRoom(roomId)
 
         if (info) {
             const hostId = req.cookies?.hostId
