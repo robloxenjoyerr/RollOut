@@ -29,17 +29,19 @@ gameRouter.post("/verify/:roomId", async (req, res) => {
 gameRouter.post("/start", async (req, res) => {
 
     const { roomConfig } = req.body
+    
     const hostIdCookie = req.cookies?.hostId
-    console.log("hostIdCookie:", hostIdCookie)
 
-    const alreadyInRoom = await findRoomByClient(hostIdCookie)
-    console.log("alreadyInRoom:", alreadyInRoom)
+    if(hostIdCookie){
+        const alreadyInRoom = await findRoomByClient(hostIdCookie)
 
-    if (alreadyInRoom) {
-        return res.send({ roomId: alreadyInRoom.id })
+        if (alreadyInRoom) {
+            return res.send({ roomId: alreadyInRoom.id })
+        }
     }
 
-    const hostId = randomBytes(8).toString("hex")
+
+    const hostId = hostIdCookie || randomBytes(8).toString("hex")
     try {
         const info = await createRoom(roomConfig, hostId)
         if (!info) return res.status(500).send({ error: true })
