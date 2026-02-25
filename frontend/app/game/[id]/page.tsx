@@ -20,6 +20,8 @@ export default async function Page({ params }: { params: { roomId: string } }) {
             redirectAuth: false // so apiFetch doesnt redirect by itself
         });
 
+        console.log("RES: ", res)
+
         if (!res.valid) return redirect("/");
 
         if (res.isHost) {
