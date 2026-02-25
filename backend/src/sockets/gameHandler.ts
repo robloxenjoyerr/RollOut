@@ -1,15 +1,5 @@
 import { Socket, Server } from "socket.io";
-import { PersonState, Person } from "../services/db-actions.js";
 
-async function rollNextPersonAndUpdateDB(game_id: string) {
-  try {
-    // 1. HOL DEN AKTUELLEN STAND IMMER FRISCH AUS DER DATENBANK
-  } catch(err){
-    console.log(err)
-  }
-
-    
-}
 
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
@@ -23,13 +13,10 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     return room ? Array.from(room).map(id => ({ socket_id: id })) : [];
   }
 
-  socket.on('getGameState', async (game_id) => {
-    // Dieser Handler ist gut. Er holt die Daten immer frisch.
-   
-  });
 
   socket.on("joinGame", (data) => {
     const { game_id, socket_id } = data;
+
     currentGameId = game_id;
     socket.join(game_id);
     io.to(game_id).emit("playerJoined", { socket_id, current_clients: getCurrentClients() });
@@ -37,7 +24,6 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
   socket.on("disconnect", () => {
     if (!currentGameId) return;
-    console.log("User disconnected fully from GameID:", currentGameId);
     io.to(currentGameId).emit("playerDisconnected", { socket_id: socket.id, current_clients: getCurrentClients() });
   });
 
@@ -52,11 +38,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
 
   socket.on("rollNext", async (data) => {
-    const { game_id } = data;
-
-    console.log(`"rollNext" für Spiel ${game_id} empfangen.`);
-    const result = await rollNextPersonAndUpdateDB(game_id);
-
+    
     
   });
 };
