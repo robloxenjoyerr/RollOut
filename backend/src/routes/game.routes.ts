@@ -45,8 +45,9 @@ gameRouter.post("/start", async (req, res) => {
         if (info) {
             res.cookie("hostId", hostId, {
                 httpOnly: true,
-                secure: true,
-                sameSite: "strict",
+                secure: true, 
+                sameSite: "none", // ← none statt strict für cross-domain
+                domain: ".rollout.live",  // ← auf Hauptdomain setzen
                 maxAge: 1000 * 60 * 60 * 1
             })
             return res.send({ roomId: info.id })

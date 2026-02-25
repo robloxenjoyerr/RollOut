@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: { roomId: string } }) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                ...(hostId ? { "Cookie: ": `hostId=${hostId}` } : {})
+                ...(hostId ? { "Cookie": `hostId=${hostId}` } : {})
             },
             cache: "no-store",
             redirectAuth: false // so apiFetch doesnt redirect by itself
