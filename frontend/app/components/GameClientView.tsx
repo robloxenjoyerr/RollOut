@@ -15,13 +15,14 @@ import ToastContainer from "./ToastContainer"
 interface GameClientViewProps {
     game_id: string
     game_phase: GamePhase
+    client_id: string
 }
 
 interface Client {
     socket_id: string
 }
 
-export default function GameClientView({ game_id, game_phase }: GameClientViewProps) {
+export default function GameClientView({ game_id, game_phase, client_id }: GameClientViewProps) {
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ game_id })
     const router = useRouter()
