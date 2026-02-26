@@ -25,7 +25,7 @@ model Client {
 
 model liveGames {
   id String  @id @default(uuid())
-  gameCode String? @unique
+  roomCode String @unique
   roomName String @default("Room-Name is undefined")
   mode String @default("wheel")
   isPrivate Boolean @default(false)

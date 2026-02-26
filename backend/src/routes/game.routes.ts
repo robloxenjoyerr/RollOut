@@ -5,18 +5,48 @@ import prisma from "../lib/prisma-client";
 
 const gameRouter = Router()
 
-gameRouter.post("/verify/:roomId", async (req, res) => {
-    const { roomId } = req.params
-    console.log("roomId:", roomId)
+gameRouter.post("/start", async (req, res) => {
+    const { roomConfig } = req.body
+    const clientId = getOrCreateClientId(req, res)
+
+
+    const alreadyInRoom = await findRoomByClient(clientId)
+    if (alreadyInRoom) {
+        return res.send({ roomCode: alreadyInRoom.id, alreadyInRoom: true })
+    }
+
+    try {
+        const room = await createRoom(roomConfig, clientId)
+        if (!room) return res.status(500).send({ error: true })
+
+        await prisma.client.create({
+            data: {
+                clientId,          // Cookie-Wert
+                name: roomConfig.hostName ?? "Host",
+                gameId: room.id,
+                isHost: true
+            }
+        })
+
+        return res.send({ roomId: room.id, roomCode: room.roomCode })
+
+    } catch (err) {
+        console.error("gameRouter ERROR : /start : ", err)
+    }
+})
+
+gameRouter.post("/verify/:roomCode", async (req, res) => {
+    const { roomCode } = req.params
+    console.log("roomId:", roomCode)
     console.log("cookies:", req.cookies)
     try {
-        const info = await verifyRoom(roomId)
+        const room = await verifyRoom(roomCode)
 
-        if (info) {
+        if (room) {
             const clientId = req.cookies?.clientId
-            console.log("hostID from req.cookies.hostiD: ", clientId)
-            const isHost = clientId && clientId === info.hostId
-            return res.send({ valid: true, isHost: isHost, status: info.status })
+
+            const isHost = clientId && clientId === room.hostId
+            return res.send({ valid: true, isHost: isHost, status: room.status })
         }
         else {
             return res.send({ valid: false, isHost: false })
@@ -27,49 +57,27 @@ gameRouter.post("/verify/:roomId", async (req, res) => {
     }
 })
 
-gameRouter.post("/start", async (req, res) => {
-    const { roomConfig } = req.body
+gameRouter.post("/join/:roomCode", async (req, res) => {
+    const { roomCode } = req.params
+    const { clientName } = req.body
     const clientId = getOrCreateClientId(req, res)
 
-    const alreadyInRoom = await findRoomByClient(clientId)
-    if (alreadyInRoom) {
-        return res.send({ roomId: alreadyInRoom.id, alreadyInRoom: true })
-    }
-
-    try {
-        const room = await createRoom(roomConfig, clientId)
-        if (!room) return res.status(500).send({ error: true })
-        
-        await prisma.client.create({
-            data: {
-                clientId,          // Cookie-Wert
-                name: roomConfig.hostName ?? "Host",
-                gameId: room.id,
-                isHost: true
-            }
-        })
-
-        return res.send({ roomId: room.id})
-
-    } catch (err) {
-        console.error("gameRouter ERROR : /start : ", err)
-    }
-})
-
-gameRouter.post("/join", async (req, res) => {
-    const { roomId, playerName } = req.body
-    const clientId = getOrCreateClientId(req, res)
-
-    // Schon in diesem Raum? → Rejoin
-    const existingClient = await prisma.client.findFirst({
-        where: { clientId, gameId: roomId }
+    const game = await prisma.liveGames.findUnique({
+        where: { roomCode: roomCode }
     })
 
+    if (!game) return res.status(404).send({ error: "Room not found" })
+
+    const existingClient = await prisma.client.findFirst({
+        where: { clientId, gameId: game.id }
+    })
+
+  
     if (existingClient) {
-        return res.send({ 
-            success: true, 
+        return res.send({
+            success: true,
             rejoin: true,
-            clientDbId: existingClient.id 
+            clientDbId: existingClient.id
         })
     }
 
@@ -77,8 +85,8 @@ gameRouter.post("/join", async (req, res) => {
         const client = await prisma.client.create({
             data: {
                 clientId,
-                name: playerName,
-                gameId: roomId,
+                name: clientName,
+                gameId: roomCode,
                 isHost: false
             }
         })

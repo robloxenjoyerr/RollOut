@@ -4,10 +4,10 @@ import Cookies from "js-cookie"; // Direktimport statt useAuth
 import { getClientIdFromCookie } from "../lib/services";
 
 interface useSocketProps {
-    game_id: string;
+    roomCode: string;
 }
 
-export function useSocket({ game_id }: useSocketProps) {
+export function useSocket({ roomCode }: useSocketProps) {
     const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
@@ -27,7 +27,7 @@ export function useSocket({ game_id }: useSocketProps) {
         return () => {
             newSocket.disconnect();
         };
-    }, [game_id]); // isNormalClient und token als Dependency entfernt, da wir direkt lesen
+    }, [roomCode]); // isNormalClient und token als Dependency entfernt, da wir direkt lesen
 
     return {
         socket,

@@ -21,16 +21,16 @@ export async function createRoom(roomConfig: LiveGameType, hostId: string) {
       isPrivate: roomConfig.isPrivate,
       status: "waiting-lobby",
       hostId: hostId,
-      gameCode: roomConfig.isPrivate ? randomBytes(6).toString("hex").toUpperCase() : null
+      roomCode: randomBytes(6).toString("hex").toUpperCase()
     }
   })
 }
 
-export async function verifyRoom(roomId: string) {
-  if (!roomId) return null
+export async function verifyRoom(roomCode: string) {
+  if (!roomCode) return null
 
   return await prisma.liveGames.findUnique({
-    where: { id: roomId }
+    where: { roomCode: roomCode }
   })
 }
 
@@ -52,6 +52,14 @@ export async function findRoomByClient(clientId: string) {
   return result
 }
 
+export async function findRoomByGameCode(roomCode: string){
+  if(!roomCode) return null
+
+  return await prisma.liveGames.findUnique({
+    where: { roomCode: roomCode}
+  })
+}
+
 export async function deleteGame(id: string) {
   return await prisma.liveGames.delete({
     where: { id }
@@ -65,7 +73,9 @@ export async function getGame(id: string) {
 }
 
 export async function getAllGames() {
-  return await prisma.liveGames.findMany()
+  return await prisma.liveGames.findMany({
+    select: { id: true, roomName: true }
+  })
 }
 
 export async function addClientToGame(gameId: string, clientData: { clientId: string; name: string; isHost?: boolean }) {

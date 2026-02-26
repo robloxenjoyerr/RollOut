@@ -41,7 +41,7 @@ export default function Host() {
                 body: JSON.stringify({ roomConfig: currentRoomConfig })
             })
             if (res) {
-                router.push(`/game/${res.roomId}`)
+                router.push(`/room/${res.roomCode}`)
             }
             else{
                 router.push("/")

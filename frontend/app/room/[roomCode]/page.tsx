@@ -6,13 +6,13 @@ import GameHostView from "@/app/components/GameHostView"
 import { cookies } from "next/headers"
 
 
-export default async function Page({ params }: { params: { roomId: string } }) {
-    const { roomId } = await params;
+export default async function Page({ params }: { params: { roomCode: string } }) {
+    const { roomCode } = await params;
     const cookieStore = await cookies()
     const clientId = cookieStore.get("clientId")?.value
-
+    
     try {
-        const res = await apiFetch(`/api/game/verify/${roomId}`, {
+        const res = await apiFetch(`/api/game/verify/${roomCode}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -29,15 +29,15 @@ export default async function Page({ params }: { params: { roomId: string } }) {
         } 
 
         if (res.isHost) {
-            return <GameHostView game_id={roomId} game_phase={res.status} client_id={clientId && clientId || res.id} />;
+            return <GameHostView roomCode={roomCode} game_phase={res.status} client_id={clientId && clientId || res.id} />;
         } else {
-            return <GameClientView game_id={roomId} game_phase={res.status} client_id={clientId && clientId || res.id} />;
+            return <GameClientView roomCode={roomCode} game_phase={res.status} client_id={clientId && clientId || res.id} />;
         }
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen
         console.error("game/id ERROR : ", error)
         console.log("REDERECTING TO /")
-        return redirect("/")
+        return redirect("/join")
     }
 
 

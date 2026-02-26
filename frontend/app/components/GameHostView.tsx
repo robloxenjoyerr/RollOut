@@ -18,18 +18,19 @@ import Loading from "./Loading"
 import { getClientIdFromCookie } from "../lib/services"
 
 interface GameHostViewProps {
-    game_id: string
+    roomCode: string
     game_phase: GamePhase
     client_id: string
 }
 
 interface Client {
-    socket_id: string
+    clientId: string
+    name: string
 }
 
-export default function GameHostView({ game_id, game_phase }: GameHostViewProps) {
+export default function GameHostView({ roomCode, game_phase }: GameHostViewProps) {
     const { toasts, addToast } = useToasts()
-    const { socket } = useSocket({ game_id })
+    const { socket } = useSocket({ roomCode })
     const router = useRouter()
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
@@ -42,11 +43,11 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
     useEffect(() => {
         if (!socket) return
-        if (!currentPhase) router.push(`/game/${game_id}`)
+        if (!currentPhase) router.push(`/game/${roomCode}`)
 
 
         const onConnect = () => {
-            socket.emit("getGameState", game_id)
+            socket.emit("getGameState", roomCode)
         }
 
         const onGameStateUpdate = (data: any) => {
@@ -58,12 +59,12 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
             setAvailablePersons(parsedPersons)
         }
 
-        const onPlayerJoined = (data: any) => {
-            setClients(data.current_clients || [])
-            addToast(`New Client ${data.name} connected!`, "info")
+        const onClientJoined = (client: { name: string, clientId: string}) => {
+            setClients((prev) => [...prev, client])
+            addToast(`New Client ${client.name} connected!`, "info")
         }
 
-        const onPlayerDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
+        const onClientDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
             addToast(`Client with ID: ${data.socket_id} disconnected.`, "info")
             setClients(data.current_clients || [])
         }
@@ -149,8 +150,8 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
         socket.on("connect", onConnect)
         socket.on("gameStateUpdate", onGameStateUpdate)
-        socket.on("playerJoined", (data) => onPlayerJoined(data))
-        socket.on("playerDisconnected", onPlayerDisconnected)
+        socket.on("clientJoined", (data) => onClientJoined(data))
+        socket.on("clientDisconnected", onClientDisconnected)
         socket.on("gameStarted", onGameStarted)
         socket.on("gameStartError", onGameStartError)
         socket.on("nextRolled", onNextRolled)
@@ -163,8 +164,8 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
             console.log("Cleaning up socket listeners...")
             socket.off("connect", onConnect)
             socket.off("gameStateUpdate", onGameStateUpdate)
-            socket.off("playerJoined", onPlayerJoined)
-            socket.off("playerDisconnected", onPlayerDisconnected)
+            socket.off("playerJoined", onClientJoined)
+            socket.off("playerDisconnected", onClientDisconnected)
             socket.off("gameStarted", onGameStarted)
             socket.off("gameStartError", onGameStartError)
             socket.off("gameEnded", onGameEnded)
@@ -178,7 +179,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
     const rollNext = () => {
         if (!socket || isSpinning) return
         setCurrentRolled(null)
-        socket.emit("rollNext", { game_id })
+        socket.emit("rollNext", { roomCode })
     }
 
 
@@ -186,12 +187,12 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
         const res = await apiFetch("/api/game/stop", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ game_id: game_id }),
+            body: JSON.stringify({ game_id: roomCode }),
             redirectAuth: false
         })
 
         if (res.success && socket) {
-            socket.emit("stopGame", { game_id })
+            socket.emit("stopGame", { roomCode })
             addToast("Game stopped", "info")
 
             socket.on("gameEnded", () => {
@@ -206,7 +207,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
     async function startGame() {
         if (!socket) return
-        socket.emit("startGame", { game_id })
+        socket.emit("startGame", { roomCode })
     }
 
     if (currentPhase === "waiting-lobby") {
@@ -219,7 +220,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
                 <div className="flex flex-col gap-10 absolute top-25 left-45 ">
                     <div className="flex flex-col">
-                        <span className="text-black font-bold text-7xl select-none ">Game Lobby</span>
+                        <span className="text-black font-bold text-7xl select-none ">Game Lobby - {<span className="text-violet-500">{roomCode}</span>}</span>
                         <span className="text-gray-500 font-light text-2xl select-none">
                             Clients currently connected - start whenever you're ready!
                         </span>
@@ -231,14 +232,14 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
                             {clients.map((client) => (
                                 <motion.span
                                     className="text-black font-bold rounded-2xl border-2 border-black/20 p-3 select-none bg-black/5"
-                                    key={client.socket_id}
+                                    key={client.clientId}
                                     layout
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
                                     transition={{ type: "spring", stiffness: 200, damping: 25 }}
                                 >
-                                    {`Client ID: ${client.socket_id}`}
+                                    {`Client ID: ${client.clientId}`}
                                 </motion.span>
                             ))}
                         </AnimatePresence>

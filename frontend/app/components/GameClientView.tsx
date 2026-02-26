@@ -9,11 +9,11 @@ import { useSocket } from "../hooks/useSocket"
 import { GamePhase, Template } from "../lib/types"
 import Wheel from "./Wheel"
 import { Person } from "../lib/types"
-
+import Cookies from "js-cookie"
 import ToastContainer from "./ToastContainer"
 
 interface GameClientViewProps {
-    game_id: string
+    roomCode: string
     game_phase: GamePhase
     client_id: string
 }
@@ -22,9 +22,9 @@ interface Client {
     socket_id: string
 }
 
-export default function GameClientView({ game_id, game_phase, client_id }: GameClientViewProps) {
+export default function GameClientView({ roomCode, game_phase, client_id }: GameClientViewProps) {
     const { toasts, addToast } = useToasts()
-    const { socket } = useSocket({ game_id })
+    const { socket } = useSocket({ roomCode })
     const router = useRouter()
     const [rotation, setRotation] = useState(0);
     const [availablePersons, setAvailablePersons] = useState<any[]>([])
@@ -32,15 +32,17 @@ export default function GameClientView({ game_id, game_phase, client_id }: GameC
     const [clients, setClients] = useState<Client[]>([]);
     const [currentRolled, setCurrentRolled] = useState<any>(null);
     const [pendingUpdate, setPendingUpdate] = useState<any>(null);
+    
+
     useEffect(() => {
         if (!socket) return
+        Cookies.set("clientId", client_id)
 
-         console.log("CLIENT PAGE")
 
         const onConnect = () => {
-            console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
-            socket.emit("getGameState", game_id)
-            socket.emit("joinGame", { game_id, socket_id: socket.id })
+            console.log("Connected to GameID: ", roomCode, "with socketID: ", socket.id)
+            socket.emit("getGameState", roomCode)
+            socket.emit("joinGame", { roomCode, socket_id: socket.id })
         }
 
         const onGameStateUpdate = (data: any) => {
@@ -160,7 +162,7 @@ export default function GameClientView({ game_id, game_phase, client_id }: GameC
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, game_id, game_phase])
+    }, [socket, roomCode, game_phase])
 
     if (currentPhase === "waiting-lobby") {
         return (

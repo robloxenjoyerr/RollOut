@@ -4,14 +4,13 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   const client = socket.data.client
   const gameId = client.gameId  // ← statt currentGameId
 
-  io.to(gameId).emit("playerJoined", { 
+  io.to(gameId).emit("clientJoined", { 
     clientId: client.clientId, 
     name: client.name, 
-    isHost: client.isHost 
   });
 
   socket.on("disconnect", () => {
-    io.to(gameId).emit("playerDisconnected", { 
+    io.to(gameId).emit("clientDisconnected", { 
       clientId: client.clientId, 
       name: client.name 
     });
