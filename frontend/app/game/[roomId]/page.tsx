@@ -9,14 +9,14 @@ import { cookies } from "next/headers"
 export default async function Page({ params }: { params: { roomId: string } }) {
     const { roomId } = await params;
     const cookieStore = await cookies()
-    const hostId = cookieStore.get("hostId")?.value
+    const clientId = cookieStore.get("clientId")?.value
 
     try {
         const res = await apiFetch(`/api/game/verify/${roomId}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                ...(hostId ? { "Cookie": `hostId=${hostId}` } : {})
+                ...(clientId ? { "Cookie": `clientId=${clientId}` } : {})
             },
             redirectAuth: false // so apiFetch doesnt redirect by itself
         });
@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: { roomId: string } }) {
         } 
 
         if (res.isHost) {
-            return <GameHostView game_id={roomId} game_phase={res.status} client_id={hostId && hostId || res.id} />;
+            return <GameHostView game_id={roomId} game_phase={res.status} client_id={clientId && clientId || res.id} />;
         } else {
             return <GameClientView game_id={roomId} game_phase={res.status} />;
         }

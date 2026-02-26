@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { createRoom, findRoomByClient, verifyRoom } from "../services/db-actions";
-import { randomBytes } from "node:crypto";
-import { isTokenHeader } from "hono/utils/jwt/jwt";
 import { getOrCreateClientId } from "../lib/services";
 import prisma from "../lib/prisma-client";
 
@@ -55,6 +53,40 @@ gameRouter.post("/start", async (req, res) => {
 
     } catch (err) {
         console.error("gameRouter ERROR : /start : ", err)
+    }
+})
+
+gameRouter.post("/join", async (req, res) => {
+    const { roomId, playerName } = req.body
+    const clientId = getOrCreateClientId(req, res)
+
+    // Schon in diesem Raum? → Rejoin
+    const existingClient = await prisma.client.findFirst({
+        where: { clientId, gameId: roomId }
+    })
+
+    if (existingClient) {
+        return res.send({ 
+            success: true, 
+            rejoin: true,
+            clientDbId: existingClient.id 
+        })
+    }
+
+    try {
+        const client = await prisma.client.create({
+            data: {
+                clientId,
+                name: playerName,
+                gameId: roomId,
+                isHost: false
+            }
+        })
+
+        return res.send({ success: true, rejoin: false, clientDbId: client.id })
+    } catch (err) {
+        console.error("gameRouter ERROR /join:", err)
+        res.status(500).send({ error: true })
     }
 })
 

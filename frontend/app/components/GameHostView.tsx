@@ -15,6 +15,7 @@ import ToastContainer from "./ToastContainer"
 import Wheel from "./Wheel"
 import Loading from "./Loading"
 
+import { getClientIdFromCookie } from "../lib/services"
 
 interface GameHostViewProps {
     game_id: string
@@ -26,9 +27,9 @@ interface Client {
     socket_id: string
 }
 
-export default function GameHostView({ game_id, game_phase, client_id }: GameHostViewProps) {
+export default function GameHostView({ game_id, game_phase }: GameHostViewProps) {
     const { toasts, addToast } = useToasts()
-    const { socket } = useSocket({ game_id, isNormalClient: false })
+    const { socket } = useSocket({ game_id })
     const router = useRouter()
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
@@ -46,7 +47,6 @@ export default function GameHostView({ game_id, game_phase, client_id }: GameHos
 
         const onConnect = () => {
             socket.emit("getGameState", game_id)
-            socket.emit("joinGame", { game_id, socket_id: socket.id, clientId: client_id })
         }
 
         const onGameStateUpdate = (data: any) => {
@@ -58,9 +58,9 @@ export default function GameHostView({ game_id, game_phase, client_id }: GameHos
             setAvailablePersons(parsedPersons)
         }
 
-        const onPlayerJoined = (data: { current_clients: Client[] }) => {
+        const onPlayerJoined = (data: any) => {
             setClients(data.current_clients || [])
-            addToast("New Client connected!", "info")
+            addToast(`New Client ${data.name} connected!`, "info")
         }
 
         const onPlayerDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
@@ -149,7 +149,7 @@ export default function GameHostView({ game_id, game_phase, client_id }: GameHos
 
         socket.on("connect", onConnect)
         socket.on("gameStateUpdate", onGameStateUpdate)
-        socket.on("playerJoined", onPlayerJoined)
+        socket.on("playerJoined", (data) => onPlayerJoined(data))
         socket.on("playerDisconnected", onPlayerDisconnected)
         socket.on("gameStarted", onGameStarted)
         socket.on("gameStartError", onGameStartError)

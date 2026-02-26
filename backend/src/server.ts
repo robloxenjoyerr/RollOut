@@ -7,6 +7,7 @@ import { createServer } from "node:http"
 import { registerGameHandlers } from "./sockets/gameHandler"
 import apiRouter from "./routes/api.routes";
 import cookieParser from "cookie-parser"
+import prisma from "./lib/prisma-client"
 
 const PORT = process.env.PORT || 4000
 const app = express();
@@ -22,13 +23,13 @@ console.log(allowedOrigins)
 
 app.use(cors({
   origin: (origin, callback) => {
-    if(!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true)
     } else {
       console.log("CORS blocked for Origin: ", origin)
       callback(new Error("Not allowed by CORS."))
     }
-  }, 
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -39,11 +40,11 @@ app.use(express.json())
 app.use(cookieParser())
 
 const io = new Server(httpServer, {
-    cors: {
-      origin: allowedOrigins,
-      methods: ["GET", "POST"],
-      credentials: true
-    }
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
+  }
 })
 
 app.get("/", (_req, res) => {
@@ -60,11 +61,32 @@ app.get("/", (_req, res) => {
 
 app.use("/api", apiRouter)
 
-httpServer.listen({port: PORT, host: "0.0.0.0"}, () => {
+httpServer.listen({ port: PORT, host: "0.0.0.0" }, () => {
   console.log(`Backend is listening on Port ${PORT}`)
 })
 
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
+  const clientId = socket.handshake.auth.clientId
+
+  if (!clientId) {
+    socket.disconnect()
+    return
+  }
+
+  const client = await prisma.client.findUnique({
+    where: { clientId },
+    include: { game: true }
+  })
+
+  if (!client) {
+    socket.disconnect()
+    return
+  }
+
+  // Ab hier: client ist verifiziert
+  socket.join(client.gameId) // Raum beitreten
+  socket.data.client = client // für spätere Events
+
   registerGameHandlers(io, socket)
 })

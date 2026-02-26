@@ -1,42 +1,32 @@
 import { Socket, Server } from "socket.io";
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
+  const client = socket.data.client
+  const gameId = client.gameId  // ← statt currentGameId
 
-  // Einzige "globale" Variable pro Verbindung ist die gameId für den Disconnect-Fall.
-  let currentGameId: string | null = null;
-
-  function getCurrentClients() {
-    if (!currentGameId) return [];
-    const room = io.sockets.adapter.rooms.get(currentGameId);
-    return room ? Array.from(room).map(id => ({ socket_id: id })) : [];
-  }
-
-
-  socket.on("joinGame", (data) => {
-    const { game_id, socket_id, hostId } = data;
-
-    currentGameId = game_id;
-    socket.join(game_id);
-    io.to(game_id).emit("playerJoined", { socket_id, current_clients: getCurrentClients() });
+  io.to(gameId).emit("playerJoined", { 
+    clientId: client.clientId, 
+    name: client.name, 
+    isHost: client.isHost 
   });
 
   socket.on("disconnect", () => {
-    if (!currentGameId) return;
-    io.to(currentGameId).emit("playerDisconnected", { socket_id: socket.id, current_clients: getCurrentClients() });
+    io.to(gameId).emit("playerDisconnected", { 
+      clientId: client.clientId, 
+      name: client.name 
+    });
   });
 
-  socket.on("startGame", async (data) => {
-    
+  socket.on("startGame", async () => {
+
   });
 
-  socket.on("stopGame", (data) => {
-    const { game_id } = data;
-    io.to(game_id).emit("gameEnded");
+  socket.on("stopGame", () => {
+    io.to(gameId).emit("gameEnded");
   });
 
 
-  socket.on("rollNext", async (data) => {
-    
-    
+  socket.on("rollNext", async () => {
+
   });
 };

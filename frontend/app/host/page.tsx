@@ -37,15 +37,14 @@ export default function Host() {
                     "Content-Type": "application/json"
                 },
                 redirectAuth: false,
+                credentials: "include",
                 body: JSON.stringify({ roomConfig: currentRoomConfig })
             })
             if (res) {
-                console.log(("ROUTER PUSH TO /GAME/roomId"))
                 router.push(`/game/${res.roomId}`)
             }
             else{
-                console.log("ROUTER PUSH TO /JOIN")
-                // router.push("/join")
+                router.push("/")
             }
         }
         catch (err) {
