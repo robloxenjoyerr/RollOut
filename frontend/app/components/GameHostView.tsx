@@ -5,9 +5,8 @@ import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 import { apiFetch } from "../lib/api"
-import { GamePhase, Template } from "../lib/types"
+import { GamePhase } from "../lib/types"
 import { Person } from "../lib/types"
-import { useAuth } from "../hooks/useAuth"
 import { useSocket } from "../hooks/useSocket"
 import { useToasts } from "../hooks/useToasts"
 
@@ -28,7 +27,6 @@ interface Client {
 export default function GameHostView({ game_id, game_phase }: GameHostViewProps) {
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ game_id, isNormalClient: false })
-    const { token } = useAuth()
     const router = useRouter()
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
@@ -207,7 +205,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
     async function startGame() {
         if (!socket) return
-        socket.emit("startGame", { game_id, token })
+        socket.emit("startGame", { game_id })
     }
 
     if (currentPhase === "waiting") {

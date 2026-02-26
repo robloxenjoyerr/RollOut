@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createRoom, findRoomByClient, verifyRoom } from "../services/db-actions.js";
+import { createRoom, findRoomByClient, verifyRoom } from "../services/db-actions";
 import { randomBytes } from "node:crypto";
 import { isTokenHeader } from "hono/utils/jwt/jwt";
 

@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import prisma from "../lib/prisma-client.js";
+import prisma from "../lib/prisma-client";
 import { randomBytes } from "node:crypto";
 
 

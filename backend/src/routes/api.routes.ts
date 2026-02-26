@@ -1,7 +1,7 @@
 import { Router } from "express"
-import gameRouter from "./game.routes.js"
-import userRouter from "./user.routes.js"
-import templateRouter from "./templates.routes.js"
+import gameRouter from "./game.routes"
+import userRouter from "./user.routes"
+import templateRouter from "./templates.routes"
 
 const apiRouter = Router()
 

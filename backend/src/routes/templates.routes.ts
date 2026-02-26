@@ -1,6 +1,4 @@
 import { Router } from "express";
-import { loginAuthentication } from "../middleware/secureMiddleware.js";
-import { randomBytes } from "node:crypto";
 
 
 const templateRouter = Router()

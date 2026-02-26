@@ -4,8 +4,8 @@ import express from "express"
 import cors from "cors"
 import { Server } from "socket.io"
 import { createServer } from "node:http"
-import { registerGameHandlers } from "./sockets/gameHandler.js"
-import apiRouter from "./routes/api.routes.js";
+import { registerGameHandlers } from "./sockets/gameHandler"
+import apiRouter from "./routes/api.routes";
 import cookieParser from "cookie-parser"
 
 const PORT = process.env.PORT || 4000
