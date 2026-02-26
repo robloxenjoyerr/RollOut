@@ -21,19 +21,19 @@ import { getClientIdFromCookie } from "../lib/services"
 
 interface GameHostViewProps {
     roomCode: string
-    game_phase: GamePhase
+    roomConfig: any
     client_id: string
 }
 
 
-export default function GameHostView({ roomCode, game_phase }: GameHostViewProps) {
+export default function GameHostView({ roomCode, roomConfig }: GameHostViewProps) {
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ roomCode })
     const router = useRouter()
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
     const [pendingUpdate, setPendingUpdate] = useState<any>(null)
-    const [currentPhase, setCurrentPhase] = useState<GamePhase>(game_phase)
+    const [currentPhase, setCurrentPhase] = useState<GamePhase>(roomConfig.status)
     const [currentRolled, setCurrentRolled] = useState<null | Person>(null)
     const [availablePersons, setAvailablePersons] = useState<any[]>([])
     const [isSpinning, setIsSpinning] = useState<boolean>(false)
@@ -171,7 +171,7 @@ export default function GameHostView({ roomCode, game_phase }: GameHostViewProps
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket])
+    }, [socket, roomConfig, roomCode])
 
 
     const rollNext = () => {

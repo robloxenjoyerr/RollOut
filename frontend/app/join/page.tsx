@@ -1,16 +1,14 @@
 "use client"
 
-import Button from "../components/Button";
-import Loading from "../components/Loading";
-import Card from "../components/Card";
-import { AnimatePresence, motion } from "framer-motion";
+
 import { useRouter } from "next/navigation";
 import { useToasts } from "../hooks/useToasts";
 import { useAvailableGames } from "../hooks/useAvailableGames";
 import RollOutHeader from "../components/RollOutHeader";
 import Input from "../components/Input";
-import { i, input } from "framer-motion/client";
+
 import { useRef } from "react";
+
 
 export default function JoinPage() {
     const { toasts, addToast } = useToasts()
@@ -32,8 +30,8 @@ export default function JoinPage() {
         }
     }
 
-    async function joinGame(gameCode: string) {
-        router.push(`/room/${gameCode}`)
+    async function joinGame(roomCode: string) {
+        router.push(`/room/${roomCode}`)
     }
 
     return <>

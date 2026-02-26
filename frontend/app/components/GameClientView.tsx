@@ -15,18 +15,18 @@ import { Client } from "../lib/types"
 
 interface GameClientViewProps {
     roomCode: string
-    game_phase: GamePhase
+    roomConfig: any
     client_id: string
 }
 
 
-export default function GameClientView({ roomCode, game_phase, client_id }: GameClientViewProps) {
+export default function GameClientView({ roomCode, roomConfig, client_id }: GameClientViewProps) {
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ roomCode })
     const router = useRouter()
     const [rotation, setRotation] = useState(0);
     const [availablePersons, setAvailablePersons] = useState<any[]>([])
-    const [currentPhase, setCurrentPhase] = useState<GamePhase>(game_phase);
+    const [currentPhase, setCurrentPhase] = useState<GamePhase>(roomConfig.status);
     const [clients, setClients] = useState<Client[]>([]);
     const [currentRolled, setCurrentRolled] = useState<any>(null);
     const [pendingUpdate, setPendingUpdate] = useState<any>(null);
@@ -160,7 +160,7 @@ export default function GameClientView({ roomCode, game_phase, client_id }: Game
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, roomCode, game_phase])
+    }, [socket, roomCode, roomConfig])
 
     if (currentPhase === "waiting-lobby") {
         return (
