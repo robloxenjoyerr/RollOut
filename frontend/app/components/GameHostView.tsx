@@ -41,6 +41,8 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
         if (!socket) return
         if (!currentPhase) router.push(`/game/${game_id}`)
 
+
+        console.log("PHASE: ", currentPhase)
         console.log("HOST PAGE")
         const onConnect = () => {
             console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
