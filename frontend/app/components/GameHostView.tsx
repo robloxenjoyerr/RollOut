@@ -1,6 +1,6 @@
 "use client"
 
-import { redirect, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
@@ -41,7 +41,6 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
     useEffect(() => {
         if (!socket) return
-        console.log("CURRENT PHASE: ", currentPhase)
         console.log("HOST PAGE")
         const onConnect = () => {
             console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
@@ -210,8 +209,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
         socket.emit("startGame", { game_id, token })
     }
 
-    setCurrentPhase("waiting")
-    // if (!currentPhase) redirect(`/game/${game_id}`)
+    if (!currentPhase) router.push(`/game/${game_id}`)
 
     if (currentPhase === "waiting") {
 
