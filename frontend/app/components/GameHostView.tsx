@@ -283,7 +283,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
         return (
             <div className="text-red-600">
                 <Loading></Loading>
-                ERROR
+                {currentPhase}
             </div>
         )
     }
