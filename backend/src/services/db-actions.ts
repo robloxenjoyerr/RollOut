@@ -68,13 +68,13 @@ export async function getAllGames() {
   return await prisma.liveGames.findMany()
 }
 
-export async function addClientToGame(gameId: string, clientData: { id: string; name: string; isHost?: boolean }) {
+export async function addClientToGame(gameId: string, clientData: { clientId: string; name: string; isHost?: boolean }) {
   return await prisma.client.create({
     data: {
-      id: clientData.id, // UUID
+      clientId: clientData.clientId,
       name: clientData.name,
+      gameId, // Foreign Key zum Game 
       isHost: clientData.isHost ?? false,
-      gameId // Foreign Key zum Game
     }
   });
 }
