@@ -14,7 +14,6 @@ import { useRef } from "react";
 
 export default function JoinPage() {
     const { toasts, addToast } = useToasts()
-    const { liveGames, loading } = useAvailableGames()
     const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
     const router = useRouter()
@@ -37,16 +36,15 @@ export default function JoinPage() {
         router.push(`/room/${gameCode}`)
     }
 
-    console.log("Live Games: ", liveGames)
     return <>
         <div className=" flex flex-col w-[80vw] h-[80vh] gap-20 items-center justify-center">
             <RollOutHeader />
             <div className="flex flex-col gap-2 absolute">
                 <div className="flex flex-row justify-center items-center top-32 gap-4 text-black">
-                    <div className="flex w-130 h-25 gap-5 rounded-2xl p-2">
+                    <div className="flex w-200 h-35 gap-5 rounded-2xl p-2">
                         {[0, 1, 2, 3, 4, 5].map((i) => (
                             <Input
-                                className="text-center "
+                                className="text-center text-5xl "
                                 id={i}
                                 key={i}
                                 maxLength="1"
