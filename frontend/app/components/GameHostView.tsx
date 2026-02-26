@@ -15,16 +15,18 @@ import ToastContainer from "./ToastContainer"
 import Wheel from "./Wheel"
 import Loading from "./Loading"
 
+
 interface GameHostViewProps {
     game_id: string
     game_phase: GamePhase
+    client_id: string
 }
 
 interface Client {
     socket_id: string
 }
 
-export default function GameHostView({ game_id, game_phase }: GameHostViewProps) {
+export default function GameHostView({ game_id, game_phase, client_id }: GameHostViewProps) {
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ game_id, isNormalClient: false })
     const router = useRouter()
@@ -35,19 +37,16 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
     const [currentRolled, setCurrentRolled] = useState<null | Person>(null)
     const [availablePersons, setAvailablePersons] = useState<any[]>([])
     const [isSpinning, setIsSpinning] = useState<boolean>(false)
-
+    
 
     useEffect(() => {
         if (!socket) return
         if (!currentPhase) router.push(`/game/${game_id}`)
 
 
-        console.log("PHASE: ", currentPhase)
-        console.log("HOST PAGE")
         const onConnect = () => {
-            console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
             socket.emit("getGameState", game_id)
-            socket.emit("joinGame", { game_id, socket_id: socket.id })
+            socket.emit("joinGame", { game_id, socket_id: socket.id, clientId: client_id })
         }
 
         const onGameStateUpdate = (data: any) => {

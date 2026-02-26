@@ -2,6 +2,8 @@ import { Router } from "express";
 import { createRoom, findRoomByClient, verifyRoom } from "../services/db-actions";
 import { randomBytes } from "node:crypto";
 import { isTokenHeader } from "hono/utils/jwt/jwt";
+import { getOrCreateClientId } from "../lib/services";
+import prisma from "../lib/prisma-client";
 
 const gameRouter = Router()
 
@@ -29,32 +31,28 @@ gameRouter.post("/verify/:roomId", async (req, res) => {
 
 gameRouter.post("/start", async (req, res) => {
     const { roomConfig } = req.body
-    const hostIdCookie = req.cookies?.hostId
+    const clientId = getOrCreateClientId(req, res)
 
-    if(hostIdCookie){
-        const alreadyInRoom = await findRoomByClient(hostIdCookie)
-
-        if (alreadyInRoom) {
-            return res.send({ roomId: alreadyInRoom.id, alreadyInRoom: true })
-        }
+    const alreadyInRoom = await findRoomByClient(clientId)
+    if (alreadyInRoom) {
+        return res.send({ roomId: alreadyInRoom.id, alreadyInRoom: true })
     }
 
-
-    const hostId = hostIdCookie || randomBytes(8).toString("hex")
     try {
-        const info = await createRoom(roomConfig, hostId)
-        if (!info) return res.status(500).send({ error: true })
+        const room = await createRoom(roomConfig, clientId)
+        if (!room) return res.status(500).send({ error: true })
+        
+        await prisma.client.create({
+            data: {
+                clientId,          // Cookie-Wert
+                name: roomConfig.hostName ?? "Host",
+                gameId: room.id,
+                isHost: true
+            }
+        })
 
-        if (info) {
-            res.cookie("hostId", hostId, {
-                httpOnly: true,
-                secure: true,
-                sameSite: "none", // ← none statt strict für cross-domain
-                domain: ".rollout.live",  // ← auf Hauptdomain setzen
-                maxAge: 1000 * 60 * 60 * 1
-            })
-            return res.send({ roomId: info.id })
-        }
+        return res.send({ roomId: room.id})
+
     } catch (err) {
         console.error("gameRouter ERROR : /start : ", err)
     }

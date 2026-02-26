@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: { roomId: string } }) {
         } 
 
         if (res.isHost) {
-            return <GameHostView game_id={roomId} game_phase={res.status} />;
+            return <GameHostView game_id={roomId} game_phase={res.status} client_id={hostId && hostId || res.id} />;
         } else {
             return <GameClientView game_id={roomId} game_phase={res.status} />;
         }

@@ -15,10 +15,12 @@ datasource db {
 
 model Client {
   id String @id @default(uuid())
+  clientId String @unique
   name String
   gameId String
-  game liveGames @relation(fields: [gameId], references: [id])
   isHost Boolean @default(false)
+  joinedAt DateTime @default(now())
+  game liveGames @relation(fields: [gameId], references: [id])
 }
 
 model liveGames {

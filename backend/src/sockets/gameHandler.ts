@@ -13,7 +13,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
 
   socket.on("joinGame", (data) => {
-    const { game_id, socket_id } = data;
+    const { game_id, socket_id, hostId } = data;
 
     currentGameId = game_id;
     socket.join(game_id);
