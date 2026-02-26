@@ -41,6 +41,8 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
     useEffect(() => {
         if (!socket) return
+        if (!currentPhase) router.push(`/game/${game_id}`)
+
         console.log("HOST PAGE")
         const onConnect = () => {
             console.log("Connected to GameID: ", game_id, "with socketID: ", socket.id)
@@ -152,7 +154,6 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
         socket.on("playerDisconnected", onPlayerDisconnected)
         socket.on("gameStarted", onGameStarted)
         socket.on("gameStartError", onGameStartError)
-        socket.on("gameEnded", onGameEnded)
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
 
@@ -172,8 +173,8 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [])
-    // socket, game_id, addToast, router, game_phase
+    }, [socket, game_id, addToast, router, game_phase])
+
 
     const rollNext = () => {
         if (!socket || isSpinning) return
@@ -208,8 +209,6 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
         if (!socket) return
         socket.emit("startGame", { game_id, token })
     }
-
-    if (!currentPhase) router.push(`/game/${game_id}`)
 
     if (currentPhase === "waiting") {
 

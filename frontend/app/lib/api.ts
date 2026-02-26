@@ -30,13 +30,11 @@ export async function apiFetch(endpoint: string, options: CustomRequestInit = {}
   });
 
   // not needed
-  if (redirectAuth && typeof window !== 'undefined') {
-    if (typeof window !== 'undefined') {
-      Cookies.remove("login_token");
-      window.location.href = "/login"
-    }
-    throw new Error("Unauthorized");
-  }
+  // if (redirectAuth === true && typeof window !== 'undefined') {
+  //   Cookies.remove("login_token");
+  //   window.location.href = "/login";
+  //   throw new Error("Unauthorized");
+  // }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
