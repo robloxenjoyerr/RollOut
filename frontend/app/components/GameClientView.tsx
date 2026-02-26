@@ -46,7 +46,7 @@ export default function GameClientView({ game_id, game_phase }: GameClientViewPr
             const parsedPersons: Person[] = data.persons || []
             const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
-            setCurrentPhase({ phase: data.phase })
+            setCurrentPhase( data.phase )
             setPendingUpdate(unrolledPersons)
             setAvailablePersons(parsedPersons)
         }
@@ -63,7 +63,7 @@ export default function GameClientView({ game_id, game_phase }: GameClientViewPr
 
         const onGameStarted = () => {
             addToast("Game has started!", "success")
-            setCurrentPhase({ phase: "in-progress" })
+            setCurrentPhase("in-progress")
 
         }
 
@@ -161,7 +161,7 @@ export default function GameClientView({ game_id, game_phase }: GameClientViewPr
         // The dependency array should only include values that when changed require the effect to be re-run.
     }, [socket, game_id, addToast, router, game_phase])
 
-    if (currentPhase.phase === "waiting") {
+    if (currentPhase === "waiting") {
         return (
             <div>
                 <AnimatePresence>
@@ -199,7 +199,7 @@ export default function GameClientView({ game_id, game_phase }: GameClientViewPr
     }
 
     // Fall 2: Spiel läuft
-    if (currentPhase.phase === "in-progress") {
+    if (currentPhase === "in-progress") {
         return (
             <div className="relative w-screen h-screen flex flex-col items-center justify-center overflow-hidden">
                 <AnimatePresence>
