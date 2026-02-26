@@ -210,7 +210,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
         socket.emit("startGame", { game_id })
     }
 
-    if (currentPhase === "waiting") {
+    if (currentPhase === "waiting-lobby") {
 
         return (
             <div>

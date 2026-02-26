@@ -43,4 +43,4 @@ export interface LiveGame {
     unrolled: Person[]
 }
 
-export type GamePhase = "unstarted" | "waiting" | "in-progress" | "finished";
+export type GamePhase = "unstarted" | "waiting-lobby" | "in-progress" | "finished";
