@@ -11,6 +11,7 @@ import Wheel from "./Wheel"
 import { Person } from "../lib/types"
 import Cookies from "js-cookie"
 import ToastContainer from "./ToastContainer"
+import { Client } from "../lib/types"
 
 interface GameClientViewProps {
     roomCode: string
@@ -18,9 +19,6 @@ interface GameClientViewProps {
     client_id: string
 }
 
-interface Client {
-    socket_id: string
-}
 
 export default function GameClientView({ roomCode, game_phase, client_id }: GameClientViewProps) {
     const { toasts, addToast } = useToasts()
@@ -173,9 +171,10 @@ export default function GameClientView({ roomCode, game_phase, client_id }: Game
 
                 <div className="flex flex-col gap-10 absolute top-25 left-45 ">
                     <div className="flex flex-col">
-                        <span className="text-black font-bold text-7xl select-none ">Waiting Lobby</span>
+                        <span className="text-black font-bold text-7xl select-none ">Game Lobby - {<span className="text-violet-500">{roomCode}</span>}</span>
                         <span className="text-gray-500 font-light text-2xl select-none">
-                            Clients currently connected – waiting for the host to start rolling!                                </span>
+                            Clients currently connected - start whenever you're ready!
+                        </span>
                     </div>
 
                     <div className="flex flex-row gap-4 flex-wrap">
@@ -183,15 +182,15 @@ export default function GameClientView({ roomCode, game_phase, client_id }: Game
                         <AnimatePresence>
                             {clients.map((client) => (
                                 <motion.span
-                                    className="text-black font-bold rounded-2xl border-2 border-black/20 p-3 select-none bg-black/5"
-                                    key={client.socket_id}
+                                    className={`${client.isHost ? "text-violet-400" : "text-green-400"} font-bold rounded-2xl border-2 ${client.isHost ? "border-violet-400/50" : "border-green-400/50"} p-3 select-none bg-black/5`}
+                                    key={client.clientId}
                                     layout
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
                                     transition={{ type: "spring", stiffness: 200, damping: 25 }}
                                 >
-                                    {`Client ID: ${client.socket_id}`}
+                                    {`${client.isHost ? "HOST" : client.name}`}
                                 </motion.span>
                             ))}
                         </AnimatePresence>

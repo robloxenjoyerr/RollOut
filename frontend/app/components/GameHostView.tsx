@@ -15,6 +15,8 @@ import ToastContainer from "./ToastContainer"
 import Wheel from "./Wheel"
 import Loading from "./Loading"
 
+import { Client } from "../lib/types"
+
 import { getClientIdFromCookie } from "../lib/services"
 
 interface GameHostViewProps {
@@ -23,10 +25,6 @@ interface GameHostViewProps {
     client_id: string
 }
 
-interface Client {
-    clientId: string
-    name: string
-}
 
 export default function GameHostView({ roomCode, game_phase }: GameHostViewProps) {
     const { toasts, addToast } = useToasts()
@@ -59,7 +57,7 @@ export default function GameHostView({ roomCode, game_phase }: GameHostViewProps
             setAvailablePersons(parsedPersons)
         }
 
-        const onClientJoined = (client: { name: string, clientId: string}) => {
+        const onClientJoined = (client: Client) => {
             setClients((prev) => [...prev, client])
             addToast(`New Client ${client.name} connected!`, "info")
         }
@@ -231,7 +229,7 @@ export default function GameHostView({ roomCode, game_phase }: GameHostViewProps
                         <AnimatePresence>
                             {clients.map((client) => (
                                 <motion.span
-                                    className="text-black font-bold rounded-2xl border-2 border-black/20 p-3 select-none bg-black/5"
+                                    className={`${client.isHost ? "text-violet-400" : "text-green-400"} font-bold rounded-2xl border-2 ${client.isHost ? "border-violet-400/50" : "border-green-400/50"} p-3 select-none bg-black/5`}
                                     key={client.clientId}
                                     layout
                                     initial={{ opacity: 0, scale: 0.8 }}
@@ -239,7 +237,7 @@ export default function GameHostView({ roomCode, game_phase }: GameHostViewProps
                                     exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
                                     transition={{ type: "spring", stiffness: 200, damping: 25 }}
                                 >
-                                    {`Client ID: ${client.clientId}`}
+                                    {`${client.isHost ? "HOST" : client.name}`}
                                 </motion.span>
                             ))}
                         </AnimatePresence>
