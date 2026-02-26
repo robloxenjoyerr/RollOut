@@ -43,10 +43,4 @@ export interface LiveGame {
     unrolled: Person[]
 }
 
-export type GamePhaseValue = "unstarted" | "waiting" | "in-progress" | "finished";
-
-export interface GamePhase {
-  phase: GamePhaseValue;
-  // Hier könntest du weitere Eigenschaften hinzufügen, falls vorhanden
-  // z.B. timestamp: number;
-}
+export type GamePhase = "unstarted" | "waiting" | "in-progress" | "finished";

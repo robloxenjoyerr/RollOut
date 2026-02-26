@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react"
 import { Mode } from "../lib/types"
 import { Modes } from "../lib/types"
-import { select } from "framer-motion/client"
 
 interface RoomConfig {
     roomName: string | undefined,
@@ -42,11 +41,11 @@ export default function Host() {
             })
             if (res) {
                 console.log(("ROUTER PUSH TO /GAME/roomId"))
-                router.push(`/game/${res.roomId}`)
+                // router.push(`/game/${res.roomId}`)
             }
             else{
                 console.log("ROUTER PUSH TO /JOIN")
-                router.push("/join")
+                // router.push("/join")
             }
         }
         catch (err) {

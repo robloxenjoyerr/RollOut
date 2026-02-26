@@ -53,7 +53,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
             const parsedPersons: Person[] = data.persons || []
             const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
-            setCurrentPhase({ phase: data.phase })
+            setCurrentPhase(data.phase)
             setPendingUpdate(unrolledPersons)
             setAvailablePersons(parsedPersons)
         }
@@ -70,7 +70,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
 
         const onGameStarted = () => {
             addToast("Game has started!", "success")
-            setCurrentPhase({ phase: "in-progress" })
+            setCurrentPhase("in-progress")
         }
 
         const onGameStartError = () => {
@@ -173,7 +173,8 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, game_id, addToast, router, game_phase])
+    }, [])
+    // socket, game_id, addToast, router, game_phase
 
     const rollNext = () => {
         if (!socket || isSpinning) return
@@ -209,10 +210,10 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
         socket.emit("startGame", { game_id, token })
     }
 
-    setCurrentPhase({phase: "waiting"})
-    if (!currentPhase) redirect(`/game/${game_id}`)
+    setCurrentPhase("waiting")
+    // if (!currentPhase) redirect(`/game/${game_id}`)
 
-    if (currentPhase.phase === "waiting") {
+    if (currentPhase === "waiting") {
 
         return (
             <div>
@@ -255,7 +256,7 @@ export default function GameHostView({ game_id, game_phase }: GameHostViewProps)
             </div>
         )
     }
-    else if (currentPhase.phase === "in-progress") {
+    else if (currentPhase === "in-progress") {
         return (
             <>
                 <AnimatePresence>

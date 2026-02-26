@@ -1,7 +1,5 @@
 import { Socket, Server } from "socket.io";
 
-
-
 export const registerGameHandlers = (io: Server, socket: Socket) => {
 
   // Einzige "globale" Variable pro Verbindung ist die gameId für den Disconnect-Fall.
