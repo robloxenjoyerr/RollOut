@@ -41,7 +41,7 @@ export default function Host() {
             })
             if (res) {
                 console.log(("ROUTER PUSH TO /GAME/roomId"))
-                // router.push(`/game/${res.roomId}`)
+                router.push(`/game/${res.roomId}`)
             }
             else{
                 console.log("ROUTER PUSH TO /JOIN")
