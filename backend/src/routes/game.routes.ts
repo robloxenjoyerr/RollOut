@@ -16,7 +16,7 @@ gameRouter.post("/verify/:roomId", async (req, res) => {
             const hostId = req.cookies?.hostId
             console.log("hostID from req.cookies.hostiD: ", hostId)
             const isHost = hostId && hostId === info.hostId
-            return res.send({ valid: true, isHost: !!isHost })
+            return res.send({ valid: true, isHost: !!isHost, status: info.status })
         }
         else {
             return res.send({ valid: false, isHost: false })
