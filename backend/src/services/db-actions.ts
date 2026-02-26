@@ -21,7 +21,7 @@ export async function createRoom(roomConfig: LiveGameType, hostId: string) {
       isPrivate: roomConfig.isPrivate,
       status: "waiting-lobby",
       hostId: hostId,
-      roomCode: randomBytes(6).toString("hex").toUpperCase()
+      roomCode: randomBytes(3).toString("hex").toUpperCase()
     }
   })
 }

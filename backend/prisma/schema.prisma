@@ -30,6 +30,6 @@ model liveGames {
   mode String @default("wheel")
   isPrivate Boolean @default(false)
   status String @default("waiting")
-  hostId String
+  hostId String 
   clients Client[]
 }
