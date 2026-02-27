@@ -40,6 +40,7 @@ gameRouter.post("/verify/:roomCode", async (req, res) => {
     const { roomCode } = req.params
     console.log("roomId:", roomCode)
     console.log("cookies:", req.cookies)
+
     try {
         const room = await verifyRoom(roomCode)
 
@@ -47,6 +48,7 @@ gameRouter.post("/verify/:roomCode", async (req, res) => {
             let clientId = req.cookies?.clientId
             if(!clientId) {
                 clientId = randomUUID()
+                console.log("NEW CLIENTID: ", clientId)
             }
 
             const isHost = clientId && clientId === room.hostId

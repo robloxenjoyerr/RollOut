@@ -17,9 +17,10 @@ export default function JoinPage() {
     const router = useRouter()
 
 
-    async function joinRoom(roomCode: string) {
+    async function joinRoom() {
         console.log(inputRef.current?.value)
-        router.push(`/room/${roomCode}`)
+
+        router.push(`/room/${inputRef.current?.value}`)
     }
 
     return <>

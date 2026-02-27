@@ -26,8 +26,7 @@ export default async function Page({ params }: { params: { roomCode: string } })
         console.log("RES: ", res)
 
         if (!res.valid) {
-            console.log("REDERECTING TO /HOST")
-            return redirect("/host");
+            return redirect("/join");
         } 
 
         if(!clientId){
