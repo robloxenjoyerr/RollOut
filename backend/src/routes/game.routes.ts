@@ -38,6 +38,8 @@ gameRouter.post("/start", async (req, res) => {
 
 gameRouter.post("/verify/:roomCode", async (req, res) => {
     const { roomCode } = req.params
+    // const { clientName } = req.body
+    // ADD NAME IN POST BODY => SET IN PRISMA.CLIENT.CREATE
 
     try {
         const room = await verifyRoom(roomCode)
@@ -51,6 +53,21 @@ gameRouter.post("/verify/:roomCode", async (req, res) => {
                 sameSite: "none", // Wichtig für Cross-Origin
                 maxAge: 1 * 24 * 60 * 60 * 1000 // 7 Tage
             })
+
+            const alreadyInRoom = await prisma.client.findUnique({
+                where: { clientId: clientId }
+            })
+
+            if (!alreadyInRoom) {
+                await prisma.client.create({
+                    data: {
+                        clientId,          // Cookie-Wert
+                        name: "NoNameNoob", // clientName
+                        gameId: room.id,
+                        isHost: false
+                    }
+                })
+            }
 
             const isHost = clientId && clientId === room.hostId
             return res.send({ valid: true, isHost: isHost, status: room.status, clientId: clientId })
