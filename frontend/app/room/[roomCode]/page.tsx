@@ -11,7 +11,7 @@ import { cookies } from "next/headers"
 export default async function Page({ params }: { params: { roomCode: string } }) {
     const { roomCode } = await params;
     const cookieStore = await cookies()
-    const clientId = cookieStore.get("clientId")?.value
+    let clientId = cookieStore.get("clientId")?.value
     
     try {
         const res = await apiFetch(`/api/game/verify/${roomCode}`, {
@@ -30,10 +30,14 @@ export default async function Page({ params }: { params: { roomCode: string } })
             return redirect("/host");
         } 
 
+        if(!clientId){
+            clientId = res.clientId
+        }
+
         if (res.isHost) {
-            return <GameHostView roomCode={roomCode} roomConfig={res} client_id={clientId && clientId || res.id} />;
+            return <GameHostView roomCode={roomCode} roomConfig={res} client_id={clientId && clientId || ""} />;
         } else {
-            return <GameClientView roomCode={roomCode} roomConfig={res} client_id={clientId && clientId || res.id} />;
+            return <GameClientView roomCode={roomCode} roomConfig={res} client_id={clientId && clientId || ""} />;
         }
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen

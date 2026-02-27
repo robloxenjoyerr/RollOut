@@ -2,6 +2,7 @@ import { Router } from "express";
 import { createRoom, findRoomByClient, verifyRoom } from "../services/db-actions";
 import { getOrCreateClientId } from "../lib/services";
 import prisma from "../lib/prisma-client";
+import { randomUUID } from "node:crypto";
 
 const gameRouter = Router()
 
@@ -43,10 +44,13 @@ gameRouter.post("/verify/:roomCode", async (req, res) => {
         const room = await verifyRoom(roomCode)
 
         if (room) {
-            const clientId = req.cookies?.clientId
+            let clientId = req.cookies?.clientId
+            if(!clientId) {
+                clientId = randomUUID()
+            }
 
             const isHost = clientId && clientId === room.hostId
-            return res.send({ valid: true, isHost: isHost, status: room.status })
+            return res.send({ valid: true, isHost: isHost, status: room.status, clientId: clientId })
         }
         else {
             return res.send({ valid: false, isHost: false })

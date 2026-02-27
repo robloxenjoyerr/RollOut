@@ -40,7 +40,6 @@ export default function GameClientView({ roomCode, roomConfig, client_id }: Game
         const onConnect = () => {
             console.log("Connected to GameID: ", roomCode, "with socketID: ", socket.id)
             socket.emit("getGameState", roomCode)
-            socket.emit("joinGame", { roomCode, socket_id: socket.id })
         }
 
         const onGameStateUpdate = (data: any) => {
