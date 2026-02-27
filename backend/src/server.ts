@@ -69,6 +69,7 @@ httpServer.listen({ port: PORT, host: "0.0.0.0" }, () => {
 io.on("connection", async (socket) => {
   const clientId = socket.handshake.auth.clientId
 
+  console.log("Server.ts: clientId: ", clientId)
   if (!clientId) {
     socket.disconnect()
     return
