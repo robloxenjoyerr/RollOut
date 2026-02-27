@@ -54,13 +54,13 @@ export default function Host() {
 
     return (
 
-        <Card className="text-black" alignItems="center" width="w-fit" gap="gap-5" height="h-fit" justifyContent="around" >
+        <Card className="text-white font-bold text-l shadow-black/20 shadow-sm  backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl" alignItems="center" width="w-fit" gap="gap-5" height="h-fit" justifyContent="around">
             <div className="flex flex-col items-center ">
                 <span className="items-center justify-items-center">Host a Room</span>
             </div >
             <div className="flex flex-row gap-5 w-fit">
                 <div className="flex flex-col gap-3 justify-center w-30">
-                    <Input placeholder="Room Name" width="w-full" id="roomName" ref={roomNameRef} />
+                    <Input placeholder="Room Name" width="w-full" id="roomName" className="text-white" ref={roomNameRef} />
                     <div className="flex flex-row h-fit w-full border-2 p-2 border-black/20 rounded-2xl">
                         <label className="w-full mr-2 select-none" htmlFor="is-private">Private</label>
                         <Input type="checkbox" width="w-5" height="h-4" className="self-center" id="is-private" ref={privateRoomRef}/>

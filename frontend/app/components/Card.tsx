@@ -21,6 +21,7 @@ interface CardProps {
     autoMarginOn?: boolean,
     isStyled?: boolean,
     shadowOn?: boolean,
+    bgColor?: string,
     overflowAutoOn?: boolean,
     hideScrollbar?: boolean,
     href?:string,
@@ -44,6 +45,7 @@ export default function Card({
     autoMarginOn = true,
     isStyled = true,
     shadowOn = true,
+    bgColor = "bg-white",
     overflowAutoOn = true,
     hideScrollbar = false,
     labelText = "",
@@ -57,7 +59,7 @@ export default function Card({
     function handleClick(){
         onClick?.()
     }
-    const visualStyle = `transition-all ease-in-out duration-150 bg-white text-black border-2 border-black/30 rounded-2xl shadow-sm ${className}`
+    const visualStyle = `transition-all ease-in-out duration-150 text-black border-2 border-black/30 rounded-2xl shadow-sm ${bgColor} ${className}`
 
     const styling = `
         ${display} ${flexDirection} ${gap} ${padding} 
