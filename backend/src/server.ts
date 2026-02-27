@@ -81,6 +81,7 @@ io.on("connection", async (socket) => {
   })
 
   if (!client) {
+    console.log("Disconnecting again..")
     socket.disconnect()
     return
   }
