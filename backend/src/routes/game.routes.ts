@@ -38,18 +38,19 @@ gameRouter.post("/start", async (req, res) => {
 
 gameRouter.post("/verify/:roomCode", async (req, res) => {
     const { roomCode } = req.params
-    console.log("roomId:", roomCode)
-    console.log("cookies:", req.cookies)
 
     try {
         const room = await verifyRoom(roomCode)
 
         if (room) {
-            let clientId = req.cookies?.clientId
-            if(!clientId) {
-                clientId = randomUUID()
-                console.log("NEW CLIENTID: ", clientId)
-            }
+            let clientId = req.cookies?.clientId || randomUUID()
+
+            res.cookie("clientId", clientId, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "none", // Wichtig für Cross-Origin
+                maxAge: 1 * 24 * 60 * 60 * 1000 // 7 Tage
+            })
 
             const isHost = clientId && clientId === room.hostId
             return res.send({ valid: true, isHost: isHost, status: room.status, clientId: clientId })
@@ -78,7 +79,7 @@ gameRouter.post("/join/:roomCode", async (req, res) => {
         where: { clientId, gameId: game.id }
     })
 
-  
+
     if (existingClient) {
         return res.send({
             success: true,
