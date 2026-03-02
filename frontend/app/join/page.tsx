@@ -8,6 +8,7 @@ import Input from "../components/Input";
 
 import { useRef } from "react";
 import Button from "../components/Button";
+import Footer from "../components/Footer";
 
 
 export default function JoinPage() {
@@ -38,5 +39,6 @@ export default function JoinPage() {
             </div>
 
         </div >
+        <Footer></Footer>
     </>
 }

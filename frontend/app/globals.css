@@ -7,7 +7,7 @@
 *::after {
   box-sizing: border-box;
   /* Alles inkl. Padding & Border */
-  
+
 }
 
 
@@ -19,6 +19,7 @@
   /* Subtile Tech-Akzente */
   --accent-blue: #38bdf8;
   --accent-indigo: #6366f1;
+  --accent-footer: #08090e;
 }
 
 button {
@@ -26,7 +27,7 @@ button {
   background-color: var(--accent-indigo);
 }
 
-button:hover{
+button:hover {
   background-color: var(--accent-blue);
 }
 
@@ -47,6 +48,14 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.footer {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.58) 2px, transparent 2px);
+}
+
+.header {
+ /* */
 }
 
 body::before {

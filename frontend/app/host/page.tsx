@@ -9,6 +9,8 @@ import { Modes } from "../lib/types"
 import Overlay from "../components/Overlay"
 import { AnimatePresence, number } from "framer-motion"
 import { motion } from "framer-motion"
+import RollOutHeader from "../components/RollOutHeader"
+import Footer from "../components/Footer"
 
 interface RoomConfig {
     roomName: string | undefined,
@@ -54,6 +56,7 @@ export default function Host() {
 
     return (
         <>
+            <RollOutHeader></RollOutHeader>
             <AnimatePresence>
                 <Overlay className="w-50 h-70 flex flex-col" bgClassName="" isOpen={selectingMode} onClose={() => setSelectingMode(false)}>
                     {Modes && Modes.map((m) => (
@@ -96,6 +99,7 @@ export default function Host() {
                 </div>
                 <Button className="w-full h-15 items-center justify-items-center" onClick={startGame}>Host</Button>
             </Card>
+            <Footer></Footer>
         </>
     )
 }
