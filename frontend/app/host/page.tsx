@@ -12,6 +12,8 @@ import { motion } from "framer-motion"
 import RollOutHeader from "../components/RollOutHeader"
 import Footer from "../components/Footer"
 import Header from "../components/Header"
+import ToastContainer from "../components/ToastContainer"
+import { useToasts } from "../hooks/useToasts"
 
 interface RoomConfig {
     roomName: string | undefined,
@@ -26,6 +28,7 @@ export default function Host() {
     const privateRoomRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
     const [selectingMode, setSelectingMode] = useState<boolean>(false)
+    const {toasts, addToast } = useToasts()
 
     async function startGame() {
         try {
@@ -55,6 +58,10 @@ export default function Host() {
         }
     }
 
+    async function loadPreset(){
+        addToast("This feature is still in development.", "error")
+    }
+
     return (
         <>
             <Header useRedirect={true}/>
@@ -62,7 +69,7 @@ export default function Host() {
                 <Overlay className="w-50 h-70 flex flex-col" bgClassName="" isOpen={selectingMode} onClose={() => setSelectingMode(false)}>
                     {Modes && Modes.map((m) => (
                         <motion.span
-                            className="text-white self-center w-full font-bold text-l shadow-black/20 shadow-sm p-2 m-2 rounded-2xl select-none bg-(--accent-indigo) hover:bg-(--accent-blue) hover:cursor-pointer overflow-auto"
+                            className={`text-white self-center w-full font-bold text-l shadow-black/20 shadow-sm p-2 m-2 rounded-2xl select-none bg-(--accent-indigo) hover:bg-(--accent-blue) hover:cursor-pointer overflow-auto ${m === "random" ? "bg-linear-to-r from-fuchsia-500 to-cyan-500" : ""}`}
                             key={m}
                             onClick={() => { setSelectedMode(m); setSelectingMode(false) }}
                         >
@@ -102,7 +109,7 @@ export default function Host() {
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-white/30 italic gap-2">
 
-                        <Button>Load Preset</Button>
+                        <Button onClick={loadPreset}>Load Preset</Button>
                         <span className="border-2 w-20 h-full p-2 rounded-xl self-center text-center">no preset available</span>
 
                     </div>
@@ -111,6 +118,7 @@ export default function Host() {
             </Card>
 
             <Footer></Footer>
+            <ToastContainer toasts={toasts}></ToastContainer>
         </>
     )
 }

@@ -41,7 +41,7 @@ export default function Home() {
               damping: 20,
             }}
           >
-            <Card href="/host" width="w-80" height="h-50" padding="p-6" justifyContent="center" alignItems="center" overflowAutoOn={false} className="group gap-6 hover:drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]  text-white font-bold text-2xl shadow-black/20 shadow-sm  hover:border-2 hover:scale-102 transition-all ease-in-out hover:border-green-400 backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl ">
+            <Card href="/host" width="w-80" height="h-50" padding="p-6" justifyContent="center" alignItems="center" overflowAutoOn={false} className="group gap-6 hover:drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]  text-white font-bold text-2xl shadow-black/20 shadow-sm  hover:border-2 hover:scale-102 transition-all ease-in-out hover:border-green-400 hover:animate-pulse backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl ">
               <span className="text-white/70 text-2xl font-bold self-center select-none">Host a Game</span>
               <img className="transition-all duration-200 ease-in-out group-hover:scale-125 w-15 h-15 self-center" src="/PlayImage.svg" alt="" />
             </Card>
@@ -55,7 +55,7 @@ export default function Home() {
               damping: 20,
             }}
           >
-            <Card href="/join" width="w-80" height="h-50" overflowAutoOn={false} padding="p-6" justifyContent="center" alignItems="center" className="group gap-6 hover:drop-shadow-[0_0_20px_rgba(99,102,241,0.3)] text-white font-bold text-2xl shadow-black/20 shadow-sm  hover:border-2 hover:scale-102 transition-all ease-in-out hover:border-indigo-400 backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl ">
+            <Card href="/join" width="w-80" height="h-50" overflowAutoOn={false} padding="p-6" justifyContent="center" alignItems="center" className="group gap-6 hover:drop-shadow-[0_0_20px_rgba(99,102,241,0.3)] text-white font-bold text-2xl shadow-black/20 shadow-sm  hover:border-2 hover:scale-102 transition-all ease-in-out hover:border-indigo-400 hover:animate-pulse backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl ">
               <span className="text-white/70 text-2xl font-bold self-center select-none">Join a Game</span>
               <img className="transition-all duration-200 ease-in-out group-hover:scale-125 w-15 h-15 self-center" src="/JoinImage.svg" alt="" />
             </Card>
