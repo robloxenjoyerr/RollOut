@@ -38,16 +38,13 @@ gameRouter.post("/start", async (req, res) => {
 
 gameRouter.post("/verify/:roomCode", async (req, res) => {
     const { roomCode } = req.params
-    // const { clientName } = req.body
-    // ADD NAME IN POST BODY => SET IN PRISMA.CLIENT.CREATE
-
-
     // FIX BUG => HOST JOINS => OTHER PLAYER JOINS => GETS SHOWN => CLIENT REFRESH SITE => HOST DISAPPEARS IN "clients cucently conjnected list"
 
     try {
         const room = await verifyRoom(roomCode)
-
+        console.log("Verifying Room response: ", room)
         if (room) {
+            console.log("Room verified => is existing with roomCode: ", roomCode)
             let clientId = req.cookies?.clientId || randomUUID()
 
             res.cookie("clientId", clientId, {
@@ -61,6 +58,8 @@ gameRouter.post("/verify/:roomCode", async (req, res) => {
                 where: { clientId: clientId }
             })
 
+            console.log("Is client in room already? : ", alreadyInRoom)
+
             if (!alreadyInRoom) {
                 await prisma.client.create({
                     data: {
@@ -71,6 +70,8 @@ gameRouter.post("/verify/:roomCode", async (req, res) => {
                     }
                 })
             }
+
+
 
             const isHost = clientId && clientId === room.hostId
             return res.send({ valid: true, isHost: isHost, status: room.status, clientId: clientId })

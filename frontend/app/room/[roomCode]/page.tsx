@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: { roomCode: string } })
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen
         console.error("game/id ERROR : ", error)
-        console.log("REDERECTING TO /")
+        console.log("REDERECTING TO /join")
         return redirect("/join")
     }
 
