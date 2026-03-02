@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: { roomCode: string } })
     let clientId = cookieStore.get("clientId")?.value
     
     try {
-        const res = await apiFetch(`/api/game/verify/${roomCode}`, {
+        const res = await apiFetch(`/api/game/join/${roomCode}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

@@ -36,54 +36,54 @@ gameRouter.post("/start", async (req, res) => {
     }
 })
 
-gameRouter.post("/verify/:roomCode", async (req, res) => {
-    const { roomCode } = req.params
-    // FIX BUG => HOST JOINS => OTHER PLAYER JOINS => GETS SHOWN => CLIENT REFRESH SITE => HOST DISAPPEARS IN "clients cucently conjnected list"
+// gameRouter.post("/verify/:roomCode", async (req, res) => {
+//     const { roomCode } = req.params
+//     // FIX BUG => HOST JOINS => OTHER PLAYER JOINS => GETS SHOWN => CLIENT REFRESH SITE => HOST DISAPPEARS IN "clients cucently conjnected list"
 
-    try {
-        const room = await verifyRoom(roomCode)
-        console.log("Verifying Room response: ", room)
-        if (room) {
-            console.log("Room verified => is existing with roomCode: ", roomCode)
-            let clientId = req.cookies?.clientId || randomUUID()
+//     try {
+//         const room = await verifyRoom(roomCode)
+//         console.log("Verifying Room response: ", room)
+//         if (room) {
+//             console.log("Room verified => is existing with roomCode: ", roomCode)
+//             let clientId = req.cookies?.clientId || randomUUID()
 
-            res.cookie("clientId", clientId, {
-                httpOnly: true,
-                secure: true,
-                sameSite: "none", // Wichtig für Cross-Origin
-                maxAge: 1 * 24 * 60 * 60 * 1000 // 7 Tage
-            })
+//             res.cookie("clientId", clientId, {
+//                 httpOnly: true,
+//                 secure: true,
+//                 sameSite: "none", // Wichtig für Cross-Origin
+//                 maxAge: 1 * 24 * 60 * 60 * 1000 // 7 Tage
+//             })
 
-            const alreadyInRoom = await prisma.client.findUnique({
-                where: { clientId: clientId }
-            })
+//             const alreadyInRoom = await prisma.client.findUnique({
+//                 where: { clientId: clientId }
+//             })
 
-            console.log("Is client in room already? : ", alreadyInRoom)
+//             console.log("Is client in room already? : ", alreadyInRoom)
 
-            if (!alreadyInRoom) {
-                await prisma.client.create({
-                    data: {
-                        clientId,          // Cookie-Wert
-                        name: "NoNameNoob", // clientName
-                        gameId: room.id,
-                        isHost: false
-                    }
-                })
-            }
+//             if (!alreadyInRoom) {
+//                 await prisma.client.create({
+//                     data: {
+//                         clientId,          // Cookie-Wert
+//                         name: "NoNameNoob", // clientName
+//                         gameId: room.id,
+//                         isHost: false
+//                     }
+//                 })
+//             }
 
 
 
-            const isHost = clientId && clientId === room.hostId
-            return res.send({ valid: true, isHost: isHost, status: room.status, clientId: clientId })
-        }
-        else {
-            return res.send({ valid: false, isHost: false })
-        }
-    } catch (err) {
-        console.error("gameRouter ERROR : /verify : ", err)
-        return res.status(500).send({ valid: false, isHost: false })
-    }
-})
+//             const isHost = clientId && clientId === room.hostId
+//             return res.send({ valid: true, isHost: isHost, status: room.status, clientId: clientId })
+//         }
+//         else {
+//             return res.send({ valid: false, isHost: false })
+//         }
+//     } catch (err) {
+//         console.error("gameRouter ERROR : /verify : ", err)
+//         return res.status(500).send({ valid: false, isHost: false })
+//     }
+// })
 
 gameRouter.post("/join/:roomCode", async (req, res) => {
     const { roomCode } = req.params
