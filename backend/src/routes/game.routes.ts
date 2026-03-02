@@ -87,9 +87,10 @@ gameRouter.post("/start", async (req, res) => {
 
 gameRouter.post("/join/:roomCode", async (req, res) => {
     const { roomCode } = req.params
-    const { clientName } = req.body
+    let { clientName } = req.body
     const clientId = getOrCreateClientId(req, res)
 
+    if(!clientName) clientName = "Bob"
     const game = await prisma.liveGames.findUnique({
         where: { roomCode: roomCode }
     })
