@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { ReactNode } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface CardProps {
     children: ReactNode,
@@ -24,7 +25,7 @@ interface CardProps {
     bgColor?: string,
     overflowAutoOn?: boolean,
     hideScrollbar?: boolean,
-    href?:string,
+    href?: string,
     className?: string,
     [key: string]: any
 }
@@ -56,11 +57,10 @@ export default function Card({
     ...props
 }: CardProps) {
 
-    function handleClick(){
+    function handleClick() {
         onClick?.()
     }
-    const visualStyle = `transition-all ease-in-out duration-150 text-black border-2 border-black/30 rounded-2xl shadow-sm ${bgColor} ${className}`
-
+    const visualStyle = `text-black border-2 border-black/30 rounded-2xl shadow-sm ${bgColor} ${className}`
     const styling = `
         ${display} ${flexDirection} ${gap} ${padding} 
         ${justifyContent} ${alignItems} ${boxSizing} 
@@ -70,16 +70,18 @@ export default function Card({
         ${overflowAutoOn ? 'overflow-y-auto' : ''} 
         ${isStyled ? visualStyle : ''} 
     `.trim().replace(/\s+/g, ' ')
-    
-    if (href){
+
+    if (href) {
         return <Link href={href} className={styling} {...props}>
             {children}
         </Link>
     }
 
     return (
-        <div onClick={handleClick} className={styling} {...props}>
-            {children}
-        </div>
+        <AnimatePresence>
+            <motion.div onClick={handleClick} className={styling} {...props}>
+                {children}
+            </motion.div>
+        </AnimatePresence>
     )
 }

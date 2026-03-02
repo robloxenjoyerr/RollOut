@@ -70,7 +70,16 @@ export default function Host() {
                     ))}
                 </Overlay>
             </AnimatePresence>
-            <Card className="text-white font-bold text-l shadow-black/20 shadow-sm  backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl" alignItems="center" width="w-fit" gap="gap-5" height="h-fit" justifyContent="around">
+
+            <Card
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                    type: "spring",
+                    stiffness: 250,
+                    damping: 20,
+                }}
+                className="text-white font-bold text-l shadow-black/20 shadow-sm  backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl" alignItems="center" width="w-fit" gap="gap-5" height="h-fit" justifyContent="around">
                 <div className="flex flex-col items-center ">
                     <span className="items-center justify-items-center">Host a Room</span>
                 </div >
@@ -99,6 +108,7 @@ export default function Host() {
                 </div>
                 <Button className="w-full h-15 items-center justify-items-center" onClick={startGame}>Host</Button>
             </Card>
+
             <Footer></Footer>
         </>
     )

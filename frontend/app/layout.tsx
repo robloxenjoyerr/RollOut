@@ -26,9 +26,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`} 
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <MouseGlow/>
+        <div className="background-blobs w-full h-full">
+          <div className="blob blob-1"></div>
+          <div className="blob blob-2"></div>
+          <div className="blob blob-3"></div>
+        </div>
+        <MouseGlow />
         {children}
         <div className="custom-cursor"></div>
       </body>

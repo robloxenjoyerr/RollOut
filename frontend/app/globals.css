@@ -103,6 +103,15 @@ body::after {
   100% {
     transform: translate(30px, -20px) scale(1.05);
   }
+
+
+}
+
+.header-title {
+  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.034);
+  padding: 10px 20px;
+  border-radius: 20px;
 }
 
 @keyframes floatShape {
@@ -133,4 +142,68 @@ body::after {
 .hide-scrollbar::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+
+/* Container für die Hintergrund-Elemente */
+.background-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: -2; /* Hinter body::before und body::after */
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.2;
+  animation: wander 25s ease-in-out infinite alternate;
+}
+
+/* Blaues Glühen oben links */
+.blob-1 {
+  width: 400px;
+  height: 400px;
+  background: var(--accent-blue);
+  top: -100px;
+  left: -100px;
+  animation-duration: 30s;
+}
+
+/* Lilanes Glühen unten rechts */
+.blob-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--accent-indigo);
+  bottom: -150px;
+  right: -100px;
+  animation-duration: 35s;
+  animation-delay: -5s;
+}
+
+/* Ein kleinerer, schnellerer Akzent in der Mitte */
+.blob-3 {
+  width: 300px;
+  height: 300px;
+  background: white;
+  opacity: 0.05;
+  top: 40%;
+  left: 50%;
+  animation-duration: 20s;
+}
+
+@keyframes wander {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(100px, 50px) scale(1.2) rotate(120deg);
+  }
+  66% {
+    transform: translate(-50px, 150px) scale(0.8) rotate(240deg);
+  }
+  100% {
+    transform: translate(50px, -50px) scale(1.1) rotate(360deg);
+  }
 }
