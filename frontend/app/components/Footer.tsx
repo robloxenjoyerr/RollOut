@@ -15,7 +15,7 @@ export default function Footer() {
                     href="/impressum"
                     className="text-white/40 hover:text-(--accent-cyan) text-xs transition-colors cursor-pointer"
                 >
-                    Impressum
+                    /
                 </a>
                 <a
                     href="/datenschutz"
@@ -27,13 +27,15 @@ export default function Footer() {
                     href="/agb"
                     className="text-white/40 hover:text-(--accent-cyan) text-xs transition-colors cursor-pointer"
                 >
-                    AGB
+                    Cookies
                 </a>
 
                 {/* Kleiner Status-Indikator (optionaler Eyecatcher) */}
-                <div className="ml-4 flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[10px] text-white/50 uppercase tracking-widest">RollOut Status</span>
+                <div className="flex justify-around gap-5">
+                    <span className="text-[10px] select-none w-fit self-center flex text-center text-white/50 backdrop-blur-md bg-white/5 border border-white/10 p-1 rounded-xl uppercase">
+                        <div className="self-center w-1.5 h-1.5 m-1 rounded-full bg-green-500 animate-pulse" />
+                        currently <span className="text-red-400 mr-2 ml-2 animate-pulse"> 0 </span>  rooms active 🔥
+                    </span>
                 </div>
 
                 <a
@@ -58,7 +60,7 @@ export default function Footer() {
                         </svg>
                     </span>
                     <span className="text-[10px] flex text-white/40 group-hover:text-white transition-colors uppercase tracking-wider">
-                       
+
                         Support Dev
                     </span>
                 </a>

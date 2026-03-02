@@ -10,7 +10,7 @@ interface RollOutHeaderProps{
 export default function RollOutHeader({children}: RollOutHeaderProps) {
     const router = useRouter()
     return (
-        <span onClick={() => router.push("/")} className="absolute top-5 hover:cursor-pointer flex flex-col gap-3 items-center">
+        <span onClick={() => router.push("/")} className="absolute top-15 hover:cursor-pointer flex flex-col gap-3 items-center">
             <Shuffle
                 className="self-center header-title header text-8xl font-extrabold text-neutral-100 drop-shadow-lg tracking-tight hover:scale-105 transition-all duration-300 ease-out"
                 text="RollOut"

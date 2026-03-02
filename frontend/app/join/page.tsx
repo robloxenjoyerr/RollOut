@@ -10,6 +10,7 @@ import { useRef } from "react";
 import Button from "../components/Button";
 import Footer from "../components/Footer";
 import { AnimatePresence } from "framer-motion";
+import Header from "../components/Header";
 
 
 export default function JoinPage() {
@@ -27,7 +28,7 @@ export default function JoinPage() {
 
     return <>
         <div className=" flex flex-col w-[80vw] h-[80vh] gap-20 items-center justify-center ">
-            <RollOutHeader />
+            <Header></Header>
             <AnimatePresence>
 
                 <motion.div

@@ -11,6 +11,7 @@ import { AnimatePresence, number } from "framer-motion"
 import { motion } from "framer-motion"
 import RollOutHeader from "../components/RollOutHeader"
 import Footer from "../components/Footer"
+import Header from "../components/Header"
 
 interface RoomConfig {
     roomName: string | undefined,
@@ -56,7 +57,7 @@ export default function Host() {
 
     return (
         <>
-            <RollOutHeader></RollOutHeader>
+            <Header useRedirect={true}/>
             <AnimatePresence>
                 <Overlay className="w-50 h-70 flex flex-col" bgClassName="" isOpen={selectingMode} onClose={() => setSelectingMode(false)}>
                     {Modes && Modes.map((m) => (
