@@ -1,5 +1,4 @@
 export type Phase = "unstarted" | "waiting-lobby" | "in-progress" | "finished";
-export type Mode = "random" | "wheel" | "plinko" | "casino"
 export const Modes = [
     "wheel",
     "random",
@@ -27,7 +26,7 @@ export interface Template {
     owner_id: string
     name: string
     persons: Person[]
-    mode: Mode
+    mode: typeof Modes
     state: Phase
 }
 
@@ -37,7 +36,7 @@ export interface LiveGame {
     host_id: string,
     session_id: string,
     phase: GamePhase,
-    mode: Mode,
+    mode: typeof Modes,
     clients: Client[],
     rolled: Person[],
     unrolled: Person[]

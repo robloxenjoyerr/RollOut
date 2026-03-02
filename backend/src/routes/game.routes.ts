@@ -41,6 +41,9 @@ gameRouter.post("/verify/:roomCode", async (req, res) => {
     // const { clientName } = req.body
     // ADD NAME IN POST BODY => SET IN PRISMA.CLIENT.CREATE
 
+
+    // FIX BUG => HOST JOINS => OTHER PLAYER JOINS => GETS SHOWN => CLIENT REFRESH SITE => HOST DISAPPEARS IN "clients cucently conjnected list"
+
     try {
         const room = await verifyRoom(roomCode)
 

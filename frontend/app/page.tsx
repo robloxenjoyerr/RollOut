@@ -14,7 +14,7 @@ export default function Home() {
       {/* <span className=" font-bold left-5 text-black/40 top-5 text-3xl absolute">Welcome {userName && userName}!</span> */}
       <div className="flex flex-col items-center gap-4 w-full justify-center self-center ">
         <Shuffle
-          className="self-center text-8xl font-extrabold text-blue-300 drop-shadow-lg tracking-tight hover:scale-105 transition-all duration-300 ease-out"
+          className="self-center select-none text-7xl font-extrabold text-blue-300 drop-shadow-lg tracking-tight hover:scale-105 transition-all duration-300 ease-out"
           text="RollOut"
           shuffleDirection="right"
           duration={0.35}
@@ -37,7 +37,7 @@ export default function Home() {
           cursorCharacter="|"
           deletingSpeed={50}
           cursorBlinkDuration={0.5}
-          className="text-white/80 text-xl font-bold  "
+          className="text-white/80 text-xl font-bold select-none "
         />
       </div>
       <div className="flex flex-row gap-15">

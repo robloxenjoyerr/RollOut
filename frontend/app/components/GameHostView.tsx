@@ -59,6 +59,7 @@ export default function GameHostView({ roomCode, roomConfig }: GameHostViewProps
 
         const onClientJoined = (client: Client) => {
             setClients((prev) => [...prev, client])
+            console.log(clients)
             addToast(`New Client ${client.name} connected!`, "info")
         }
 

@@ -6,10 +6,11 @@ interface OverlayProps {
     isOpen: boolean,
     onClose: () => void,
     children: ReactNode,
+    bgClassName?: string,
     className?: string
 }
 
-export default function Overlay({ isOpen, onClose, children, className = "" }: OverlayProps) {
+export default function Overlay({ isOpen, onClose, children, className = "", bgClassName = "" }: OverlayProps) {
     // Wenn isOpen false ist, rendern wir gar nichts. 
     // Das erlaubt AnimatePresence im Parent, die exit-Animation zu starten!
     if (!isOpen) return null;
@@ -22,7 +23,7 @@ export default function Overlay({ isOpen, onClose, children, className = "" }: O
             exit={{ opacity: 0 }}
             transition={{ duration: 0.1 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 flex justify-center items-center bg-black/20"
+            className={`fixed inset-0 z-50 flex justify-center items-center backdrop-blur bg-black/30 ${bgClassName}`}
         >
             <motion.div
                 // Fenster-Animation
@@ -30,13 +31,13 @@ export default function Overlay({ isOpen, onClose, children, className = "" }: O
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 1.1, opacity: 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className={`bg-white rounded-xl border-2 border-black/30 shadow-md p-6 relative ${className}`}
+                className={`bg-(--background)/90 rounded-xl border-2 border-white/20 shadow-md p-6 relative ${className}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <Button 
                     onClick={onClose} 
                     padding="p-0" 
-                    className="hover:rotate-90 absolute top-0 right-0 rounded-md p-1 shadow-none bg-transparent h-7 w-7"
+                    className="hover:rotate-90 absolute top-0 right-0 rounded-md p-1 shadow-none bg-none h-7 w-7"
                 >
                     <img src="/close.svg" alt="close" />
                 </Button>

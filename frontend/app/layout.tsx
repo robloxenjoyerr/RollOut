@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import MouseGlow from "./components/MouseGlow";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,11 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`} 
       >
+        <MouseGlow/>
         {children}
-        
+        <div className="custom-cursor"></div>
       </body>
     </html>
   );
