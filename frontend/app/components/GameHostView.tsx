@@ -60,12 +60,12 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         const onClientJoined = (client: Client) => {
             setClients((prev) => [...prev, client])
             console.log(clients)
-            addToast(`New Client ${client.name} connected!`, "info")
+            addToast(`New Client ${client.name} has connected!`, "info")
         }
 
-        const onClientDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
-            addToast(`Client with ID: ${data.socket_id} disconnected.`, "info")
-            setClients(data.current_clients || [])
+        const onClientDisconnected = (client: Client) => {
+            addToast(`Client ${client.name} has disconnected.`, "info")
+            setClients((prev)=> ({...prev, client}))
         }
 
         const onGameStarted = () => {
