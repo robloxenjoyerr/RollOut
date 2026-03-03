@@ -53,8 +53,6 @@ export default function JoinPage() {
     }
 
     async function joinRoom() {
-        const roomCode = gameCodeRef.current?.value
-        const userName = userNameRef.current?.value
         if(!roomCode || !username.trim()) {
             addToast("Either Room-Code or Username was invalid.", "error")
             return
