@@ -40,7 +40,7 @@ export default function GameHostView({ roomCode, roomConfig }: GameHostViewProps
 
     useEffect(() => {
         if (!socket) return
-        if (!currentPhase) router.push(`/game/${roomCode}`)
+        if (!currentPhase) router.push(`/room/${roomCode}`)
 
 
         const onConnect = () => {
