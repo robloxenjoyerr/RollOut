@@ -66,12 +66,24 @@ gameRouter.post("/verify", async (req, res) => {
         const alreadyInRoom = await findRoomByClient(clientId)
 
         if (alreadyInRoom) {
+            // if the caller supplied a userName and it's different from the
+            // name we have stored, update the record so future joins show the
+            // right name
+            if (userName && userName !== alreadyInRoom.userName) {
+                console.log(`/VERIFY: updating stored username for ${clientId} to ${userName}`)
+                await prisma.client.update({
+                    where: { clientId },
+                    data: { name: userName }
+                })
+                alreadyInRoom.userName = userName
+            }
+
             return res.send({
                 roomCode: alreadyInRoom.game.roomCode,
                 reconnect: true,
                 valid: true,
                 isHost: alreadyInRoom.isHost,
-                userName: alreadyInRoom.game.clients.find(c => c.clientId === clientId)?.name || "NoNameNoob",
+                userName: alreadyInRoom.userName || "NoNameNoob",
                 status: alreadyInRoom.game.status,
                 clientId
             })
