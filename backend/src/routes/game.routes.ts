@@ -69,8 +69,11 @@ gameRouter.post("/verify", async (req, res) => {
             return res.send({
                 roomCode: alreadyInRoom.game.roomCode,
                 reconnect: true,
+                valid: true,
                 isHost: alreadyInRoom.isHost,
                 userName: alreadyInRoom.game.clients.find(c => c.clientId === clientId)?.name || "NoNameNoob",
+                status: alreadyInRoom.game.status,
+                clientId
             })
         }
         // Client registrieren
