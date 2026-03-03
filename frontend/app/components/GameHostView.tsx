@@ -65,7 +65,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
 
         const onClientDisconnected = (client: Client) => {
             addToast(`Client ${client.name} has disconnected.`, "info")
-            setClients((prev)=> ({...prev, client}))
+            setClients((prev) => prev.filter(c => c.clientId !== client.clientId))
         }
 
         const onGameStarted = () => {
@@ -150,7 +150,8 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         socket.on("connect", onConnect)
         socket.on("gameStateUpdate", onGameStateUpdate)
         socket.on("clientJoined", (data) => onClientJoined(data))
-        socket.on("clientDisconnected", onClientDisconnected)
+        socket.on("clientDisconnected", (data) => onClientDisconnected(data))
+        socket.on("currentClients", (clientList: Client[]) => setClients(clientList))
         socket.on("gameStarted", onGameStarted)
         socket.on("gameStartError", onGameStartError)
         socket.on("nextRolled", onNextRolled)
@@ -163,11 +164,11 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             console.log("Cleaning up socket listeners...")
             socket.off("connect", onConnect)
             socket.off("gameStateUpdate", onGameStateUpdate)
-            socket.off("playerJoined", onClientJoined)
-            socket.off("playerDisconnected", onClientDisconnected)
+            socket.off("clientJoined", onClientJoined)
+            socket.off("clientDisconnected", onClientDisconnected)
+            socket.off("currentClients")
             socket.off("gameStarted", onGameStarted)
             socket.off("gameStartError", onGameStartError)
-            socket.off("gameEnded", onGameEnded)
             socket.off("nextRolled", onNextRolled)
             socket.off("allPersonsRolled", onAllRolled)
         }
