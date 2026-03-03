@@ -47,71 +47,73 @@ gameRouter.post("/start", async (req, res) => {
     }
 })
 
-gameRouter.post("/join", async (req, res) => {
-    try {
-        const { roomCode } = req.body
-        const room = await verifyRoom(roomCode)
-        console.log(`/JOIN: Room found with entered Code ${roomCode}: `, room, "\n")
-
-        if (!room) {
-            return res.status(404).send({ valid: false, message: "Room with specified Code doesn`t exist." })
-        }
-
-        return res.status(201).send({ valid: true })
-    } catch (err) {
-        console.error("gameRouter ERROR : /verify : ", err, "\n")
-        return res.status(500).send({ valid: false, message: "An Error has occurred." })
-    }
-})
 
 gameRouter.post("/verify", async (req, res) => {
     try {
         const { roomCode, userName } = req.body
         const clientId = getOrCreateClientId(req, res)
-
+        
         if (!clientId) {
             console.log("/START: getOrCreateClientId ERROR => Returned NULL.", "\n")
             return res.status(400).send({ valid: false, message: "ClientID could not be determined." })
         }
-
+        
         const room = await verifyRoom(roomCode)
         if (!room) return res.status(404).send({ valid: false, message: "Room not found." })
-
-        console.log(`/START: Is ClientID ${clientId} in a room already: `, room.roomCode, "\n")
-
-        const alreadyInRoom = await findRoomByClient(clientId)
-
-        if (alreadyInRoom) {
-            return res.send({
-                roomCode: alreadyInRoom.game.roomCode,
-                reconnect: true, 
-                isHost: alreadyInRoom.isHost,
-                userName: alreadyInRoom.game.clients.find(c => c.clientId === clientId)?.name || "NoNameNoob",
-            })
-        }
-        // Client registrieren
-        const newClient = await prisma.client.create({
-            data: {
-                clientId,
-                name: userName || "NoNameNoob",
-                gameId: room.id,
+            
+            console.log(`/START: Is ClientID ${clientId} in a room already: `, room.roomCode, "\n")
+            
+            const alreadyInRoom = await findRoomByClient(clientId)
+            
+            if (alreadyInRoom) {
+                return res.send({
+                    roomCode: alreadyInRoom.game.roomCode,
+                    reconnect: true, 
+                    isHost: alreadyInRoom.isHost,
+                    userName: alreadyInRoom.game.clients.find(c => c.clientId === clientId)?.name || "NoNameNoob",
+                })
             }
-        })
+            // Client registrieren
+            const newClient = await prisma.client.create({
+                data: {
+                    clientId,
+                    name: userName || "NoNameNoob",
+                    gameId: room.id,
+                }
+            })
+            
+            
+            return res.send({
+                valid: true,
+                isHost: room.hostId === clientId,
+                status: room.status,
+                clientId,
+                userName: newClient.name,
+                roomCode: room.roomCode
+            })
+            
+        } catch (err) {
+            console.log(err)
+        }
+    })
 
-
-        return res.send({
-            valid: true,
-            isHost: room.hostId === clientId,
-            status: room.status,
-            clientId,
-            userName: newClient.name,
-            roomCode: room.roomCode
-        })
-
-    } catch (err) {
-        console.log(err)
-    }
-})
+    
+    gameRouter.post("/join", async (req, res) => {
+        try {
+            const { roomCode } = req.body
+            const room = await verifyRoom(roomCode)
+            console.log(`/JOIN: Room found with entered Code ${roomCode}: `, room, "\n")
+    
+            if (!room) {
+                return res.status(404).send({ valid: false, message: "Room with specified Code doesn`t exist." })
+            }
+    
+            return res.status(201).send({ valid: true })
+        } catch (err) {
+            console.error("gameRouter ERROR : /verify : ", err, "\n")
+            return res.status(500).send({ valid: false, message: "An Error has occurred." })
+        }
+    })
 
 gameRouter.post("/stop", async (req, res) => {
     const { game_id } = req.body

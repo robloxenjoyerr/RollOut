@@ -35,7 +35,7 @@ export function getOrCreateClientId(req: Request, res: Response): string | null{
         if (existing) return existing
         
         const newId = randomUUID()
-        console.log("SERVICES.TS: SERVICES.TS WARN: No ClientId found, generating new ClientId now: ", newId, "\n")
+        console.log("SERVICES.TS - WARN: No ClientId found, generating new ClientId now: ", newId, "\n")
         
         res.cookie("clientId", newId, {
             httpOnly: true,

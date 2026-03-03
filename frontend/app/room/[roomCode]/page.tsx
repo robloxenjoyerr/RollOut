@@ -10,14 +10,17 @@ import { cookies } from "next/headers"
 
 
 export default async function Page({ params, searchParams }: { params: { roomCode: string }, searchParams: { username?: string } }) {
+    const cookieStore = await cookies()
     const { roomCode } = params;
     const userName = searchParams.username
-
+    const clientId = cookieStore.get("clientId")?.value
+    
     try {
         const res = await apiFetch(`/api/game/verify`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                ...(clientId ? { "Cookie": `clientId=${clientId}` } : {})
             },
             body: JSON.stringify({ roomCode: roomCode, userName: userName }),
             credentials: "include",
