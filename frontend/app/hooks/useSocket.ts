@@ -24,6 +24,8 @@ export function useSocket({ roomCode, clientId }: useSocketProps) {
 
         newSocket.on("connect", () => {
             console.log(`[useSocket] Connected! Socket ID: ${newSocket.id}`)
+            // Tell the server which room this client is joining
+            newSocket.emit("joinRoom", { roomCode, clientId })
         })
 
         newSocket.on("connect_error", (error) => {

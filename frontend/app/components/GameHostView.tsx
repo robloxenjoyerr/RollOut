@@ -45,12 +45,10 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             return
         }
         
-        console.log("[GameHostView] Socket initialized, setting up listeners. Socket ID:", socket.id, "Connected:", socket.connected)
-        
-        if (!currentPhase) router.push(`/room/${roomCode}`)
-
+        console.log("[GameHostView] Socket created. Waiting for connection. Socket ID:", socket.id, "Connected:", socket.connected)
 
         const onConnect = () => {
+            console.log("[GameHostView] NOW CONNECTED! Socket ID:", socket.id)
             socket.emit("getGameState", roomCode)
         }
 
