@@ -55,13 +55,13 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             setAvailablePersons(parsedPersons)
         }
 
-        const onPlayerJoined = (data: { current_clients: Client[] }) => {
+        const onClientJoined = (data: { current_clients: Client[] }) => {
             console.log("[GameClientView] onPlayerJoined:", data)
             setClients(data.current_clients || [])
             addToast("New Client connected!", "info")
         }
 
-        const onPlayerDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
+        const onClientDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
             console.log("[GameClientView] onPlayerDisconnected:", data)
             addToast(`Client with ID: ${data.socket_id} disconnected.`, "info")
             setClients(data.current_clients || [])
@@ -145,8 +145,8 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
 
         socket.on("connect", onConnect)
         socket.on("gameStateUpdate", onGameStateUpdate)
-        socket.on("playerJoined", onPlayerJoined)
-        socket.on("playerDisconnected", onPlayerDisconnected)
+        socket.on("playerJoined", onClientJoined)
+        socket.on("playerDisconnected", onClientDisconnected)
         socket.on("gameStarted", onGameStarted)
         socket.on("gameStartError", onGameStartError)
         socket.on("gameEnded", onGameEnded)
@@ -161,8 +161,8 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             console.log("Cleaning up socket listeners...")
             socket.off("connect", onConnect)
             socket.off("gameStateUpdate", onGameStateUpdate)
-            socket.off("playerJoined", onPlayerJoined)
-            socket.off("playerDisconnected", onPlayerDisconnected)
+            socket.off("playerJoined", onClientJoined)
+            socket.off("playerDisconnected", onClientDisconnected)
             socket.off("gameStarted", onGameStarted)
             socket.off("gameStartError", onGameStartError)
             socket.off("gameEnded", onGameEnded)

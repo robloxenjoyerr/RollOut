@@ -4,6 +4,7 @@ import { getOrCreateClientId } from "../lib/services";
 import prisma from "../lib/prisma-client";
 import { randomUUID } from "node:crypto";
 
+// => FIX: Username doesnt get shown when joining as client
 
 const gameRouter = Router()
 
