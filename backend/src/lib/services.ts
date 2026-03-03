@@ -32,7 +32,10 @@ export function getOrCreateClientId(req: Request, res: Response): string | null{
         const existing = req.cookies?.clientId
         console.log("SERVICES.TS: Does Client already have ClientID: ", existing ? true : false, "\n")
         
-        if (existing) return existing
+        if (existing) {
+            console.log("SERVICES.TS: Client already has ClientId, sending back the existing one.")
+            return existing
+        }
         
         const newId = randomUUID()
         console.log("SERVICES.TS - WARN: No ClientId found, generating new ClientId now: ", newId, "\n")
