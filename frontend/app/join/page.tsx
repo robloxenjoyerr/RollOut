@@ -44,6 +44,7 @@ export default function JoinPage() {
                 return
             }
             else {
+                console.log("RES: ", data)
                 setEnteringUsername(true)
             }
 
@@ -55,11 +56,11 @@ export default function JoinPage() {
     async function joinRoom() {
         const roomCode = gameCodeRef.current?.value
         const userName = userNameRef.current?.value
-        if(!roomCode || !userName) {
+        if(!roomCode || !userName || !username) {
             addToast("Either Room-Code or Username was invalid.", "error")
             return
         }
-        router.push(`/room/${roomCode}?username=${encodeURIComponent(userName)}`)
+        router.push(`/room/${roomCode}?username=${encodeURIComponent(username)}`)
     }
 
     return <>
@@ -81,7 +82,7 @@ export default function JoinPage() {
                         <div className="flex flex-col top-32 p-2 h-fit text-white font-bold text-2xl shadow-black/20 shadow-sm  backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl">
                             <div className="flex w-100 h-20 gap-1 rounded-2xl p-2">
 
-                                <Input placeholder="Username" className="text-center text-white rounded-xl" ref={userNameRef}></Input>
+                                <Input placeholder="Username" autoComplete="off" onChange={(e: React.ChangeEvent<HTMLInputElement>)=> setUsername(e.target.value)} className="text-center text-white rounded-xl" ref={userNameRef}></Input>
                             </div>
                             <Button onClick={joinRoom} className="w-fill m-2">Enter</Button>
                         </div>
@@ -100,7 +101,7 @@ export default function JoinPage() {
                         <div className="flex flex-col top-32 p-2 h-fit text-white font-bold text-2xl shadow-black/20 shadow-sm  backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl">
                             <div className="flex w-100 h-20 gap-1 rounded-2xl p-2">
 
-                                <Input placeholder="Game-Code" className="text-center text-white rounded-xl" ref={gameCodeRef}></Input>
+                                <Input placeholder="Game-Code" autoComplete="off" className="text-center text-white rounded-xl" ref={gameCodeRef}></Input>
                             </div>
                             <Button onClick={verifyRoom} className="w-fill m-2">Join</Button>
                         </div>
