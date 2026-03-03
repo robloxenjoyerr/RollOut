@@ -5,17 +5,15 @@ import { getClientIdFromCookie } from "../lib/services";
 
 interface useSocketProps {
     roomCode: string;
+    clientId: string
 }
 
-export function useSocket({ roomCode }: useSocketProps) {
+export function useSocket({ roomCode, clientId }: useSocketProps) {
     const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
         // IP Adresse bestimmen
         const url = process.env.NEXT_PUBLIC_API_URL!
-
-        const clientId = getClientIdFromCookie()
-
         
         // Verbindung aufbauen
         const newSocket = io(url!, {

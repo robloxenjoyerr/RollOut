@@ -15,13 +15,14 @@ import { Client } from "../lib/types"
 
 interface GameClientViewProps {
     roomCode: string
+    clientId: string
     roomConfig: any
 }
 
 
-export default function GameClientView({ roomCode, roomConfig }: GameClientViewProps) {
+export default function GameClientView({ roomCode, clientId, roomConfig }: GameClientViewProps) {
     const { toasts, addToast } = useToasts()
-    const { socket } = useSocket({ roomCode })
+    const { socket } = useSocket({ roomCode, clientId })
     const router = useRouter()
     const [rotation, setRotation] = useState(0);
     const [availablePersons, setAvailablePersons] = useState<any[]>([])

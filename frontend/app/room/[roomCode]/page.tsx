@@ -31,9 +31,9 @@ export default async function Page({ params, searchParams }: { params: { roomCod
 
 
         if (res.isHost) {
-            return <GameHostView roomCode={roomCode} roomConfig={res} />;
+            return <GameHostView roomCode={roomCode} roomConfig={res} clientId={res.clientId} />;
         } else {
-            return <GameClientView roomCode={roomCode} roomConfig={res} />;
+            return <GameClientView roomCode={roomCode} roomConfig={res} clientId={res.clientId} />;
         }
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen

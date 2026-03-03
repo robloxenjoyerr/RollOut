@@ -21,13 +21,14 @@ import { getClientIdFromCookie } from "../lib/services"
 
 interface GameHostViewProps {
     roomCode: string
+    clientId: string
     roomConfig: any
 }
 
 
-export default function GameHostView({ roomCode, roomConfig }: GameHostViewProps) {
+export default function GameHostView({ roomCode, clientId, roomConfig }: GameHostViewProps) {
     const { toasts, addToast } = useToasts()
-    const { socket } = useSocket({ roomCode })
+    const { socket } = useSocket({ roomCode, clientId })
     const router = useRouter()
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
