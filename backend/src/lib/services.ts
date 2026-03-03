@@ -10,7 +10,7 @@ export function idFromToken(token: string | undefined | null) {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: string; name: string; iat: number; exp: number }
         return decoded.id
     } catch (err) {
-        console.log("SERVICES.TS: idFromToken ERROR: ", err)
+        console.log("SERVICES.TS: idFromToken ERROR: ", err, "\n")
         return null
     }
 }
@@ -30,12 +30,12 @@ export function idFromToken(token: string | undefined | null) {
 export function getOrCreateClientId(req: Request, res: Response): string | null{
     try{
         const existing = req.cookies?.clientId
-        console.log("SERVICES.TS: Does Client already have ClientID: ", existing)
+        console.log("SERVICES.TS: Does Client already have ClientID: ", existing ? true : false, "\n")
         
         if (existing) return existing
         
         const newId = randomUUID()
-        console.log("SERVICES.TS: SERVICES.TS WARN: No ClientId found, generating new ClientId now: ", newId)
+        console.log("SERVICES.TS: SERVICES.TS WARN: No ClientId found, generating new ClientId now: ", newId, "\n")
         
         res.cookie("clientId", newId, {
             httpOnly: true,
@@ -49,7 +49,7 @@ export function getOrCreateClientId(req: Request, res: Response): string | null{
         
         return newId
     } catch(err){
-        console.log("SERVICES.TS ERROR: Error with getting or creating new clientId: ", err)
+        console.log("SERVICES.TS ERROR: Error with getting or creating new clientId: ", err, "\n")
         return null
     }
 }

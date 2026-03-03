@@ -12,7 +12,7 @@ type LiveGameType = Awaited<ReturnType<typeof prisma.liveGames.findUnique>>;
 
 
 export async function createRoom(roomConfig: LiveGameType, hostId: string) {
-  console.log("DB-ACTIONS.TS: Trying to create new Room with config: ", roomConfig)
+  console.log("DB-ACTIONS.TS: Trying to create new Room with config: ", roomConfig, "\n")
   if (!roomConfig) return null
 
   return await prisma.liveGames.create({
@@ -36,7 +36,7 @@ export async function verifyRoom(roomCode: string) {
 }
 
 export async function findRoomByClient(clientId: string) {
-  console.log("DB-ACTIONS.TS: Finding Room by ClientID: ", clientId)
+  console.log("DB-ACTIONS.TS: Finding Room by ClientID: ", clientId, "\n")
   if (!clientId) return null
 
   const client = await prisma.client.findUnique({
@@ -50,9 +50,9 @@ export async function findRoomByClient(clientId: string) {
     }
   })
 
-  if (!client) return null
+  if (!client) return false
 
-  console.log("DB-ACTIONS.TS: findRoomByClient => Client already in game: ", client.game ? true : false)
+  console.log("DB-ACTIONS.TS: findRoomByClient => Client already in game: ", client.game ? true : false, "\n")
 
   return {
     game: client.game,

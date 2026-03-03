@@ -7,7 +7,6 @@ const apiRouter = Router()
 
 apiRouter.use("/user", userRouter)
 apiRouter.use("/game", gameRouter)
-
 apiRouter.get("/livegames", async (req, res) => {
   
 })

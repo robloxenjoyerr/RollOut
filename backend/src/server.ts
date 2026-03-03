@@ -62,14 +62,14 @@ app.get("/", (_req, res) => {
 app.use("/api", apiRouter)
 
 httpServer.listen({ port: PORT, host: "0.0.0.0" }, () => {
-  console.log(`Backend is listening on Port ${PORT}`)
+  console.log(`Backend is listening on Port ${PORT}`, "\n")
 })
 
 
 io.on("connection", async (socket) => {
   const clientId = socket.handshake.auth.clientId
 
-  console.log("Server.ts: clientId: ", clientId)
+  console.log("Server.ts: clientId: ", clientId, "\n")
   if (!clientId) {
     socket.disconnect()
     return
@@ -81,7 +81,7 @@ io.on("connection", async (socket) => {
   })
 
   if (!client) {
-    console.log("Disconnecting again..")
+    console.log("Disconnecting again..", "\n")
     socket.disconnect()
     return
   }

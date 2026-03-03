@@ -10,25 +10,25 @@ const gameRouter = Router()
 gameRouter.post("/start", async (req, res) => {
     try {
         const { roomConfig } = req.body
-        console.log("/START: Trying to start new Room with Config: ", roomConfig)
+        console.log("/START: Trying to start new Room with Config: ", roomConfig, "\n")
 
         const clientId = getOrCreateClientId(req, res)
-        console.log("/START: ClientID is: ", clientId)
+        console.log("/START: ClientID is: ", clientId, "\n")
         if (!clientId) {
-            console.log("/START: getOrCreateClientId ERROR => Returned NULL.")
+            console.log("/START: getOrCreateClientId ERROR => Returned NULL.", "\n")
             return null
         }
 
         const alreadyInRoom = await findRoomByClient(clientId)
-        console.log(`/START: Is ClientID ${clientId} in a room already: `, alreadyInRoom)
+        console.log(`/START: Is ClientID ${clientId} in a room already: `, alreadyInRoom, "\n")
 
         if (alreadyInRoom) {
             return res.send({ roomCode: alreadyInRoom.game.roomCode, reconnect: true })
         }
 
-        console.log("/START: Trying to create new Room..")
+        console.log("/START: Trying to create new Room..", "\n")
         const room = await createRoom(roomConfig, clientId)
-        console.log("/START: Room creation successful?: ", room ? true : false)
+        console.log("/START: Room creation successful?: ", room ? true : false, "\n")
 
         if (!room) return res.status(500).send({ error: true })
 
@@ -43,7 +43,7 @@ gameRouter.post("/start", async (req, res) => {
         return res.send({ roomId: room.id, roomCode: room.roomCode })
 
     } catch (err) {
-        console.error("/START ERROR: ", err)
+        console.error("/START ERROR: ", err, "\n")
     }
 })
 
@@ -51,7 +51,7 @@ gameRouter.post("/join", async (req, res) => {
     try {
         const { roomCode } = req.body
         const room = await verifyRoom(roomCode)
-        console.log(`/JOIN: Room found with entered Code ${roomCode}: `, room)
+        console.log(`/JOIN: Room found with entered Code ${roomCode}: `, room, "\n")
 
         if (!room) {
             return res.status(404).send({ valid: false, message: "Room with specified Code doesn`t exist." })
@@ -59,7 +59,7 @@ gameRouter.post("/join", async (req, res) => {
 
         return res.status(201).send({ valid: true })
     } catch (err) {
-        console.error("gameRouter ERROR : /verify : ", err)
+        console.error("gameRouter ERROR : /verify : ", err, "\n")
         return res.status(500).send({ valid: false, message: "An Error has occurred." })
     }
 })
@@ -70,14 +70,14 @@ gameRouter.post("/verify", async (req, res) => {
         const clientId = getOrCreateClientId(req, res)
 
         if (!clientId) {
-            console.log("/START: getOrCreateClientId ERROR => Returned NULL.")
+            console.log("/START: getOrCreateClientId ERROR => Returned NULL.", "\n")
             return res.status(400).send({ valid: false, message: "ClientID could not be determined." })
         }
 
         const room = await verifyRoom(roomCode)
         if (!room) return res.status(404).send({ valid: false, message: "Room not found." })
 
-        console.log(`/START: Is ClientID ${clientId} in a room already: `, room.roomCode)
+        console.log(`/START: Is ClientID ${clientId} in a room already: `, room.roomCode, "\n")
 
         const alreadyInRoom = await findRoomByClient(clientId)
 
