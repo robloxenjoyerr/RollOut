@@ -55,6 +55,8 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   });
 
   socket.on("startGame", async () => {
+    console.log(`[GameHandler] startGame event received from ${client.name} in room ${gameId}`)
+    console.log(`[GameHandler] Broadcasting gameStarted to room ${gameId}`)
     io.to(gameId).emit("gameStarted")
   });
 

@@ -71,6 +71,7 @@ io.on("connection", async (socket) => {
 
   console.log("Server.ts: clientId: ", clientId, "\n")
   if (!clientId) {
+    console.log("Server.ts: No clientId provided, disconnecting")
     socket.disconnect()
     return
   }
@@ -81,11 +82,13 @@ io.on("connection", async (socket) => {
   })
 
   if (!client) {
-    console.log("Disconnecting again..", "\n")
+    console.log("Server.ts: Client not found in DB for clientId:", clientId, "- disconnecting", "\n")
     socket.disconnect()
     return
   }
 
+  console.log(`Server.ts: Client ${client.name} (${client.clientId}) verified - joining room ${client.gameId}\n`)
+  
   // Ab hier: client ist verifiziert
   socket.join(client.gameId) // Raum beitreten
   socket.data.client = client // für spätere Events

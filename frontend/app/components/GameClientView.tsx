@@ -36,11 +36,12 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         if (!socket) return
 
         const onConnect = () => {
-            console.log("Connected to GameID: ", roomCode, "with socketID: ", socket.id)
+            console.log("[GameClientView] Connected to GameID: ", roomCode, "with socketID: ", socket.id)
             socket.emit("getGameState", roomCode)
         }
 
         const onGameStateUpdate = (data: any) => {
+            console.log("[GameClientView] onGameStateUpdate:", data)
             const parsedPersons: Person[] = data.persons || []
             const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
@@ -50,32 +51,37 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         }
 
         const onPlayerJoined = (data: { current_clients: Client[] }) => {
+            console.log("[GameClientView] onPlayerJoined:", data)
             setClients(data.current_clients || [])
             addToast("New Client connected!", "info")
         }
 
         const onPlayerDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
+            console.log("[GameClientView] onPlayerDisconnected:", data)
             addToast(`Client with ID: ${data.socket_id} disconnected.`, "info")
             setClients(data.current_clients || [])
         }
 
         const onGameStarted = () => {
+            console.log("[GameClientView] onGameStarted received!")
             addToast("Game has started!", "success")
             setCurrentPhase("in-progress")
-
         }
 
         const onGameStartError = () => {
+            console.log("[GameClientView] onGameStartError")
             addToast("Error starting the game.", "error")
         }
 
         const onGameEnded = () => {
+            console.log("[GameClientView] onGameEnded")
             addToast("Game ended.", "info")
             router.push('/join')
         }
 
 
         const onNextRolled = (data: any) => {
+            console.log("[GameClientView] onNextRolled:", data)
             const { unrolledPersons, nextRolled } = data
 
             const effectivePersons = pendingUpdate ? pendingUpdate : availablePersons
@@ -110,6 +116,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         }
 
         const onAllRolled = (data: any) => {
+            console.log("[GameClientView] onAllRolled")
 
             setTimeout(() => {
                 addToast("All persons have been rolled! Game is getting closed in 5 seconds.", "success")
