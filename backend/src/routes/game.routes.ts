@@ -98,9 +98,10 @@ gameRouter.post("/verify", async (req, res) => {
             }
         })
 
+
         return res.send({
             valid: true,
-            isHost: newClient.isHost,
+            isHost: room.hostId === clientId,
             status: room.status,
             clientId,
             userName: newClient.name,
