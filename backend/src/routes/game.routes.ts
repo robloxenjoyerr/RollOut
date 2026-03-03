@@ -37,7 +37,6 @@ gameRouter.post("/start", async (req, res) => {
                 clientId,          // Cookie-Wert
                 name: "HOST",
                 gameId: room.id,
-                isHost: true
             }
         })
 
@@ -96,7 +95,6 @@ gameRouter.post("/verify", async (req, res) => {
                 clientId,
                 name: userName || "NoNameNoob",
                 gameId: room.id,
-                isHost: false
             }
         })
 

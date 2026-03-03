@@ -93,7 +93,6 @@ export async function addClientToGame(gameId: string, clientData: { clientId: st
       clientId: clientData.clientId,
       name: clientData.name,
       gameId, // Foreign Key zum Game 
-      isHost: clientData.isHost ?? false,
     }
   });
 }
