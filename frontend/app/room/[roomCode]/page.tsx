@@ -11,7 +11,7 @@ import { cookies } from "next/headers"
 
 export default async function Page({ params, searchParams }: { params: { roomCode: string }, searchParams: { username?: string } }) {
     const cookieStore = await cookies()
-    const { roomCode } = params;
+    const { roomCode } = await params;
     const userName = searchParams.username
     const clientId = cookieStore.get("clientId")?.value
 
