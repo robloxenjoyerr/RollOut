@@ -21,6 +21,7 @@ export default function JoinPage() {
     const router = useRouter()
     const [enteringUsername, setEnteringUsername] = useState<boolean>(false)
     const [username, setUsername] = useState<string>("")
+    const [roomCode, setRoomCode] = useState<string>("")
 
     async function verifyRoom() {
         const roomCode = gameCodeRef.current?.value
@@ -101,7 +102,7 @@ export default function JoinPage() {
                         <div className="flex flex-col top-32 p-2 h-fit text-white font-bold text-2xl shadow-black/20 shadow-sm  backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl">
                             <div className="flex w-100 h-20 gap-1 rounded-2xl p-2">
 
-                                <Input placeholder="Game-Code" autoComplete="off" className="text-center text-white rounded-xl" ref={gameCodeRef}></Input>
+                                <Input placeholder="Game-Code" autoComplete="off" onChange={(e: React.ChangeEvent<HTMLInputElement>)=> setRoomCode(e.target.value)} className="text-center text-white rounded-xl" ></Input>
                             </div>
                             <Button onClick={verifyRoom} className="w-fill m-2">Join</Button>
                         </div>
