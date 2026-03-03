@@ -20,7 +20,7 @@ export default function JoinPage() {
     const userNameRef = useRef<(HTMLInputElement | null)>(null)
     const router = useRouter()
     const [enteringUsername, setEnteringUsername] = useState<boolean>(false)
-    const [username, setUsername] = useState<string | null>(null)
+    const [username, setUsername] = useState<string>("")
 
     async function verifyRoom() {
         const roomCode = gameCodeRef.current?.value
@@ -56,7 +56,7 @@ export default function JoinPage() {
     async function joinRoom() {
         const roomCode = gameCodeRef.current?.value
         const userName = userNameRef.current?.value
-        if(!roomCode || !username) {
+        if(!roomCode || !username.trim()) {
             addToast("Either Room-Code or Username was invalid.", "error")
             return
         }
