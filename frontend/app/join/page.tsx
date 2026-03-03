@@ -44,6 +44,10 @@ export default function JoinPage() {
             else {
                 console.log("RES: ", data)
                 setEnteringUsername(true)
+                if (usernameInputRef.current) {
+                    usernameInputRef.current.value = ""
+                }
+                
             }
 
         } catch (err) {
