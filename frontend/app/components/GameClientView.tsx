@@ -16,11 +16,10 @@ import { Client } from "../lib/types"
 interface GameClientViewProps {
     roomCode: string
     roomConfig: any
-    client_id: string
 }
 
 
-export default function GameClientView({ roomCode, roomConfig, client_id }: GameClientViewProps) {
+export default function GameClientView({ roomCode, roomConfig }: GameClientViewProps) {
     const { toasts, addToast } = useToasts()
     const { socket } = useSocket({ roomCode })
     const router = useRouter()
@@ -34,8 +33,6 @@ export default function GameClientView({ roomCode, roomConfig, client_id }: Game
 
     useEffect(() => {
         if (!socket) return
-        Cookies.set("clientId", client_id)
-
 
         const onConnect = () => {
             console.log("Connected to GameID: ", roomCode, "with socketID: ", socket.id)

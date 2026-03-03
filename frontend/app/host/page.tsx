@@ -48,10 +48,9 @@ export default function Host() {
                 body: JSON.stringify({ roomConfig: currentRoomConfig })
             })
             if (res) {
-                console.log("Alredy in room?: ", res.alreadyInRoom)
+                console.log("Reconnect to existing Room: ", res.reconnect)
                 router.push(`/room/${res.roomCode}`)
             }
-
         }
         catch (err) {
             console.log(err)

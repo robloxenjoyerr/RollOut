@@ -4,26 +4,38 @@ import { getOrCreateClientId } from "../lib/services";
 import prisma from "../lib/prisma-client";
 import { randomUUID } from "node:crypto";
 
+
 const gameRouter = Router()
 
 gameRouter.post("/start", async (req, res) => {
-    const { roomConfig } = req.body
-    const clientId = getOrCreateClientId(req, res)
-
-
-    const alreadyInRoom = await findRoomByClient(clientId)
-    if (alreadyInRoom) {
-        return res.send({ roomCode: alreadyInRoom.id, alreadyInRoom: true })
-    }
-
     try {
+        const { roomConfig } = req.body
+        console.log("/START: Trying to start new Room with Config: ", roomConfig)
+
+        const clientId = getOrCreateClientId(req, res)
+        console.log("/START: ClientID is: ", clientId)
+        if (!clientId) {
+            console.log("/START: getOrCreateClientId ERROR => Returned NULL.")
+            return null
+        }
+
+        const alreadyInRoom = await findRoomByClient(clientId)
+        console.log(`/START: Is ClientID ${clientId} in a room already: `, alreadyInRoom)
+
+        if (alreadyInRoom) {
+            return res.send({ roomCode: alreadyInRoom.game.roomCode, reconnect: true })
+        }
+
+        console.log("/START: Trying to create new Room..")
         const room = await createRoom(roomConfig, clientId)
+        console.log("/START: Room creation successful?: ", room ? true : false)
+
         if (!room) return res.status(500).send({ error: true })
 
         await prisma.client.create({
             data: {
                 clientId,          // Cookie-Wert
-                name: roomConfig.hostName ?? "Host",
+                name: "HOST",
                 gameId: room.id,
                 isHost: true
             }
@@ -32,98 +44,73 @@ gameRouter.post("/start", async (req, res) => {
         return res.send({ roomId: room.id, roomCode: room.roomCode })
 
     } catch (err) {
-        console.error("gameRouter ERROR : /start : ", err)
+        console.error("/START ERROR: ", err)
     }
 })
 
-gameRouter.post("/join/:roomCode", async (req, res) => {
-    const { roomCode } = req.params
-    // FIX BUG => HOST JOINS => OTHER PLAYER JOINS => GETS SHOWN => CLIENT REFRESH SITE => HOST DISAPPEARS IN "clients cucently conjnected list"
-
+gameRouter.post("/join", async (req, res) => {
     try {
+        const { roomCode } = req.body
         const room = await verifyRoom(roomCode)
-        console.log("Verifying Room response: ", room)
-        if (room) {
-            console.log("Room verified => is existing with roomCode: ", roomCode)
-            let clientId = req.cookies?.clientId || randomUUID()
+        console.log(`/JOIN: Room found with entered Code ${roomCode}: `, room)
 
-            res.cookie("clientId", clientId, {
-                httpOnly: true,
-                secure: true,
-                sameSite: "none", // Wichtig für Cross-Origin
-                maxAge: 1 * 24 * 60 * 60 * 1000 // 7 Tage
-            })
-
-            const alreadyInRoom = await prisma.client.findUnique({
-                where: { clientId: clientId }
-            })
-
-            console.log("Is client in room already? : ", alreadyInRoom)
-
-            if (!alreadyInRoom) {
-                await prisma.client.create({
-                    data: {
-                        clientId,          // Cookie-Wert
-                        name: "NoNameNoob", // clientName
-                        gameId: room.id,
-                        isHost: false
-                    }
-                })
-            }
-
-
-
-            const isHost = clientId && clientId === room.hostId
-            return res.send({ valid: true, isHost: isHost, status: room.status, clientId: clientId })
+        if (!room) {
+            return res.status(404).send({ valid: false, message: "Room with specified Code doesn`t exist." })
         }
-        else {
-            return res.send({ valid: false, isHost: false })
-        }
+
+        return res.status(201).send({ valid: true })
     } catch (err) {
         console.error("gameRouter ERROR : /verify : ", err)
-        return res.status(500).send({ valid: false, isHost: false })
+        return res.status(500).send({ valid: false, message: "An Error has occurred." })
     }
 })
 
-gameRouter.post("/joinA/:roomCode", async (req, res) => {
-    const { roomCode } = req.params
-    let { clientName } = req.body
-    const clientId = getOrCreateClientId(req, res)
-
-    if(!clientName) clientName = "Bob"
-    const game = await prisma.liveGames.findUnique({
-        where: { roomCode: roomCode }
-    })
-
-    if (!game) return res.status(404).send({ error: "Room not found" })
-
-    const existingClient = await prisma.client.findFirst({
-        where: { clientId, gameId: game.id }
-    })
-
-
-    if (existingClient) {
-        return res.send({
-            success: true,
-            rejoin: true,
-            clientDbId: existingClient.id
-        })
-    }
-
+gameRouter.post("/verify", async (req, res) => {
     try {
-        const client = await prisma.client.create({
+        const { roomCode, userName } = req.body
+        const clientId = getOrCreateClientId(req, res)
+
+        if (!clientId) {
+            console.log("/START: getOrCreateClientId ERROR => Returned NULL.")
+            return res.status(400).send({ valid: false, message: "ClientID could not be determined." })
+        }
+
+        const room = await verifyRoom(roomCode)
+        if (!room) return res.status(404).send({ valid: false, message: "Room not found." })
+
+        console.log(`/START: Is ClientID ${clientId} in a room already: `, room.roomCode)
+
+        const alreadyInRoom = await findRoomByClient(clientId)
+
+        if (alreadyInRoom) {
+            return res.send({
+                roomCode: alreadyInRoom.game.roomCode,
+                reconnect: true, 
+                isHost: alreadyInRoom.isHost,
+                userName: alreadyInRoom.game.clients.find(c => c.clientId === clientId)?.name || "NoNameNoob",
+            })
+        }
+        // Client registrieren
+        const newClient = await prisma.client.create({
             data: {
                 clientId,
-                name: clientName,
-                gameId: roomCode,
+                name: userName || "NoNameNoob",
+                gameId: room.id,
                 isHost: false
             }
         })
 
-        return res.send({ success: true, rejoin: false, clientDbId: client.id })
+        return res.send({
+            valid: true,
+            isHost: newClient.isHost,
+            status: room.status,
+            clientId,
+            userName: newClient.name,
+            roomCode: room.roomCode
+        })
+
     } catch (err) {
-        console.error("gameRouter ERROR /join:", err)
-        res.status(500).send({ error: true })
+        console.log(err)
     }
 })
 

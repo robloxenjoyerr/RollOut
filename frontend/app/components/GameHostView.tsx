@@ -22,7 +22,6 @@ import { getClientIdFromCookie } from "../lib/services"
 interface GameHostViewProps {
     roomCode: string
     roomConfig: any
-    client_id: string
 }
 
 
@@ -37,7 +36,7 @@ export default function GameHostView({ roomCode, roomConfig }: GameHostViewProps
     const [currentRolled, setCurrentRolled] = useState<null | Person>(null)
     const [availablePersons, setAvailablePersons] = useState<any[]>([])
     const [isSpinning, setIsSpinning] = useState<boolean>(false)
-    
+
 
     useEffect(() => {
         if (!socket) return

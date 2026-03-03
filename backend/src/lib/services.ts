@@ -1,46 +1,56 @@
 import { Request, Response } from "express"
-import { randomBytes } from "crypto"
+import { randomBytes, randomUUID } from "crypto"
 import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET!
 console.log("JWT: ", JWT_SECRET)
 
 export function idFromToken(token: string | undefined | null) {
-    if(!token) return null
+    if (!token) return null
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: string; name: string; iat: number; exp: number }
         return decoded.id
-    } catch(err) {
-        console.log("services.ts, idFromToken ERROR: ", err)
+    } catch (err) {
+        console.log("SERVICES.TS: idFromToken ERROR: ", err)
         return null
     }
 }
 
-export function validateToken(token: string){
-    if(!token) return null
+// export function validateToken(token: string){
+//     if(!token) return null
+//     try{
+//         const decoded = jwt.verify(token, JWT_SECRET) as { exp: number }
+//         return decoded
+//     } catch(err){
+//         console.error("SERVICES.TS: validateToken ERROR: ", err)
+//         return null
+//     }
+// }
+
+
+export function getOrCreateClientId(req: Request, res: Response): string | null{
     try{
-        const decoded = jwt.verify(token, JWT_SECRET) as { exp: number }
-        return decoded
+        const existing = req.cookies?.clientId
+        console.log("SERVICES.TS: Does Client already have ClientID: ", existing)
+        
+        if (existing) return existing
+        
+        const newId = randomUUID()
+        console.log("SERVICES.TS: SERVICES.TS WARN: No ClientId found, generating new ClientId now: ", newId)
+        
+        res.cookie("clientId", newId, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "none",
+            domain: process.env.NODE_ENV === "production"
+                ? ".rollout.live"
+                : undefined,
+            maxAge: 1000 * 60 * 60 * 1, // 1 Stunde
+        })
+        
+        return newId
     } catch(err){
-        console.error("Token validation failed: ", err)
+        console.log("SERVICES.TS ERROR: Error with getting or creating new clientId: ", err)
         return null
     }
-}
-
-
-export function getOrCreateClientId(req: Request, res: Response): string {
-    const existing = req.cookies?.clientId
-
-    if (existing) return existing
-
-    const newId = randomBytes(16).toString("hex")
-
-    res.cookie("clientId", newId, {
-        secure: true,
-        sameSite: "none",
-        domain: ".rollout.live",
-        maxAge: 1000 * 60 * 60 * 24 * 1 // 30 Tage
-    })
-
-    return newId
 }
 

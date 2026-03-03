@@ -18,7 +18,6 @@ model Client {
   clientId String @unique
   name String
   gameId String
-  isHost Boolean @default(false)
   joinedAt DateTime @default(now())
   game liveGames @relation(fields: [gameId], references: [id])
 }
