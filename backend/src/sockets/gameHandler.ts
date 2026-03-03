@@ -55,7 +55,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   });
 
   socket.on("startGame", async () => {
-
+    io.to(gameId).emit("gameStarted")
   });
 
   socket.on("stopGame", () => {

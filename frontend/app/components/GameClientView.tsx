@@ -141,7 +141,6 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
 
-
         //  runs when the component unmounts or dependencies change
         // removing ALL listeners to prevent memory leaks
         return () => {
@@ -155,6 +154,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             socket.off("gameEnded", onGameEnded)
             socket.off("nextRolled", onNextRolled)
             socket.off("allPersonsRolled", onAllRolled)
+
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
     }, [socket, roomCode, roomConfig])
