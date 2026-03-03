@@ -15,17 +15,32 @@ export function useSocket({ roomCode, clientId }: useSocketProps) {
         // IP Adresse bestimmen
         const url = process.env.NEXT_PUBLIC_API_URL!
         
+        console.log(`[useSocket] Creating socket: url=${url}, clientId=${clientId}, roomCode=${roomCode}`)
+        
         // Verbindung aufbauen
         const newSocket = io(url!, {
             auth: { clientId } // Token mitschicken falls vorhanden
         });
 
+        newSocket.on("connect", () => {
+            console.log(`[useSocket] Connected! Socket ID: ${newSocket.id}`)
+        })
+
+        newSocket.on("connect_error", (error) => {
+            console.error(`[useSocket] Connect error:`, error)
+        })
+
+        newSocket.on("disconnect", (reason) => {
+            console.log(`[useSocket] Disconnected! Reason: ${reason}`)
+        })
+
         setSocket(newSocket);
 
         return () => {
+            console.log(`[useSocket] Cleanup - disconnecting socket`)
             newSocket.disconnect();
         };
-    }, [roomCode]); // isNormalClient und token als Dependency entfernt, da wir direkt lesen
+    }, [roomCode, clientId]);
 
     return {
         socket,

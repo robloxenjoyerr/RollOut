@@ -33,7 +33,12 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
     
 
     useEffect(() => {
-        if (!socket) return
+        if (!socket) {
+            console.log("[GameClientView] Socket not yet initialized, returning early")
+            return
+        }
+
+        console.log("[GameClientView] Socket initialized, setting up listeners. Socket ID:", socket.id, "Connected:", socket.connected)
 
         const onConnect = () => {
             console.log("[GameClientView] Connected to GameID: ", roomCode, "with socketID: ", socket.id)
@@ -147,6 +152,8 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         socket.on("gameEnded", onGameEnded)
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
+
+        console.log("[GameClientView] Socket listeners registered")
 
         //  runs when the component unmounts or dependencies change
         // removing ALL listeners to prevent memory leaks

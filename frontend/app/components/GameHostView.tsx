@@ -40,7 +40,13 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
 
 
     useEffect(() => {
-        if (!socket) return
+        if (!socket) {
+            console.log("[GameHostView] Socket not yet initialized, returning early")
+            return
+        }
+        
+        console.log("[GameHostView] Socket initialized, setting up listeners. Socket ID:", socket.id, "Connected:", socket.connected)
+        
         if (!currentPhase) router.push(`/room/${roomCode}`)
 
 
@@ -156,6 +162,8 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         socket.on("gameStartError", onGameStartError)
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
+
+        console.log("[GameHostView] Socket listeners registered")
 
 
         //  runs when the component unmounts or dependencies change
