@@ -53,6 +53,7 @@ export default function JoinPage() {
     }
 
     async function joinRoom() {
+        console.log(`roomCode: ${roomCode} and username: ${username}`)
         if(!roomCode || !username.trim()) {
             addToast("Either Room-Code or Username was invalid.", "error")
             return
