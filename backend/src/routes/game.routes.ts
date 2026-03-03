@@ -60,7 +60,7 @@ gameRouter.post("/verify", async (req, res) => {
 
         const room = await verifyRoom(roomCode)
         if (!room) return res.status(404).send({ valid: false, message: "Room not found." })
-
+        console.log("/START: Client already in room: ", room) 
         console.log(`/START: Is ClientID ${clientId} in a room already: `, room.roomCode, "\n")
 
         const alreadyInRoom = await findRoomByClient(clientId)

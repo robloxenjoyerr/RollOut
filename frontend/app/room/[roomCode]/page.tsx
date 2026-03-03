@@ -14,7 +14,7 @@ export default async function Page({ params, searchParams }: { params: { roomCod
     const { roomCode } = params;
     const userName = searchParams.username
     const clientId = cookieStore.get("clientId")?.value
-    
+
     try {
         const res = await apiFetch(`/api/game/verify`, {
             method: "POST",
@@ -39,6 +39,7 @@ export default async function Page({ params, searchParams }: { params: { roomCod
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen
         console.error("game/id ERROR : ", error)
         console.log("REDERECTING TO /join")
+        console.log("/VERIFY: roomCode received in /room/page.tsx:", roomCode)
         return redirect("/join")
     }
 

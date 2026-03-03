@@ -29,7 +29,7 @@ export async function createRoom(roomConfig: LiveGameType, hostId: string) {
 
 export async function verifyRoom(roomCode: string) {
   if (!roomCode) return null
-
+  console.log("DB-ACTIONS.TS: Trying to verify roomCode: ", roomCode)
   return await prisma.liveGames.findUnique({
     where: { roomCode: roomCode }
   })
