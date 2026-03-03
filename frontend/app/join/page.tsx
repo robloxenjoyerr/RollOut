@@ -24,8 +24,6 @@ export default function JoinPage() {
     const [roomCode, setRoomCode] = useState<string>("")
 
     async function verifyRoom() {
-        const roomCode = gameCodeRef.current?.value
-        const userName = userNameRef.current?.value
         if (!roomCode) return null
 
         try {
@@ -35,7 +33,7 @@ export default function JoinPage() {
                     "Content-Type": "application/json",
                 },
                 credentials: "include",
-                body: JSON.stringify({ roomCode: roomCode, userName: userName }),
+                body: JSON.stringify({ roomCode: roomCode }),
                 redirectAuth: false // so apiFetch doesnt redirect by itself
             })
 
