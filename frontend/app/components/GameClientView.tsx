@@ -158,7 +158,7 @@ export default function GameClientView({ roomCode, roomConfig }: GameClientViewP
         // The dependency array should only include values that when changed require the effect to be re-run.
     }, [socket, roomCode, roomConfig])
 
-    if (currentPhase === "waiting-lobby") {
+    if (currentPhase === "waiting") {
         return (
             <div>
                 <AnimatePresence>
