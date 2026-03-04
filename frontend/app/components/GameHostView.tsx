@@ -78,8 +78,8 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             setCurrentPhase(data.status)
         }
 
-        const onGameStartError = () => {
-            addToast("Error starting the game.", "error")
+        const onGameStartError = (data: any) => {
+            addToast(`${data.message}`, "error")
         }
 
         const onGameEnded = () => {
@@ -158,7 +158,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         socket.on("clientDisconnected", (data) => onClientDisconnected(data))
         socket.on("currentClients", (clientList: Client[]) => setClients(clientList))
         socket.on("gameStarted", (data) => onGameStarted(data))
-        socket.on("gameStartError", onGameStartError)
+        socket.on("gameStartError", (data) => onGameStartError(data))
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
 

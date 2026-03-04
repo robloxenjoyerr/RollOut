@@ -81,17 +81,24 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   socket.on("startGame", async (data) => {
     const { roomCode, clientId } = data
 
+    const room = await findRoomByClient(clientId)
+
+    if(room && room.game.status === "in-progress"){
+      console.log("[GameHandler] startGame Event failed => Current Room-Status is 'in-progress' already.")
+      return io.to(client.gameId).emit("gameStartError", {message: "ERROR: Couldnt Start Game, because it already started."})
+    }
+
     console.log(`[GameHandler] startGame event received from ${client.name} in room ${client.gameId}`)
     if(!roomCode || !clientId ) {
       console.log(`[GameHandler] roomCode is ${roomCode} and clientId is ${clientId}`)
       console.log("[GameHandler] startGame Event failed, either roomCode or clientId was not provided.")
-      return io.to(client.gameId).emit("startGameError", {message: "ERROR: Either roomCode or ClientId was not provided."})
+      return io.to(client.gameId).emit("gameStartError", {message: "ERROR: Either roomCode or ClientId was not provided."})
     }
     
     const clientInRoomAndHost = await findRoomByClient(clientId)
 
     if(!clientInRoomAndHost){
-      return io.to(client.gameId).emit("startGameError", {message: "ERROR: Client is not in provided Room or is not Host."})
+      return io.to(client.gameId).emit("gameStartError", {message: "ERROR: Client is not in provided Room or is not Host."})
     }
 
     
@@ -112,7 +119,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
     } catch(err){
       console.log("[GameHandler] Try-Catch Error: ", err)
-      return io.to(client.gameId).emit("startGameError", {message: "ERROR: An Error occurred inside the GameHandler."})
+      return io.to(client.gameId).emit("gameStartError", {message: "ERROR: An Error occurred inside the GameHandler."})
     }
   });
 
