@@ -33,7 +33,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
     const [pendingUpdate, setPendingUpdate] = useState<any>(null)
-    const [currentPhase, setCurrentPhase] = useState<GamePhase>(roomConfig.status)
+    const [currentPhase, setCurrentPhase] = useState<GamePhase | null>(null)
     const [currentRolled, setCurrentRolled] = useState<null | Person>(null)
     const [availablePersons, setAvailablePersons] = useState<any[]>([])
     const [isSpinning, setIsSpinning] = useState<boolean>(false)
@@ -56,7 +56,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             const parsedPersons: Person[] = data.persons || []
             const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
-            setCurrentPhase(data.phase)
+            setCurrentPhase(data.status)
             setPendingUpdate(unrolledPersons)
             setAvailablePersons(parsedPersons)
         }
@@ -180,7 +180,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, roomConfig, roomCode])
+    }, [socket, roomCode])
 
 
     const rollNext = () => {
