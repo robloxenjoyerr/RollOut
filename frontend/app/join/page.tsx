@@ -61,7 +61,7 @@ export default function JoinPage() {
             addToast("Either Room-Code or Username was invalid.", "error")
             return
         }
-        router.push(`/room/${roomCode}?username=${encodeURIComponent(username)}`)
+        router.push(`/room/${roomCode}?userName=${encodeURIComponent(username)}`)
     }
 
     return <>
