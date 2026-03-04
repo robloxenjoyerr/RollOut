@@ -16,6 +16,7 @@ export default async function Page({ params, searchParams }: { params: { roomCod
     const clientId = cookieStore.get("clientId")?.value
 
     try {
+        console.log(`[roomCode/page.tsx]: Verifying with roomCode ${roomCode} and username ${userName}`)
         const res = await apiFetch(`/api/game/verify`, {
             method: "POST",
             headers: {

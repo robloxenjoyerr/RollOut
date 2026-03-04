@@ -2,7 +2,7 @@ import { Router } from "express";
 import { createRoom, findRoomByClient, verifyRoom } from "../services/db-actions";
 import { getOrCreateClientId } from "../lib/services";
 import prisma from "../lib/prisma-client";
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 
 // => FIX: Username doesnt get shown when joining as client
 
@@ -54,6 +54,7 @@ gameRouter.post("/verify", async (req, res) => {
         const { roomCode, userName } = req.body
         const clientId = getOrCreateClientId(req, res)
 
+        console.log(`/VERIFY: Verifying with roomCode ${roomCode} and username ${userName} `)
         if (!clientId) {
             console.log("/START: getOrCreateClientId ERROR => Returned NULL.", "\n")
             return res.status(400).send({ valid: false, message: "ClientID could not be determined." })
@@ -70,8 +71,9 @@ gameRouter.post("/verify", async (req, res) => {
             // if the caller supplied a userName and it's different from the
             // name we have stored, update the record so future joins show the
             // right name
+            console.log(`/VERIFY: New Client with name ${userName} is already in a room with username: ${alreadyInRoom.userName}. Updating to new username ${userName}.`)
             if (userName && userName !== alreadyInRoom.userName) {
-                console.log(`/VERIFY: updating stored username for ${clientId} to ${userName}`)
+                console.log(`/VERIFY: updating username for ${clientId} to new username: ${userName}`)
                 await prisma.client.update({
                     where: { clientId },
                     data: { name: userName }
@@ -79,12 +81,13 @@ gameRouter.post("/verify", async (req, res) => {
                 alreadyInRoom.userName = userName
             }
 
+            console.log("/VERIFY: Sending back client info: ", alreadyInRoom)
             return res.send({
                 roomCode: alreadyInRoom.game.roomCode,
                 reconnect: true,
                 valid: true,
                 isHost: alreadyInRoom.isHost,
-                userName: alreadyInRoom.userName || "NoNameNoob",
+                userName: alreadyInRoom.userName || `NoNameProvided-${randomBytes(2).toString("hex").toUpperCase()}`,
                 status: alreadyInRoom.game.status,
                 clientId
             })
@@ -93,7 +96,7 @@ gameRouter.post("/verify", async (req, res) => {
         const newClient = await prisma.client.create({
             data: {
                 clientId,
-                name: userName || "NoNameNoob",
+                name: userName || `NoNameProvided-${randomBytes(2).toString("hex").toUpperCase()}`,
                 gameId: room.id,
             }
         })

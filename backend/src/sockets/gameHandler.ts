@@ -80,6 +80,9 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   socket.on("startGame", async () => {
     console.log(`[GameHandler] startGame event received from ${client.name} in room ${client.gameId}`)
     console.log(`[GameHandler] Broadcasting gameStarted to room ${client.gameId}`)
+
+    
+
     io.to(client.gameId).emit("gameStarted")
   });
 
