@@ -157,7 +157,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         socket.on("clientJoined", (data) => onClientJoined(data))
         socket.on("clientDisconnected", (data) => onClientDisconnected(data))
         socket.on("currentClients", (clientList: Client[]) => setClients(clientList))
-        socket.on("gameStarted", (data: {status: GamePhase}) => onGameStarted(data))
+        socket.on("gameStarted", (data) => onGameStarted(data))
         socket.on("gameStartError", onGameStartError)
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
