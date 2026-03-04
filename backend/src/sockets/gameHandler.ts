@@ -83,6 +83,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
     console.log(`[GameHandler] startGame event received from ${client.name} in room ${client.gameId}`)
     if(!roomCode || clientId ) {
+      console.log(`[GameHandler] roomCode is ${roomCode} and clientId is ${clientId}`)
       console.log("[GameHandler] startGame Event failed, either roomCode or clientId was not provided.")
       return io.to(client.gameId).emit("startGameError", {message: "ERROR: Either roomCode or ClientId was not provided."})
     }
