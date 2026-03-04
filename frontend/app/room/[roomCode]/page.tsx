@@ -9,7 +9,7 @@ import { cookies } from "next/headers"
 // => FIX: when joining as normal client, clientId is undefined => client doesnt get registered in client array and doesnt get rendered for hostview and clientview
 
 
-export default async function Page({ params, searchParams }: { params: { roomCode: string }, searchParams: Promise<{ userName?: string }> }) {    const cookieStore = await cookies()
+export default async function Page({ params, searchParams }: { params: Promise<{ roomCode: string }>, searchParams: Promise<{ userName?: string }> }) {    const cookieStore = await cookies()
     const { roomCode } = await params;
     const { userName } = await searchParams
     const clientId = cookieStore.get("clientId")?.value
