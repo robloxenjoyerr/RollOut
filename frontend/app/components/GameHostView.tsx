@@ -72,10 +72,10 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             setClients((prev) => prev.filter(c => c.clientId !== client.clientId))
         }
 
-        const onGameStarted = (status: GamePhase) => {
+        const onGameStarted = (data: any) => {
             addToast("Game has started!", "success")
-            console.log("New GamePhase: ", status)
-            setCurrentPhase(status)
+            console.log("New GamePhase: ", data.status)
+            setCurrentPhase(data.status)
         }
 
         const onGameStartError = () => {

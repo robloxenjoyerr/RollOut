@@ -12,7 +12,7 @@ type LiveGameType = Awaited<ReturnType<typeof prisma.liveGames.findUnique>>;
 
 
 export async function createRoom(roomConfig: LiveGameType, hostId: string) {
-  console.log("DB-ACTIONS.TS: Trying to create new Room with config: ", roomConfig, "\n")
+  console.log("[DB-ACTIONS] Trying to create new Room with config: ", roomConfig, "\n")
   if (!roomConfig) return null
 
   return await prisma.liveGames.create({
@@ -29,14 +29,14 @@ export async function createRoom(roomConfig: LiveGameType, hostId: string) {
 
 export async function verifyRoom(roomCode: string) {
   if (!roomCode) return null
-  console.log("DB-ACTIONS.TS: Trying to verify roomCode: ", roomCode)
+  console.log("[DB-ACTIONS] Trying to verify roomCode: ", roomCode)
   return await prisma.liveGames.findUnique({
     where: { roomCode: roomCode }
   })
 }
 
 export async function findRoomByClient(clientId: string) {
-  console.log("DB-ACTIONS.TS: Finding Room by ClientID: ", clientId, "\n")
+  console.log("[DB-ACTIONS] Finding Room by ClientID: ", clientId, "\n")
   if (!clientId) return null
 
   const client = await prisma.client.findUnique({
@@ -52,7 +52,7 @@ export async function findRoomByClient(clientId: string) {
 
   if (!client) return false
 
-  console.log("DB-ACTIONS.TS: findRoomByClient => Client already in game: ", client.game ? true : false, "\n")
+  console.log("[DB-ACTIONS] findRoomByClient => Client already in game: ", client.game ? true : false, "\n")
 
   return {
     game: client.game,
@@ -64,6 +64,15 @@ export async function findRoomByClient(clientId: string) {
 
 export async function updateRoomStatus(roomCode: string, newStatus: RoomStatus){
   if(!roomCode || !newStatus) return null
+
+
+  const currentStatus = await prisma.liveGames.findUnique({
+    where: { roomCode: roomCode}
+  })
+
+  if(currentStatus?.status === newStatus){
+    console.log(`[DB-ACTIONS] updateRoomStatus => Current Room-Status: ${currentStatus.status}, but trying to update to same status: ${newStatus}`)
+  }
 
   return await prisma.liveGames.update({
     where: { roomCode: roomCode},
