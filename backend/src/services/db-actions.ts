@@ -61,6 +61,16 @@ export async function findRoomByClient(clientId: string) {
   }
 }
 
+
+export async function updateRoomStatus(roomCode: string, newStatus: RoomStatus){
+  if(!roomCode || !newStatus) return null
+
+  return await prisma.liveGames.update({
+    where: { roomCode: roomCode},
+    data: { status: newStatus }
+  })
+}
+
 export async function findRoomByGameCode(roomCode: string) {
   if (!roomCode) return null
 

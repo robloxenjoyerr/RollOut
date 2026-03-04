@@ -1,5 +1,6 @@
 import { Socket, Server } from "socket.io";
 import prisma from "../lib/prisma-client";
+import { findRoomByClient, updateRoomStatus } from "../services/db-actions";
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   const client = socket.data.client
@@ -77,13 +78,39 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     });
   });
 
-  socket.on("startGame", async () => {
+  socket.on("startGame", async (data) => {
+    const { roomCode, clientId } = data
+
     console.log(`[GameHandler] startGame event received from ${client.name} in room ${client.gameId}`)
-    console.log(`[GameHandler] Broadcasting gameStarted to room ${client.gameId}`)
+    if(!roomCode || clientId ) {
+      console.log("[GameHandler] startGame Event failed, either roomCode or clientId was not provided.")
+      return io.to(client.gameId).emit("startGameError", {message: "ERROR: Either roomCode or ClientId was not provided."})
+    }
+    
+    const clientInRoomAndHost = await findRoomByClient(clientId)
+
+    if(!clientInRoomAndHost){
+      return io.to(client.gameId).emit("startGameError", {message: "ERROR: Client is not in provided Room or is not Host."})
+    }
 
     
+    try{
+      const updatedRoomStatus = await updateRoomStatus(roomCode, "in-progress") 
+      if(!updatedRoomStatus){
+        console.log("[GameHandler] Room-Status update failed => provided roomCode was invalid.")
+      }
 
-    io.to(client.gameId).emit("gameStarted")
+      if(updatedRoomStatus?.status !== "in-progress"){
+        console.log("[GameHandler] Room-Status update failed => Room-Status was not successfully updated to 'in-progress'.")
+      }
+
+      console.log(`[GameHandler] Game Start was successful. Broadcasting gameStarted to room ${client.gameId} now.`)
+      io.to(client.gameId).emit("gameStarted", {status: "in-progress"})
+
+    } catch(err){
+      console.log("[GameHandler] Try-Catch Error: ", err)
+      return io.to(client.gameId).emit("startGameError", {message: "ERROR: An Error occurred inside the GameHandler."})
+    }
   });
 
   socket.on("stopGame", () => {

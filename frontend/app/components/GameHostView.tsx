@@ -213,7 +213,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
 
     async function startGame() {
         if (!socket) return
-        socket.emit("startGame", { roomCode })
+        socket.emit("startGame", { roomCode, clientId })
     }
 
     if (currentPhase === "waiting-lobby") {
