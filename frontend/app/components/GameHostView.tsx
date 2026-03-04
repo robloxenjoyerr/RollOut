@@ -166,7 +166,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
 
 
         //  runs when the component unmounts or dependencies change
-        // removing ALL listeners to prevent memory leaks
+        // removing ALL listeners to prevent memory 
         return () => {
             console.log("Cleaning up socket listeners...")
             socket.off("connect", onConnect)
@@ -180,7 +180,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, roomCode])
+    }, [socket, roomCode, currentPhase])
 
 
     const rollNext = () => {
