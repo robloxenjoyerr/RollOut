@@ -1,6 +1,6 @@
 import { Socket, Server } from "socket.io";
 import prisma from "../lib/prisma-client";
-import { findRoomByClient, updateRoomStatus } from "../services/db-actions";
+import { findRoomByClient, findRoomByGameCode, updateRoomStatus } from "../services/db-actions";
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   const client = socket.data.client
@@ -70,10 +70,19 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     });
   });
 
-  socket.on("getGameState", (roomCode: string) => {
+  socket.on("getGameState", async (roomCode: string) => {
     console.log(`[GameHandler] getGameState requested by ${client.name}`)
+
+    const room = await findRoomByGameCode(roomCode)
+
+    if(!room) {
+      console.log("[GameHandler] getGameState ERROR => Room does not exist.")
+      return io.to(client.clientId).emit("gameStateUpdateError", {message: `ERROR: Room with roomCode ${roomCode} couldnt be found.`})
+    }
+
+    console.log(`[GameHandler] Current Room Status: ${room.status}`)
     io.to(client.gameId).emit("gameStateUpdate", {
-      phase: "waiting-lobby",
+      status: room.status,
       persons: []
     });
   });
