@@ -219,7 +219,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
     if (currentPhase === "waiting-lobby") {
 
         return (
-            <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+            <div className="relative w-full h-screen overflow-hidden bg-linear-to-r from-slate-950 via-slate-900 to-slate-950">
                 {/* Animated background gradient blobs */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <motion.div
@@ -250,11 +250,11 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
                         transition={{ duration: 0.6 }}
                     >
                         <div className="flex items-baseline gap-3">
-                            <h1 className="text-7xl font-black bg-gradient-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">
+                            <h1 className="text-7xl font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">
                                 Waiting Lobby
                             </h1>
                             <motion.span
-                                className="px-4 py-2 rounded-full text-xl font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50 backdrop-blur-sm"
+                                className="px-4 py-2 rounded-full text-xl items-center text-center justify-center font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50 backdrop-blur-sm"
                                 animate={{ scale: [1, 1.05, 1] }}
                                 transition={{ duration: 2, repeat: Infinity }}
                             >
@@ -273,11 +273,11 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
                             className="mb-16 w-full max-w-4xl"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.6, delay: 0.2 }}
+                            transition={{ duration: 0.4 }}
                         >
                             <div className="mb-8">
                                 <h2 className="text-2xl font-bold text-white/80 flex items-center gap-3">
-                                    <span className="w-2 h-2 rounded-full bg-gradient-to-r from-green-400 to-blue-500"></span>
+                                    <span className="w-2 h-2 rounded-full bg-linear-to-r from-green-400 to-blue-500"></span>
                                     Players Connected
                                     <span className="ml-auto text-base font-normal text-slate-400">
                                         {clients.length} {clients.length === 1 ? "player" : "players"}
@@ -317,8 +317,8 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
                                                     }}
                                                     className={`group relative px-6 py-3 rounded-xl font-semibold text-base transition-all duration-300 ${
                                                         client.isHost
-                                                            ? "bg-gradient-to-r from-violet-500/30 to-purple-500/30 border border-violet-400/50 text-violet-300 shadow-lg shadow-violet-500/20"
-                                                            : "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/50 text-green-300 shadow-lg shadow-green-500/20"
+                                                            ? "bg-linear-to-r from-violet-500/30 to-purple-500/30 border border-violet-400/50 text-violet-300 shadow-lg shadow-violet-500/20"
+                                                            : "bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/50 text-green-300 shadow-lg shadow-green-500/20"
                                                     }`}
                                                 >
                                                     <div className="flex items-center gap-2">
@@ -363,10 +363,10 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
                             whileTap={{ scale: 0.98 }}
                         >
                             {/* Background gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 group-hover:from-green-400 group-hover:via-emerald-400 group-hover:to-green-500 transition-all duration-300" />
+                            <div className="absolute inset-0 bg-linear-to-r from-green-500 via-emerald-500 to-green-600 group-hover:from-green-400 group-hover:via-emerald-400 group-hover:to-green-500 transition-all duration-300" />
                             {/* Animated shine effect */}
                             <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                                className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
                                 animate={{ x: [-100, 100] }}
                                 transition={{ duration: 3, repeat: Infinity }}
                                 style={{ width: "200%" }}
@@ -387,7 +387,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
                             whileTap={{ scale: 0.98 }}
                         >
                             {/* Background */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-rose-500 to-red-600 group-hover:from-red-400 group-hover:via-rose-400 group-hover:to-red-500 transition-all duration-300" />
+                            <div className="absolute inset-0 bg-linear-to-r from-red-500 via-rose-500 to-red-600 group-hover:from-red-400 group-hover:via-rose-400 group-hover:to-red-500 transition-all duration-300" />
                             {/* Content */}
                             <div className="relative flex items-center gap-2 justify-center">
                                 <span className="text-xl">⏹️</span>

@@ -4,16 +4,24 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "node dist/server.js"
+    "postinstall": "prisma generate",
+
+    "prisma:dev:generate": "prisma generate --schema=./prisma/dev.schema.prisma",
+    "prisma:dev:push": "prisma db push --schema=./prisma/dev.schema.prisma",
+    "dev": "npm run prisma:dev:generate && npm run prisma:dev:push && nodemon --watch src --exec ts-node src/server.ts",
+
+    "build": "prisma generate --schema=./prisma/schema.prisma && tsc",
+    "migrate:deploy": "prisma migrate deploy --schema=./prisma/schema.prisma",
+    "start": "node dist/server.js",
+
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/adapter-pg": "^7.4.1",
+    "@prisma/adapter-better-sqlite3": "^7.4.2",
+    "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.1",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
@@ -21,14 +29,14 @@
     "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
     "bcrypt-ts": "^8.0.0",
-    "better-sqlite3": "^12.5.0",
+    "better-sqlite3": "^12.6.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "hono": "^4.12.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.18.0",
+    "pg": "^8.19.0",
     "postgresql": "^0.0.1",
     "socket.io": "^4.8.3"
   },

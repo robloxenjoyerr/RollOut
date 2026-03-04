@@ -10,8 +10,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  // Dieses Schema ist explizit für SQLite
+  provider     = "sqlite" 
   relationMode = "prisma"
+  // Keine URL hier, die kommt aus der config
 }
 
 
