@@ -72,9 +72,10 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             setClients((prev) => prev.filter(c => c.clientId !== client.clientId))
         }
 
-        const onGameStarted = () => {
+        const onGameStarted = (status: GamePhase) => {
             addToast("Game has started!", "success")
-            setCurrentPhase("in-progress")
+            console.log("New GamePhase: ", status)
+            setCurrentPhase(status)
         }
 
         const onGameStartError = () => {
@@ -156,7 +157,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         socket.on("clientJoined", (data) => onClientJoined(data))
         socket.on("clientDisconnected", (data) => onClientDisconnected(data))
         socket.on("currentClients", (clientList: Client[]) => setClients(clientList))
-        socket.on("gameStarted", onGameStarted)
+        socket.on("gameStarted", (data: {status: GamePhase}) => onGameStarted(data))
         socket.on("gameStartError", onGameStartError)
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)

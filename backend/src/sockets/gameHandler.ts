@@ -101,6 +101,8 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
         console.log("[GameHandler] Room-Status update failed => provided roomCode was invalid.")
       }
 
+      console.log("[GameHandler] Updating Room-Status successfull. New Room-Status: ", updatedRoomStatus?.status)
+
       if(updatedRoomStatus?.status !== "in-progress"){
         console.log("[GameHandler] Room-Status update failed => Room-Status was not successfully updated to 'in-progress'.")
       }
