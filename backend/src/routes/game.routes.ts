@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createRoom, findRoomByClient, verifyRoom } from "../services/db-actions";
+import { addClientToGame, createRoom, findRoomByClient, verifyRoom } from "../services/db-actions";
 import { getOrCreateClientId } from "../lib/services";
 import prisma from "../lib/prisma-client";
 import { randomBytes, randomUUID } from "node:crypto";

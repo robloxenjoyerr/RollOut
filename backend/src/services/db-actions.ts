@@ -2,6 +2,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import prisma from "../lib/prisma-client";
 import { randomBytes } from "node:crypto";
+import { constrainedMemory } from "node:process";
 
 
 export type RoomStatus = "waiting-lobby" | "in-progress" | "finished";
@@ -12,8 +13,11 @@ type LiveGameType = Awaited<ReturnType<typeof prisma.liveGames.findUnique>>;
 
 
 export async function createRoom(roomConfig: LiveGameType, hostId: string) {
-  console.log("DB-ACTIONS.TS: Trying to create new Room with config: ", roomConfig, "\n")
-  if (!roomConfig) return null
+  console.log("[DB-ACTIONS - createRoom] Trying to create new Room with config: ", roomConfig, "\n")
+  if (!roomConfig) {
+    console.error("[DB-ACTIONS - createRoom] ERROR: roomConfig is undefined")
+    return null
+  }
 
   return await prisma.liveGames.create({
     data: {
@@ -28,16 +32,27 @@ export async function createRoom(roomConfig: LiveGameType, hostId: string) {
 }
 
 export async function verifyRoom(roomCode: string) {
-  if (!roomCode) return null
-  console.log("DB-ACTIONS.TS: Trying to verify roomCode: ", roomCode)
-  return await prisma.liveGames.findUnique({
+  if (!roomCode) {
+    console.error("[DB-ACTIONS - verifyRoom] ERROR: roomCode is undefined.")
+    return null
+  }
+
+  const roomVerified = await prisma.liveGames.findUnique({
     where: { roomCode: roomCode }
   })
+
+  if(!roomVerified){
+    console.error("[DB-ACTIONS - verifyRoom] ERROR: Room could not be verified.")
+  }
+
+  return roomVerified
 }
 
 export async function findRoomByClient(clientId: string) {
-  console.log("DB-ACTIONS.TS: Finding Room by ClientID: ", clientId, "\n")
-  if (!clientId) return null
+  if (!clientId) {
+    console.error("[DB-ACTIONS - findRoomByClient] ERROR: clientId is undefined.")
+    return null
+  }
 
   const client = await prisma.client.findUnique({
     where: { clientId },
@@ -50,30 +65,38 @@ export async function findRoomByClient(clientId: string) {
     }
   })
 
-  if (!client) return false
+  if (!client) {
+    console.error("[DB-ACTIONS - findRoomByClient] ERROR: client could not be found.")
+    return null
+  }
 
-  console.log("DB-ACTIONS.TS: findRoomByClient => Client already in game: ", client.game ? true : false, "\n")
+  console.log("[DB-ACTIONS - findRoomByClient] Client found! Is already in Game: ", client.game ? true : false, "\n")
 
   return {
     game: client.game,
     isHost: client.game.hostId === clientId,
-    userName: client.name 
+    userName: client.name
   }
 }
 
 
-export async function updateRoomStatus(roomCode: string, newStatus: RoomStatus){
-  if(!roomCode || !newStatus) return null
+export async function updateRoomStatus(roomCode: string, newStatus: RoomStatus) {
+  if (!roomCode || !newStatus) {
+    console.error("[DB-ACTIONS - updateRoomStatus] ERROR: Either roomCode or newStatus is undefined.")
+    return null
+  }
 
   return await prisma.liveGames.update({
-    where: { roomCode: roomCode},
+    where: { roomCode: roomCode },
     data: { status: newStatus }
   })
 }
 
 export async function findRoomByGameCode(roomCode: string) {
-  if (!roomCode) return null
-
+  if (!roomCode) {
+    console.error("[DB-ACTIONS - findRoomByGameCode] ERROR: roomCode is undefined.")
+    return null
+  }
   return await prisma.liveGames.findUnique({
     where: { roomCode: roomCode }
   })
@@ -85,25 +108,19 @@ export async function deleteGame(id: string) {
   })
 }
 
-export async function getGame(id: string) {
-  return await prisma.liveGames.findUnique({
-    where: { id }
-  })
-}
 
-export async function getAllGames() {
-  return await prisma.liveGames.findMany({
-    select: { id: true, roomName: true }
-  })
-}
-
-export async function addClientToGame(gameId: string, clientData: { clientId: string; name: string; isHost?: boolean }) {
+export async function addClientToGame(gameId: string, clientData: { clientId: string; username: string; isHost?: boolean }) {
+  if (!gameId || !clientData) {
+    console.error("[DB-ACTIONS - addClientToGame] ERROR: Either gameId or clientData is missing.")
+  }
   return await prisma.client.create({
     data: {
       clientId: clientData.clientId,
-      name: clientData.name,
-      gameId, // Foreign Key zum Game 
+      name: clientData.username || `NoNameProvided-${randomBytes(2).toString("hex").toUpperCase()}`,
+      gameId: gameId,
+      isHost: clientData.isHost
     }
-  });
+  })
 }
 
+// export async function findClientBy

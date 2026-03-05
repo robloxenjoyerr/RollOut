@@ -30,7 +30,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
     const [clients, setClients] = useState<Client[]>([]);
     const [currentRolled, setCurrentRolled] = useState<any>(null);
     const [pendingUpdate, setPendingUpdate] = useState<any>(null);
-    
+
 
     useEffect(() => {
         if (!socket) {
@@ -50,21 +50,27 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             const parsedPersons: Person[] = data.persons || []
             const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
-            setCurrentPhase( data.phase )
+            setCurrentPhase(data.phase)
             setPendingUpdate(unrolledPersons)
             setAvailablePersons(parsedPersons)
         }
 
-        const onClientJoined = (data: { current_clients: Client[] }) => {
-            console.log("[GameClientView] onPlayerJoined:", data)
-            setClients(data.current_clients || [])
-            addToast("New Client connected!", "info")
+        const onClientJoined = (client: Client) => {
+            console.log("[GameClientView] onPlayerJoined:", client)
+            console.log("[GameClientView] Current Clients connected: ", clients)
+
+            setClients((prev) => {
+                const exists = prev.some(c => c.clientId === client.clientId)
+                if (exists) return prev
+                return [...prev, client]
+            })
+            addToast(`New Client ${client.name} has connected!`, "info")
         }
 
-        const onClientDisconnected = (data: { socket_id: string, current_clients: Client[] }) => {
-            console.log("[GameClientView] onPlayerDisconnected:", data)
-            addToast(`Client with ID: ${data.socket_id} disconnected.`, "info")
-            setClients(data.current_clients || [])
+        const onClientDisconnected = (client: Client) => {
+            console.log("[GameClientView] onPlayerDisconnected:", client)
+            addToast(`Client ${client.name} has disconnected.`, "info")
+            setClients((prev) => prev.filter(c => c.clientId !== client.clientId))
         }
 
         const onGameStarted = () => {
@@ -147,6 +153,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         socket.on("gameStateUpdate", onGameStateUpdate)
         socket.on("clientJoined", onClientJoined)
         socket.on("clientDisconnected", onClientDisconnected)
+        socket.on("currentClients", (clientList: Client[]) => setClients(clientList))
         socket.on("gameStarted", onGameStarted)
         socket.on("gameStartError", onGameStartError)
         socket.on("gameEnded", onGameEnded)
@@ -163,6 +170,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             socket.off("gameStateUpdate", onGameStateUpdate)
             socket.off("clientJoined", onClientJoined)
             socket.off("clientDisconnected", onClientDisconnected)
+            socket.off("currentClients")
             socket.off("gameStarted", onGameStarted)
             socket.off("gameStartError", onGameStartError)
             socket.off("gameEnded", onGameEnded)
@@ -171,80 +179,152 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
 
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, roomCode, roomConfig])
+    }, [socket, roomCode])
 
     if (currentPhase === "waiting-lobby") {
         return (
-            <div>
-                <AnimatePresence>
-                    <ToastContainer toasts={toasts} />
-                </AnimatePresence>
-
-                <div className="flex flex-col gap-10 absolute top-25 left-45 ">
-                    <div className="flex flex-col">
-                        <span className="text-black font-bold text-7xl select-none ">Game Lobby - {<span className="text-violet-500">{roomCode}</span>}</span>
-                        <span className="text-gray-500 font-light text-2xl select-none">
-                            Clients currently connected - start whenever you're ready!
-                        </span>
-                    </div>
-
-                    <div className="flex flex-row gap-4 flex-wrap">
-                        {/* AnimatePresence correctly wraps the list of items that will be added/removed */}
-                        <AnimatePresence>
-                            {clients.map((client) => (
-                                <motion.span
-                                    className={`${client.isHost ? "text-violet-400" : "text-green-400"} font-bold rounded-2xl border-2 ${client.isHost ? "border-violet-400/50" : "border-green-400/50"} p-3 select-none bg-black/5`}
-                                    key={client.clientId}
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-                                    transition={{ type: "spring", stiffness: 200, damping: 25 }}
-                                >
-                                    {`${client.isHost ? "HOST" : client.name}`}
-                                </motion.span>
-                            ))}
-                        </AnimatePresence>
-                    </div>
+            <div className="relative w-full h-screen overflow-hidden bg-linear-to-r from-slate-950 via-slate-900 to-slate-950">
+                {/* Animated background gradient blobs */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <motion.div
+                        className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
+                        animate={{
+                            x: [0, 50, -50, 0],
+                            y: [0, -50, 50, 0],
+                        }}
+                        transition={{ duration: 8, repeat: Infinity }}
+                    />
+                    <motion.div
+                        className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"
+                        animate={{
+                            x: [0, -50, 50, 0],
+                            y: [0, 50, -50, 0],
+                        }}
+                        transition={{ duration: 10, repeat: Infinity }}
+                    />
                 </div>
-            </div>
-        )
-    }
 
-    // Fall 2: Spiel läuft
-    if (currentPhase === "in-progress") {
-        return (
-            <div className="relative w-screen h-screen flex flex-col items-center justify-center overflow-hidden">
-                <AnimatePresence>
-                    <ToastContainer toasts={toasts} />
-                </AnimatePresence>
+                {/* Content */}
+                <div className="relative z-10 flex flex-col h-screen">
+                    {/* Header section */}
+                    <motion.div
+                        className="flex flex-col gap-3 pt-16 px-12"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        <div className="flex items-baseline gap-3">
+                            <h1 className="text-7xl font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">
+                                Waiting Lobby
+                            </h1>
+                            <motion.span
+                                className="px-4 py-2 rounded-full text-xl items-center text-center justify-center font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50 backdrop-blur-sm"
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            >
+                                {roomCode}
+                            </motion.span>
+                        </div>
+                        <p className="text-lg text-slate-400 font-light tracking-wide">
+                            Waiting for players to join. Ready to start whenever you are!
+                        </p>
+                    </motion.div>
 
-                <div className="flex flex-col items-center gap-12">
-                    <h1 className="text-black font-bold text-6xl select-none">
-                        Game has Started!
-                    </h1>
+                    {/* Main content - centered */}
+                    <div className="flex-1 flex flex-col items-center justify-center px-12">
+                        {/* Clients grid */}
+                        <motion.div
+                            className="mb-16 w-full max-w-4xl"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.4 }}
+                        >
+                            <div className="mb-8">
+                                <h2 className="text-2xl font-bold text-white/80 flex items-center gap-3">
+                                    <span className="w-2 h-2 rounded-full bg-linear-to-r from-green-400 to-blue-500"></span>
+                                    Players Connected
+                                    <span className="ml-auto text-base font-normal text-slate-400">
+                                        {clients.length} {clients.length === 1 ? "player" : "players"}
+                                    </span>
+                                </h2>
+                            </div>
 
-                    {/* Das Rad */}
-                    <div className="flex flex-col items-center gap-10">
-                        <Wheel persons={availablePersons} rotation={rotation} />
-
-                        <div className="h-24">
-                            <AnimatePresence mode="wait">
-                                {currentRolled && (
+                            {/* Clients display */}
+                            <div className="min-h-32 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 p-8 shadow-2xl">
+                                {clients.length === 0 ? (
                                     <motion.div
-                                        key={currentRolled.id}
-                                        initial={{ scale: 0, opacity: 0 }}
-                                        animate={{ scale: 1.2, opacity: 1 }}
-                                        exit={{ scale: 0, opacity: 0 }}
-                                        className="text-4xl font-black text-black bg-yellow-400 p-6 rounded-2xl shadow-2xl border-4 "
+                                        className="flex flex-col items-center justify-center h-32 text-slate-400"
+                                        animate={{ opacity: [0.6, 1, 0.6] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
                                     >
-                                        🎉 {currentRolled.name}
+                                        <div className="text-5xl mb-3">👥</div>
+                                        <p className="text-lg font-medium">Waiting for the first player...</p>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        className="flex flex-row gap-4 flex-wrap"
+                                        layout
+                                    >
+                                        <AnimatePresence mode="popLayout">
+                                            {clients.map((client, index) => (
+                                                <motion.div
+                                                    key={client.clientId}
+                                                    layout
+                                                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.5, y: -20 }}
+                                                    transition={{
+                                                        type: "spring",
+                                                        stiffness: 200,
+                                                        damping: 20,
+                                                        delay: index * 0.05
+                                                    }}
+                                                    className={`group relative px-6 py-3 rounded-xl font-semibold text-base transition-all duration-300 ${client.isHost
+                                                        ? "bg-linear-to-r from-violet-500/30 to-purple-500/30 border border-violet-400/50 text-violet-300 shadow-lg shadow-violet-500/20"
+                                                        : "bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/50 text-green-300 shadow-lg shadow-green-500/20"
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        {client.isHost ? (
+                                                            <>
+                                                                <span className="text-lg">👑</span>
+                                                                <span className="font-bold tracking-wide">HOST</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <motion.span
+                                                                    className="inline-block text-lg"
+                                                                    animate={{ scale: [1, 1.2, 1] }}
+                                                                    transition={{ duration: 2, repeat: Infinity }}
+                                                                >
+                                                                    🎮
+                                                                </motion.span>
+                                                                <span className="select-none">{client.name}</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
                                     </motion.div>
                                 )}
-                            </AnimatePresence>
-                        </div>
+                            </div>
+                        </motion.div>
                     </div>
+
+                    {/* Bottom action buttons */}
+                    <motion.div
+                        className="pb-12 px-12 flex gap-4 justify-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                    >
+                    </motion.div>
                 </div>
+
+                <AnimatePresence>
+                    <ToastContainer toasts={toasts} />
+                </AnimatePresence>
             </div>
         )
     }

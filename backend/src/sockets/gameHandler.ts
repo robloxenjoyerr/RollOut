@@ -26,7 +26,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     
     // If the client is in a different room, leave it
     if (client.gameId !== room.id) {
-      console.log(`[GameHandler] Client was in room ${client.gameId}, moving to ${room.id}`)
+      console.log(`[GameHandler] Client was in room ${client.gameId} already, moving to ${room.id}`)
       socket.leave(client.gameId)
     }
     
@@ -38,7 +38,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     io.to(room.id).emit("clientJoined", {
       clientId: client.clientId,
       name: client.name,
-      isHost: client.name === "HOST"
+      // isHost: client.isHost === "HOST"
     });
 
     console.log(`[GameHandler] Broadcast clientJoined for ${client.name} to room ${room.id}`)
@@ -82,7 +82,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     const { roomCode, clientId } = data
 
     console.log(`[GameHandler] startGame event received from ${client.name} in room ${client.gameId}`)
-    if(!roomCode || clientId ) {
+    if(!roomCode || !clientId ) {
       console.log("[GameHandler] startGame Event failed, either roomCode or clientId was not provided.")
       return io.to(client.gameId).emit("startGameError", {message: "ERROR: Either roomCode or ClientId was not provided."})
     }
