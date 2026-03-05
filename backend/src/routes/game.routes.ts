@@ -87,7 +87,7 @@ gameRouter.post("/verify", async (req, res) => {
                 reconnect: true,
                 valid: true,
                 isHost: alreadyInRoom.isHost,
-                userName: alreadyInRoom.userName || `NoNameProvided-${randomBytes(2).toString("hex").toUpperCase()}`,
+                userName: alreadyInRoom.userName || `User-${randomBytes(2).toString("hex").toUpperCase()}`,
                 status: alreadyInRoom.game.status,
                 clientId
             })
@@ -96,7 +96,7 @@ gameRouter.post("/verify", async (req, res) => {
         const newClient = await prisma.client.create({
             data: {
                 clientId,
-                name: userName || `NoNameProvided-${randomBytes(2).toString("hex").toUpperCase()}`,
+                name: userName || `User-${randomBytes(2).toString("hex").toUpperCase()}`,
                 gameId: room.id,
             }
         })
