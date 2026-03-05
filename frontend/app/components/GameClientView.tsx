@@ -42,35 +42,26 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
 
 
         const onGameStateUpdate = (data: any) => {
-            console.log("[GameClientView] onGameStateUpdate:", data)
-
-            const newStatus = data.status || "waiting-lobby"
-            const newClients = data.clients || []
-
-
-            console.log(`Received state: Status=${newStatus}, Clients=${newClients.length}`);
-
-            setClients(newClients);
-            setCurrentPhase(newStatus)
-
+         
+            setClients(data.clients)
         }
 
-        const onClientJoined = (client: Client) => {
-            console.log("[GameClientView] onPlayerJoined:", client)
+        const onClientJoined = (data: any) => {
+            console.log("[GameClientView] onPlayerJoined:", data.client)
             console.log("[GameClientView] Current Clients connected: ", clients)
 
-            setClients((prev) => {
-                const exists = prev.some(c => c.clientId === client.clientId)
-                if (exists) return prev
-                return [...prev, client]
-            })
-            addToast(`New Client ${client.name} has connected!`, "info")
+            console.log("!!! SETTING CLIENTS NOW")
+            setClients(data.clients)
+            console.log("clients length: ", clients)
+            addToast(`New Client ${data.name} has connected!`, "info")
+            socket.emit("getGameState", {clientId})
         }
 
-        const onClientDisconnected = (client: Client) => {
+        const onClientDisconnected = (client: Client, clients: Client[]) => {
             console.log("[GameClientView] onPlayerDisconnected:", client)
             addToast(`Client ${client.name} has disconnected.`, "info")
-            setClients((prev) => prev.filter(c => c.clientId !== client.clientId))
+            console.log("cuurent clients: ", clients)
+            setClients((prev)=> prev.filter(c => c.clientId !== client.clientId))
         }
 
         const onGameStarted = () => {
@@ -148,7 +139,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         }
 
         
-        socket.on("gameStateUpdate", (data: any) => onGameStateUpdate(data))
+        socket.on("gameStateUpdate", onGameStateUpdate)
         socket.on("clientJoined", onClientJoined)
         socket.on("clientDisconnected", onClientDisconnected)
         socket.on("gameStarted", onGameStarted)

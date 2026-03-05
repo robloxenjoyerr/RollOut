@@ -1,6 +1,6 @@
 import { Socket, Server } from "socket.io";
 import prisma from "../lib/prisma-client";
-import { findRoomByClient, updateRoomStatus } from "../services/db-actions";
+import { findRoomByClient, findRoomByGameCode, updateRoomStatus } from "../services/db-actions";
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   const client = socket.data.client
@@ -40,7 +40,8 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     socket.to(room.id).emit("clientJoined", {
       clientId: client.clientId,
       name: client.name,
-      isHost: room.hostId === client.clientId
+      isHost: room.hostId === client.clientId,
+      clients: room.clients
     });
 
     console.log(`[GameHandler] Broadcast clientJoined for ${client.name} to room ${room.id}`)
@@ -48,17 +49,40 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
     socket.emit("gameStateUpdate", {
       status: room.status,
-      // Hier müsstest du die "persons" aus deiner Datenbank laden, falls das Spiel läuft
       clients: room.clients
     });
 
   });
 
-  socket.on("disconnect", () => {
+  socket.on("getGameState", async (clientId: string) => {
+    const room = await findRoomByClient(clientId)
+
+    if (!room) {
+      return io.to(client.gameId).emit("error", { message: "Could not find Room for ClientId: ", clientId })
+    }
+
+    io.to(client.gameId).emit("gameStateUpdate", {
+      status: room.game.status,
+      clients: room.game.clients
+    })
+  })
+
+  socket.on("disconnect", async () => {
     console.log(`[GameHandler] Client ${client.name} disconnected from room ${client.gameId}`)
+
+    const room = await findRoomByClient(client.clientId)
+
+    if (!room) {
+      console.log(`[GameHandler - socket.disconnect] Client ${client} is not in Room with gameId ${client.gameId}`)
+      return io.to(client.gameId).emit("error", { message: "Could not disconnect from a Room you were not in before." })
+    }
+
+    console.log("game clients: ", room.game.clients)
+
     io.to(client.gameId).emit("clientDisconnected", {
       clientId: client.clientId,
-      name: client.name
+      name: client.name,
+      clients: room.game.clients
     });
   });
 

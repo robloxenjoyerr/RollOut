@@ -47,60 +47,48 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         
         console.log("[GameHostView] Socket created. Waiting for connection. Socket ID:", socket.id, "Connected:", socket.connected)
 
-        const onConnect = () => {
-            console.log("[GameHostView] NOW CONNECTED! Socket ID:", socket.id)
-            socket.emit("getGameState", roomCode)
-        }
-
+        
         const onGameStateUpdate = (data: any) => {
-            const parsedPersons: Person[] = data.persons || []
-            const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
-
-            console.log("GAME STATE UPDATE => NEW GAME STATUS: ", data.status)
-
+            
             setCurrentPhase(data.status)
-            setPendingUpdate(unrolledPersons)
-            setAvailablePersons(parsedPersons)
+            setClients(data.clients)
         }
-
-        const onClientJoined = (client: Client) => {
-            setClients((prev) => {
-                const exists = prev.some(c => c.clientId === client.clientId)
-                if (exists) return prev
-                return [...prev, client]
-            })
+        
+        const onClientJoined = (data: any) => {
+            setClients(data.clients)
             console.log(clients)
-            addToast(`New Client ${client.name} has connected!`, "info")
+            addToast(`New Client ${data.name} has connected!`, "info")
+            socket.emit("getGameState", {clientId})
         }
 
-        const onClientDisconnected = (client: Client) => {
+        const onClientDisconnected = (client: Client, clients: Client[]) => {
             addToast(`Client ${client.name} has disconnected.`, "info")
-            setClients((prev) => prev.filter(c => c.clientId !== client.clientId))
+            setClients((prev)=> prev.filter(c => c.clientId !== client.clientId))
         }
-
+        
         const onGameStarted = (data: any) => {
             addToast("Game has started!", "success")
             console.log("New GamePhase: ", data.status)
             setCurrentPhase(data.status)
         }
-
+        
         const onGameStartError = (data: any) => {
             addToast(`${data.message}`, "error")
         }
-
+        
         const onGameEnded = () => {
             addToast("Game ended.", "info")
             router.push('/host')
         }
-
-
+        
+        
         const onNextRolled = (data: any) => {
             const { unrolledPersons, nextRolled } = data
-
+            
             const effectivePersons = pendingUpdate ? pendingUpdate : availablePersons
-
+            
             const winnerIndex = effectivePersons.findIndex((p: Person) => p.id === nextRolled.id)
-
+            
             if (winnerIndex !== -1) {
                 setIsSpinning(true)
                 const segmentAngle = 360 / effectivePersons.length
@@ -114,7 +102,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
                     setAvailablePersons(pendingUpdate)
                 }
                 setRotation(finalRotation)
-
+                
                 setTimeout(() => {
                     // Und wir zeigen den Namen des Gewinners an.
                     setCurrentRolled(nextRolled);
@@ -122,26 +110,26 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
                     setIsSpinning(false);
                 }, 4000);
             }
-
+            
             setPendingUpdate(unrolledPersons.filter((p: any) => p.state === "unrolled"))
             setCurrentRolled(null)
             setTimeout(() => {
                 setCurrentRolled(nextRolled)
             }, 3000)
         }
-
+        
         const onAllRolled = (data: any) => {
 
             setTimeout(() => {
                 addToast("All persons have been rolled! Game is getting closed in 5 seconds.", "success")
                 setCurrentRolled(null)
-
+                
                 let secondsLeft = 5
                 const countdownInterval = setInterval(() => {
                     if (secondsLeft > 0) {
                         addToast(`Game closing in: ${secondsLeft}`, "info")
                     }
-
+                    
                     if (secondsLeft <= 0) {
                         clearInterval(countdownInterval);
                         stopGame().then(info => {
@@ -153,24 +141,35 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
                     }
                     secondsLeft--;
                 }, 1000)
-
+                
             }, 3000)
         }
 
-
-        socket.on("connect", onConnect)
+        
+        
         socket.on("gameStateUpdate", onGameStateUpdate)
-        socket.on("clientJoined", (data) => onClientJoined(data))
-        socket.on("clientDisconnected", (data) => onClientDisconnected(data))
-        socket.on("currentClients", (clientList: Client[]) => setClients(clientList))
-        socket.on("gameStarted", (data) => onGameStarted(data))
-        socket.on("gameStartError", (data) => onGameStartError(data))
+        socket.on("clientJoined", onClientJoined)
+        socket.on("clientDisconnected", onClientDisconnected)
+        socket.on("gameStarted", onGameStarted)
+        socket.on("gameStartError", onGameStartError)
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
+        
+        const onConnect = () => {
+            console.log("[GameHostView] NOW CONNECTED! Socket ID:", socket.id)
+            socket.emit("getGameState", roomCode)
+        }
+        
+        socket.on("connect", onConnect)
+
+        if (socket.connected) {
+            console.log("[GameClientView] Socket was already connected on effect run. Manually calling onConnect.")
+            onConnect()
+        }
 
         console.log("[GameHostView] Socket listeners registered")
-
-
+        
+        
         //  runs when the component unmounts or dependencies change
         // removing ALL listeners to prevent memory 
         return () => {
