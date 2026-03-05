@@ -40,19 +40,19 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
 
         console.log("[GameClientView] Socket initialized, setting up listeners. Socket ID:", socket.id, "Connected:", socket.connected)
 
-        const onConnect = () => {
-            console.log("[GameClientView] Connected to GameID: ", roomCode, "with socketID: ", socket.id)
-            socket.emit("getGameState", roomCode)
-        }
 
         const onGameStateUpdate = (data: any) => {
             console.log("[GameClientView] onGameStateUpdate:", data)
-            const parsedPersons: Person[] = data.persons || []
-            const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
-            setCurrentPhase(data.phase)
-            setPendingUpdate(unrolledPersons)
-            setAvailablePersons(parsedPersons)
+            const newStatus = data.status || "waiting-lobby"
+            const newClients = data.clients || []
+
+
+            console.log(`Received state: Status=${newStatus}, Clients=${newClients.length}`);
+
+            setClients(newClients);
+            setCurrentPhase(newStatus)
+
         }
 
         const onClientJoined = (client: Client) => {
@@ -89,7 +89,6 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             addToast("Game ended.", "info")
             router.push('/join')
         }
-
 
         const onNextRolled = (data: any) => {
             console.log("[GameClientView] onNextRolled:", data)
@@ -148,17 +147,31 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             }, 3000)
         }
 
-
-        socket.on("connect", onConnect)
-        socket.on("gameStateUpdate", onGameStateUpdate)
+        
+        socket.on("gameStateUpdate", (data: any) => onGameStateUpdate(data))
         socket.on("clientJoined", onClientJoined)
         socket.on("clientDisconnected", onClientDisconnected)
-        socket.on("currentClients", (clientList: Client[]) => setClients(clientList))
         socket.on("gameStarted", onGameStarted)
         socket.on("gameStartError", onGameStartError)
         socket.on("gameEnded", onGameEnded)
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
+        
+
+        const onConnect = () => {
+            console.log("[GameClientView] Connected to GameID: ", roomCode, "with socketID: ", socket.id)
+            console.log(`Emitting 'joinRoom' for roomCode: ${roomCode}`);
+            socket.emit("joinRoom", { roomCode, clientId });
+
+        }
+
+        socket.on("connect", onConnect)
+        
+        if (socket.connected) {
+            console.log("[GameClientView] Socket was already connected on effect run. Manually calling onConnect.")
+            onConnect()
+        }
+
 
         console.log("[GameClientView] Socket listeners registered")
 
@@ -170,7 +183,6 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             socket.off("gameStateUpdate", onGameStateUpdate)
             socket.off("clientJoined", onClientJoined)
             socket.off("clientDisconnected", onClientDisconnected)
-            socket.off("currentClients")
             socket.off("gameStarted", onGameStarted)
             socket.off("gameStartError", onGameStartError)
             socket.off("gameEnded", onGameEnded)
@@ -179,9 +191,10 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
 
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, roomCode])
+    }, [socket, roomCode, clientId])
 
     if (currentPhase === "waiting-lobby") {
+        console.log("WAITING LOBBY => CLIENT")
         return (
             <div className="relative w-full h-screen overflow-hidden bg-linear-to-r from-slate-950 via-slate-900 to-slate-950">
                 {/* Animated background gradient blobs */}

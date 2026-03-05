@@ -43,7 +43,7 @@ export function getOrCreateClientId(req: Request, res: Response): string | null{
         res.cookie("clientId", newId, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             domain: process.env.NODE_ENV === "production"
                 ? ".rollout.live"
                 : undefined,

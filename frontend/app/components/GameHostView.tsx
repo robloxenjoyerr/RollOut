@@ -56,6 +56,8 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             const parsedPersons: Person[] = data.persons || []
             const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
+            console.log("GAME STATE UPDATE => NEW GAME STATUS: ", data.status)
+
             setCurrentPhase(data.status)
             setPendingUpdate(unrolledPersons)
             setAvailablePersons(parsedPersons)
@@ -222,7 +224,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
     }
 
     if (currentPhase === "waiting-lobby") {
-
+        console.log("WAITING LOBBY => HOST")
         return (
             <div className="relative w-full h-screen overflow-hidden bg-linear-to-r from-slate-950 via-slate-900 to-slate-950">
                 {/* Animated background gradient blobs */}
@@ -411,6 +413,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         )
     }
     else if (currentPhase === "in-progress") {
+        console.log("IN-PROGRESS VIEW")
         return (
             <>
                 <AnimatePresence>
@@ -439,6 +442,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         )
     }
     else {
+        console.log("NO HOST VIEW => LOADING")
         return (
             <div className="text-red-600">
                 <Loading></Loading>

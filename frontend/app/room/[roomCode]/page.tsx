@@ -9,18 +9,42 @@ import { cookies } from "next/headers"
 // => FIX: when joining as normal client, clientId is undefined => client doesnt get registered in client array and doesnt get rendered for hostview and clientview
 
 
-export default async function Page({ params, searchParams }: { params: Promise<{ roomCode: string }>, searchParams: Promise<{ userName?: string }> }) {    const cookieStore = await cookies()
-    const { roomCode } = await params;
-    const { userName } = await searchParams
-    const clientId = cookieStore.get("clientId")?.value
+export default async function Page({ params, searchParams }: {
+    params: Promise<{ roomCode: string }>,
+    searchParams: Promise<{ username?: string, clientId?: string }>
+}) {
+
+    const cookieStore = await cookies()
+    // Löse zuerst die Promises auf, um die Objekte zu bekommen
+    const paramsData = await params;
+    const searchParamsData = await searchParams;
+
+    // Greife DANACH auf die Eigenschaften der aufgelösten Objekte zu
+    const roomCode = paramsData.roomCode;
+    const userName = searchParamsData.username;
+    let clientId = searchParamsData.clientId;
+
+    if (!clientId) {
+        // Dann versuchen wir es aus dem Cookie zu holen
+        const cookieClientId = cookieStore.get("clientId");
+        if (cookieClientId) {
+            clientId = cookieClientId.value; // <-- HIER IST DIE WICHTIGE ÄNDERUNG: .value anhängen!
+            console.log("ClientId aus Cookie gefunden:", clientId);
+        } else {
+            console.log("Keine ClientId in searchParams oder Cookie gefunden.");
+            // Hier könnte man ggf. eine neue ClientId generieren und das Cookie setzen,
+            // aber das ist besser im Backend beim ersten API-Aufruf aufgehoben.
+            redirect("/join")
+        }
+    }
 
     try {
-        console.log(`[roomCode/page.tsx]: Verifying with roomCode ${roomCode} and username ${userName}`)
+        console.log(`[roomCode/page.tsx]: Verifying with roomCode ${roomCode} and username ${userName} and clientId ${clientId}`)
         const res = await apiFetch(`/api/game/verify`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                ...(clientId ? { "Cookie": `clientId=${clientId}` } : {})
+                "Cookie": `clientId=${clientId}`
             },
             body: JSON.stringify({ roomCode: roomCode, userName: userName }),
             credentials: "include",

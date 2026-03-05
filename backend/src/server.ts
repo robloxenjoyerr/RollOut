@@ -15,6 +15,7 @@ const httpServer = createServer(app)
 
 const allowedOrigins = [
   process.env.CORS_ORIGIN,
+  "http://localhost:3000",
   "https://rollout.live",
   "https://www.rollout.live"
 ].filter((origin): origin is string => typeof origin === "string" && origin.length > 0)

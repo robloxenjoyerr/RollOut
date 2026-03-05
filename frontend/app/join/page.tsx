@@ -21,6 +21,8 @@ export default function JoinPage() {
     const [enteringUsername, setEnteringUsername] = useState<boolean>(false)
     const [username, setUsername] = useState<string>("")
     const [roomCode, setRoomCode] = useState<string>("")
+    const [clientId, setClientId] = useState<string>("");
+
 
     async function verifyRoom() {
         if (!roomCode) return null
@@ -37,17 +39,19 @@ export default function JoinPage() {
             })
 
             if (!data.valid) {
+                console.log("JOIN RESPONSE: ", data)
                 addToast(data.message, "error")
                 setEnteringUsername(false)
                 return
             }
             else {
                 console.log("RES: ", data)
+                setClientId(data.clientId); // Speichere die ClientId
                 setEnteringUsername(true)
                 if (usernameInputRef.current) {
                     usernameInputRef.current.value = ""
                 }
-                
+
             }
 
         } catch (err) {
@@ -61,7 +65,7 @@ export default function JoinPage() {
             addToast("Either Room-Code or Username was invalid.", "error")
             return
         }
-        router.push(`/room/${roomCode}?userName=${encodeURIComponent(username)}`)
+        router.push(`/room/${roomCode}?userName=${encodeURIComponent(username)}&clientId=${clientId}`)
     }
 
     return <>
