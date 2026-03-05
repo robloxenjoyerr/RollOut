@@ -54,16 +54,16 @@ gameRouter.post("/verify", async (req, res) => {
         const { roomCode, userName } = req.body
         const clientId = getOrCreateClientId(req, res)
 
-        console.log(`/VERIFY: Verifying with roomCode ${roomCode} and username ${userName} `)
+        console.log(`[Game-Router - /VERIFY]: Verifying with roomCode ${roomCode} and username ${userName} `)
         if (!clientId) {
-            console.log("/START: getOrCreateClientId ERROR => Returned NULL.", "\n")
+            console.log("[Game-Router - /START]: getOrCreateClientId ERROR => Returned NULL.", "\n")
             return res.status(400).send({ valid: false, message: "ClientID could not be determined." })
         }
 
         const room = await verifyRoom(roomCode)
         if (!room) return res.status(404).send({ valid: false, message: "Room not found." })
-        console.log("/START: Client already in room: ", room)
-        console.log(`/START: Is ClientID ${clientId} in a room already: `, room.roomCode, "\n")
+        console.log("[Game-Router - /START]: Client already in room: ", room)
+        console.log(`[Game-Router - /START]: Is ClientID ${clientId} in a room already: `, room.roomCode, "\n")
 
         const alreadyInRoom = await findRoomByClient(clientId)
 
@@ -71,7 +71,7 @@ gameRouter.post("/verify", async (req, res) => {
             // if the caller supplied a userName and it's different from the
             // name we have stored, update the record so future joins show the
             // right name
-            console.log(`/VERIFY: New Client with name ${userName} is already in a room with username: ${alreadyInRoom.userName}. Updating to new username ${userName}.`)
+            console.log(`[Game-Router - /VERIFY]: New Client with name ${userName} is already in a room with username: ${alreadyInRoom.userName}. Updating to new username ${userName}.`)
             if (userName && userName !== alreadyInRoom.userName) {
                 console.log(`/VERIFY: updating username for ${clientId} to new username: ${userName}`)
                 await prisma.client.update({
@@ -81,7 +81,7 @@ gameRouter.post("/verify", async (req, res) => {
                 alreadyInRoom.userName = userName
             }
 
-            console.log("/VERIFY: Sending back client info: ", alreadyInRoom)
+            console.log("[Game-Router - /VERIFY]: Sending back client info: ", alreadyInRoom)
             return res.send({
                 roomCode: alreadyInRoom.game.roomCode,
                 reconnect: true,
@@ -124,13 +124,13 @@ gameRouter.post("/join", async (req, res) => {
         const clientId = getOrCreateClientId(req, res)
 
         if (!clientId) {
-            console.log("[GAME.ROUTES - /join] ERROR: Tried to get or create clientId => Failed")
+            console.log("[Game-Router - /join] ERROR: Tried to get or create clientId => Failed")
             return res.status(500).send({ valid: false, message: "Could not create Client-ID." });
 
         }
 
         const room = await verifyRoom(roomCode)
-        console.log(`/JOIN: Room found with entered Code ${roomCode}: `, room, "\n")
+        console.log(`[Game-Router - /JOIN]: Room found with entered Code ${roomCode}: `, room, "\n")
 
         if (!room) {
             return res.status(404).send({ valid: false, message: "Room with specified Code doesn`t exist." })
@@ -138,7 +138,7 @@ gameRouter.post("/join", async (req, res) => {
 
         return res.status(201).send({ valid: true, clientId: clientId })
     } catch (err) {
-        console.error("gameRouter ERROR : /verify : ", err, "\n")
+        console.error("[Game-Router - ERROR]: /verify : ", err, "\n")
         return res.status(500).send({ valid: false, message: "An Error has occurred." })
     }
 })

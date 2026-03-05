@@ -22,6 +22,8 @@ export default async function Page({ params, searchParams }: {
     // Greife DANACH auf die Eigenschaften der aufgelösten Objekte zu
     const roomCode = paramsData.roomCode;
     const userName = searchParamsData.username;
+
+    console.log("USERNAME FROM SEARCHPARAMS: ", userName)
     let clientId = searchParamsData.clientId;
 
     if (!clientId) {
