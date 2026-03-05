@@ -33,7 +33,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
     const [pendingUpdate, setPendingUpdate] = useState<any>(null)
-    const [currentPhase, setCurrentPhase] = useState<GamePhase>(roomConfig.status)
+    const [currentPhase, setCurrentPhase] = useState<GamePhase | null>(null)
     const [currentRolled, setCurrentRolled] = useState<null | Person>(null)
     const [availablePersons, setAvailablePersons] = useState<any[]>([])
     const [isSpinning, setIsSpinning] = useState<boolean>(false)
@@ -56,7 +56,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             const parsedPersons: Person[] = data.persons || []
             const unrolledPersons = parsedPersons.filter(p => p.state === "unrolled")
 
-            setCurrentPhase(data.phase)
+            setCurrentPhase(data.status)
             setPendingUpdate(unrolledPersons)
             setAvailablePersons(parsedPersons)
         }
@@ -76,13 +76,14 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             setClients((prev) => prev.filter(c => c.clientId !== client.clientId))
         }
 
-        const onGameStarted = () => {
+        const onGameStarted = (data: any) => {
             addToast("Game has started!", "success")
-            setCurrentPhase("in-progress")
+            console.log("New GamePhase: ", data.status)
+            setCurrentPhase(data.status)
         }
 
-        const onGameStartError = () => {
-            addToast("Error starting the game.", "error")
+        const onGameStartError = (data: any) => {
+            addToast(`${data.message}`, "error")
         }
 
         const onGameEnded = () => {
@@ -160,8 +161,8 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
         socket.on("clientJoined", (data) => onClientJoined(data))
         socket.on("clientDisconnected", (data) => onClientDisconnected(data))
         socket.on("currentClients", (clientList: Client[]) => setClients(clientList))
-        socket.on("gameStarted", onGameStarted)
-        socket.on("gameStartError", onGameStartError)
+        socket.on("gameStarted", (data) => onGameStarted(data))
+        socket.on("gameStartError", (data) => onGameStartError(data))
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
 
@@ -169,7 +170,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
 
 
         //  runs when the component unmounts or dependencies change
-        // removing ALL listeners to prevent memory leaks
+        // removing ALL listeners to prevent memory 
         return () => {
             console.log("Cleaning up socket listeners...")
             socket.off("connect", onConnect)
@@ -183,7 +184,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             socket.off("allPersonsRolled", onAllRolled)
         }
         // The dependency array should only include values that when changed require the effect to be re-run.
-    }, [socket, roomConfig, roomCode])
+    }, [socket, roomCode])
 
 
     const rollNext = () => {
