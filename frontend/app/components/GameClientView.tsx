@@ -54,7 +54,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             setClients(data.clients)
             console.log("clients length: ", clients)
             addToast(`New Client ${data.name} has connected!`, "info")
-            socket.emit("getGameState", {clientId})
+            socket.emit("getGameState", data.clientId)
         }
 
         const onClientDisconnected = (client: Client, clients: Client[]) => {

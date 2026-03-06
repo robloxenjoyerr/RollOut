@@ -53,7 +53,7 @@ export async function findRoomByClient(clientId: string) {
     console.error("[DB-ACTIONS - findRoomByClient] ERROR: clientId is undefined.")
     return null
   }
-
+  console.log("findROomByClientId CLIENTID: ", clientId)
   const client = await prisma.client.findUnique({
     where: { clientId },
     include: {

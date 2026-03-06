@@ -58,7 +58,7 @@ export default function GameHostView({ roomCode, clientId, roomConfig }: GameHos
             setClients(data.clients)
             console.log(clients)
             addToast(`New Client ${data.name} has connected!`, "info")
-            socket.emit("getGameState", {clientId})
+            socket.emit("getGameState", clientId)
         }
 
         const onClientDisconnected = (client: Client, clients: Client[]) => {
