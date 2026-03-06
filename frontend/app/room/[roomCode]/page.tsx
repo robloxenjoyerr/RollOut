@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import GameClientView from "@/app/components/GameClientView"
 import GameHostView from "@/app/components/GameHostView"
 import { cookies } from "next/headers"
-
+import GameView from "@/app/components/GameView"
 
 // => FIX: when joining as normal client, clientId is undefined => client doesnt get registered in client array and doesnt get rendered for hostview and clientview
 
@@ -55,17 +55,10 @@ export default async function Page({ params, searchParams }: {
 
         console.log("RES: ", res)
 
-
-        if (res.isHost) {
-            return <GameHostView roomCode={roomCode} roomConfig={res} clientId={res.clientId} />;
-        } else {
-            return <GameClientView roomCode={roomCode} roomConfig={res} clientId={res.clientId} />;
-        }
+        return <GameView roomCode={res.roomCode} clientId={res.clientId} roomConfig={res.roomConfig} isHost={res.isHost}/>
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen
         console.error("game/id ERROR : ", error)
-        console.log("REDERECTING TO /join")
-        console.log("/VERIFY: roomCode received in /room/page.tsx:", roomCode)
         return redirect("/join")
     }
 

@@ -1,0 +1,213 @@
+// hooks/useGameState.ts
+"use client"
+import { useState, useEffect, useCallback } from "react"
+import { useSocket } from "./useSocket"
+import { useToasts } from "./useToasts"
+import { GamePhase, Client } from "../lib/types"
+
+interface UseGameStateProps {
+  roomCode: string
+  clientId: string
+  isHost: boolean
+}
+
+interface GameState {
+  phase: GamePhase
+  clients: Client[] | null
+  rotation: number
+  currentRolled: Client | null
+  availablePersons: Client[] | null
+  pendingUpdate: Client[] | null
+  isSpinning: boolean
+}
+
+export function useGameState({ roomCode, clientId, isHost }: UseGameStateProps) {
+  const { socket } = useSocket({ roomCode, clientId })
+  const { addToast } = useToasts()
+
+  // ✅ Zentral verwalteter State
+  const [gameState, setGameState] = useState<GameState>({
+    phase: "waiting-lobby",
+    clients: [],
+    rotation: 0,
+    currentRolled: null,
+    availablePersons: [],
+    isSpinning: false,
+    pendingUpdate: null
+  })
+
+  // ✅ Helper-Funktionen für State-Updates
+  const updatePhase = useCallback((phase: GamePhase) => {
+    setGameState(prev => ({ ...prev, phase }))
+  }, [])
+
+  const updateClients = useCallback((clients: Client[]) => {
+    setGameState(prev => ({ ...prev, clients }))
+  }, [])
+
+  const updateRotation = useCallback((rotation: number) => {
+    setGameState(prev => ({ ...prev, rotation }))
+  }, [])
+
+  const updateCurrentRolled = useCallback((person: Client | null) => {
+    setGameState(prev => ({ ...prev, currentRolled: person }))
+  }, [])
+
+  // ✅ Zentrale Event-Handler
+  const handleGameStateUpdate = useCallback((data: any) => {
+    updatePhase(data.status)
+    updateClients(data.clients)
+    setGameState(prev => ({
+      ...prev,
+      availablePersons: data.availablePersons || prev.availablePersons
+    }))
+  }, [updatePhase, updateClients])
+
+  const handleClientJoined = useCallback((data: any) => {
+    updateClients(data.clients)
+    addToast(`New Client ${data.name} has connected!`, "info")
+    // ✅ FIX: Sende nur den String!
+    socket?.emit("getGameState", clientId)
+  }, [updateClients, addToast, socket, clientId])
+
+  const handleClientDisconnected = useCallback((client: Client) => {
+    addToast(`Client ${client.name} has disconnected.`, "info")
+    setGameState(prev => ({
+      ...prev,
+      clients: prev.clients && prev.clients.filter(c => c.clientId !== client.clientId)
+    }))
+  }, [addToast])
+
+  const handleGameStarted = useCallback((data: any) => {
+    addToast("Game has started!", "success")
+    updatePhase("in-progress")
+  }, [addToast, updatePhase])
+
+  const handleGameStartError = useCallback((data: any) => {
+    addToast(`${data.message}`, "error")
+  }, [addToast])
+
+  const handleGameEnded = useCallback(() => {
+    addToast("Game ended.", "info")
+    updatePhase("finished")
+  }, [addToast, updatePhase])
+
+  const handleNextRolled = useCallback((data: any) => {
+    const { unrolledPersons, nextRolled } = data
+    const effectivePersons = gameState.pendingUpdate || gameState.availablePersons
+    
+
+    if(!effectivePersons) return null
+
+
+    const winnerIndex = effectivePersons.findIndex((p: Client) => p.clientId === nextRolled.clientId)
+
+    if (winnerIndex !== -1) {
+      setGameState(prev => ({ ...prev, isSpinning: true }))
+
+      const segmentAngle = 360 / effectivePersons.length
+      const extraSpins = 360 * 5
+      const currentNormalized = gameState.rotation % 360
+      const targetAngle = 270 - (winnerIndex * segmentAngle) - (segmentAngle / 2)
+      let diff = targetAngle - currentNormalized
+      const finalRotation = gameState.rotation + extraSpins + (diff < 0 ? diff + 360 : diff)
+
+      updateRotation(finalRotation)
+
+      setTimeout(() => {
+        updateCurrentRolled(nextRolled)
+        setGameState(prev => ({ ...prev, isSpinning: false }))
+      }, 4000)
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      pendingUpdate: unrolledPersons.filter((p: any) => p.state === "unrolled")
+    }))
+    updateCurrentRolled(null)
+    
+    setTimeout(() => {
+      updateCurrentRolled(nextRolled)
+    }, 3000)
+  }, [gameState.pendingUpdate, gameState.availablePersons, gameState.rotation, updateRotation, updateCurrentRolled])
+
+  const handleAllRolled = useCallback(() => {
+    setTimeout(() => {
+      addToast("All persons have been rolled! Game is getting closed in 5 seconds.", "success")
+      updateCurrentRolled(null)
+
+      let secondsLeft = 5
+      const countdownInterval = setInterval(() => {
+        if (secondsLeft > 0) {
+          addToast(`Game closing in: ${secondsLeft}`, "info")
+        }
+
+        if (secondsLeft <= 0) {
+          clearInterval(countdownInterval)
+        }
+        secondsLeft--
+      }, 1000)
+    }, 3000)
+  }, [addToast, updateCurrentRolled])
+
+  // ✅ Socket-Setup einmalig
+  useEffect(() => {
+    if (!socket) return
+
+    // Registriere alle Listener
+    const listeners = {
+      gameStateUpdate: handleGameStateUpdate,
+      clientJoined: handleClientJoined,
+      clientDisconnected: handleClientDisconnected,
+      gameStarted: handleGameStarted,
+      gameStartError: handleGameStartError,
+      gameEnded: handleGameEnded,
+      nextRolled: handleNextRolled,
+      allPersonsRolled: handleAllRolled
+    }
+
+    Object.entries(listeners).forEach(([event, handler]) => {
+      socket.on(event, handler)
+    })
+
+    // Initial connection
+    const onConnect = () => {
+      console.log(`[useGameState] Connected! Emitting ${isHost ? 'roomCode' : 'clientId'}`)
+      socket.emit("getGameState", isHost ? roomCode : clientId)
+    }
+
+    socket.on("connect", onConnect)
+
+    if (socket.connected) {
+      onConnect()
+    }
+
+    // ✅ Cleanup: Entferne ALLE Listener
+    return () => {
+      Object.keys(listeners).forEach(event => {
+        socket.off(event)
+      })
+      socket.off("connect", onConnect)
+    }
+  }, [socket, roomCode, clientId, isHost, handleGameStateUpdate, handleClientJoined, handleClientDisconnected, handleGameStarted, handleGameStartError, handleGameEnded, handleNextRolled, handleAllRolled])
+
+  return {
+    gameState,
+    socket,
+    // ✅ Helper-Funktionen für Components
+    rollNext: () => {
+      if (!socket || gameState.isSpinning) return
+      updateCurrentRolled(null)
+      socket.emit("rollNext", { roomCode })
+    },
+    startGame: () => {
+      if (!socket) return
+      socket.emit("startGame", { roomCode, clientId })
+    },
+    stopGame: async () => {
+      // API-Call + Socket-Emit
+      if (!socket) return
+      socket.emit("stopGame", { roomCode })
+    }
+  }
+}

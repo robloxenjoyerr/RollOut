@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
-import { Person } from "../lib/types";
+import { Client } from "../lib/types";
 
 export default function Wheel({
   persons,
   rotation,
 }: {
-  persons: Person[];
+  persons: Client[] | null;
   rotation: number;
 }) {
   const [isMounted, setIsMounted] = useState(false);
   const radius = 150;
   const center = 175;
-  const total = persons.length;
+  const total = persons && persons.length | 0;
 
   useEffect(() => {
     setIsMounted(true);
@@ -30,6 +30,7 @@ export default function Wheel({
   if (total === 0)
     return <div className="text-black italic">No one left to roll!</div>;
 
+  if(!persons || !total) return null
   return (
     <div className="relative select-none w-120 h-120 flex items-center justify-center">
       {/* Pointer */}
@@ -119,7 +120,7 @@ export default function Wheel({
           </g>
         ) : (
           persons.map((person, i) => {
-            const angle = 360 / total;
+            const angle = 360 / total || 0;
             const start = i * angle;
             const end = start + angle;
 
@@ -135,7 +136,7 @@ export default function Wheel({
             const d = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`;
 
             return (
-              <g key={person.id}>
+              <g key={person.clientId}>
                 <path
                   d={d}
                   fill={getPersonColor(person.name)}
@@ -147,7 +148,7 @@ export default function Wheel({
                   x={center + radius / 1.5}
                   y={center}
                   fill="white"
-                  fontSize={total < 6 ? "20" : "16"}
+                  fontSize={total && total < 6 ? "20" : "16"}
                   fontWeight="900"
                   textAnchor="middle"
                   dominantBaseline="middle"

@@ -42,7 +42,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
 
 
         const onGameStateUpdate = (data: any) => {
-         
+
             setClients(data.clients)
         }
 
@@ -61,7 +61,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             console.log("[GameClientView] onPlayerDisconnected:", client)
             addToast(`Client ${client.name} has disconnected.`, "info")
             console.log("cuurent clients: ", clients)
-            setClients((prev)=> prev.filter(c => c.clientId !== client.clientId))
+            setClients((prev) => prev.filter(c => c.clientId !== client.clientId))
         }
 
         const onGameStarted = () => {
@@ -138,7 +138,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
             }, 3000)
         }
 
-        
+
         socket.on("gameStateUpdate", onGameStateUpdate)
         socket.on("clientJoined", onClientJoined)
         socket.on("clientDisconnected", onClientDisconnected)
@@ -147,7 +147,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         socket.on("gameEnded", onGameEnded)
         socket.on("nextRolled", onNextRolled)
         socket.on("allPersonsRolled", onAllRolled)
-        
+
 
         const onConnect = () => {
             console.log("[GameClientView] Connected to GameID: ", roomCode, "with socketID: ", socket.id)
@@ -157,7 +157,7 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
         }
 
         socket.on("connect", onConnect)
-        
+
         if (socket.connected) {
             console.log("[GameClientView] Socket was already connected on effect run. Manually calling onConnect.")
             onConnect()
@@ -331,11 +331,36 @@ export default function GameClientView({ roomCode, clientId, roomConfig }: GameC
                 </AnimatePresence>
             </div>
         )
+    } 
+    else if (currentPhase === "in-progress") {
+        console.log("IN-PROGRESS VIEW")
+        return (
+            <>
+                <AnimatePresence>
+                    <ToastContainer toasts={toasts}></ToastContainer>
+                </AnimatePresence>
+                <AnimatePresence>
+                    <div className="flex flex-col gap-10 absolute items-center justify-center w-screen h-screen box-content overflow-hidden m-0 p-0">
+                        <div className="flex flex-col">
+                            <span className="text-black font-bold text-7xl select-none ">Game is running!</span>
+                        </div>
+                        <div className="flex text-black flex-row gap-4 flex-wrap">
+                            {/* Wheel */}
+
+                            <div className="flex flex-col items-center gap-10">
+                                <Wheel persons={availablePersons} rotation={rotation} />
+                            </div>
+                        </div>
+                    </div>
+                </AnimatePresence>
+            </ >
+
+        )
     }
 
     return (
         <div className="text-red-500">
-            ERROR
+            <Loading></Loading>
         </div>
     )
 }
