@@ -15,8 +15,6 @@ interface GameViewProps {
 }
 
 export default function GameView({ roomCode, clientId, roomConfig, isHost }: GameViewProps) {
-    const { socket } = useSocket({ roomCode, clientId })
-
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
     const [isSpinning, setIsSpinning] = useState<boolean>(false)
@@ -25,7 +23,7 @@ export default function GameView({ roomCode, clientId, roomConfig, isHost }: Gam
         clientId,
         isHost
     })
-
+    if(!gameState.phase) return <Loading></Loading>
     if (gameState.phase === "waiting-lobby") {
         return (
             <WaitingLobby

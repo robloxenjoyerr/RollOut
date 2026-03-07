@@ -1,11 +1,79 @@
 import { Socket, Server } from "socket.io";
 import prisma from "../lib/prisma-client";
-import { findRoomByClient, findRoomByGameCode, updateRoomStatus } from "../services/db-actions";
+import { findRoomByClient, findRoomByGameCode, updateRoomStatus, deleteRoom } from "../services/db-actions";
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   const client = socket.data.client
 
   console.log(`[GameHandler] Initial client ${client.name} (${client.clientId}) socket registered`)
+
+
+  socket.on("getGameState", async (clientId: string) => {
+    const room = await findRoomByClient(clientId)
+
+    if (!room) {
+      return io.to(client.gameId).emit("error", { message: "Could not find Room for ClientId: ", clientId })
+    }
+
+    io.to(client.gameId).emit("gameStateUpdate", {
+      status: room.game.status,
+      clients: room.game.clients
+    })
+  })
+
+  const hostDisconnectTimers = new Map<string, NodeJS.Timeout>()
+
+  socket.on("disconnect", async () => {
+
+    console.log(`[GameHandler] Client ${client.name} disconnected from room ${client.gameId}`)
+
+    const room = await findRoomByClient(client.clientId)
+
+    if (!room) {
+      console.log(`[GameHandler - socket.disconnect] Client ${client} is not in Room with gameId ${client.gameId}`)
+      return io.to(client.gameId).emit("error", { message: "Could not disconnect from a Room you were not in before." })
+    }
+
+    const isHost = room.game.hostId === client.clientId
+
+    if (isHost) {
+      console.log(`[GameHandler - socket.disconnect] HOST has disconnected from Room ${room.game.roomCode}`)
+
+      await prisma.liveGames.update({
+        where: { id: room.game.id },
+        data: {
+          hostLeft: true,
+          hostLeftAt: new Date()
+        }
+      })
+
+      io.to(room.game.id).emit("hostDisconnected", {
+        message: "HOST left. Room will close in 5 minutes if HOST doesn't return."
+      })
+
+      const timer = setTimeout(async () => {
+        const stillGone = await prisma.liveGames.findUnique({
+          where: { id: room.game.id }
+        })
+
+        if (stillGone?.hostLeft) {
+          await deleteRoom(room.game.id)
+          io.to(room.game.id).emit("roomClosed", {
+            reason: "host_disconnected"
+          })
+        }
+      }, 1000 * 60 * 5) // * 5 => 5min
+
+      hostDisconnectTimers.set(room.game.id, timer)
+    }
+    else {
+      io.to(client.gameId).emit("clientDisconnected", {
+        clientId: client.clientId,
+        name: client.name,
+        clients: room.game.clients
+      });
+    }
+  });
 
   socket.on("joinRoom", async (data: { roomCode: string, clientId: string }) => {
     const { roomCode } = data;
@@ -13,15 +81,35 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     console.log(`[GameHandler] joinRoom event from ${client.name}: roomCode=${roomCode}`)
 
     // Find the actual room by code
-    const room = await prisma.liveGames.findUnique({
-      where: { roomCode },
-      include: { clients: true }
-    })
+    const room = await findRoomByGameCode(roomCode)
 
     if (!room) {
       console.log(`[GameHandler] Room ${roomCode} not found!`)
       socket.emit("error", { message: "Room not found" });
       return
+    }
+
+    if (room.hostLeft && room.hostId === client.clientID) {
+      console.log(`[GameHandler] HOST reconnected! Canceling grace-period.`)
+
+      if (hostDisconnectTimers.has(room.id)) {
+        clearTimeout(hostDisconnectTimers.get(room.id)!)
+        hostDisconnectTimers.delete(room.id)
+      }
+
+      await prisma.liveGames.update({
+        where: { id: room.id },
+        data: {
+          hostLeft: false,
+          hostLeftAt: null
+        }
+      })
+      io.to(room.id).emit("hostReconnected", {
+        clientId: client.clientId,
+        name: client.name,
+        clients: room.clients
+      })
+
     }
 
     console.log(`[GameHandler] Found room ${roomCode} with ID ${room.id}`)
@@ -37,7 +125,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     console.log(`[GameHandler] Client ${client.name} joined room ${room.id}`)
 
     // Broadcast that this client joined
-    socket.to(room.id).emit("clientJoined", {
+    io.to(room.id).emit("clientJoined", {
       clientId: client.clientId,
       name: client.name,
       isHost: room.hostId === client.clientId,
@@ -52,38 +140,6 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       clients: room.clients
     });
 
-  });
-
-  socket.on("getGameState", async (clientId: string) => {
-    const room = await findRoomByClient(clientId)
-
-    if (!room) {
-      return io.to(client.gameId).emit("error", { message: "Could not find Room for ClientId: ", clientId })
-    }
-
-    io.to(client.gameId).emit("gameStateUpdate", {
-      status: room.game.status,
-      clients: room.game.clients
-    })
-  })
-
-  socket.on("disconnect", async () => {
-    console.log(`[GameHandler] Client ${client.name} disconnected from room ${client.gameId}`)
-
-    const room = await findRoomByClient(client.clientId)
-
-    if (!room) {
-      console.log(`[GameHandler - socket.disconnect] Client ${client} is not in Room with gameId ${client.gameId}`)
-      return io.to(client.gameId).emit("error", { message: "Could not disconnect from a Room you were not in before." })
-    }
-
-    console.log("game clients: ", room.game.clients)
-
-    io.to(client.gameId).emit("clientDisconnected", {
-      clientId: client.clientId,
-      name: client.name,
-      clients: room.game.clients
-    });
   });
 
   socket.on("startGame", async (data) => {

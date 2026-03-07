@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion"
+import { ToastType } from "../hooks/useToasts"
 interface Toast {
     id: string,
     message: string,
-    type: "success" | "error" | "info"
+    type: ToastType
 }
 
 export default function ToastContainer({ toasts }: { toasts: Toast[] }) {
@@ -23,7 +24,7 @@ export default function ToastContainer({ toasts }: { toasts: Toast[] }) {
                            
                         }}
                     >
-                        <div className={`px-4 py-2 rounded-2xl shadow-md border-2 border-black/20 bg-black/30 text-white pointer-events-auto ${toast.type === "success" ? "text-green-500" : toast.type === "error" ? "text-red-500" : "text-blue-500"}`}>
+                        <div className={`px-4 py-2 rounded-2xl shadow-md border-2 border-black/20 bg-black/30 text-white pointer-events-auto ${toast.type === "success" ? "text-green-500" : toast.type === "error" ? "text-red-500" : toast.type === "info" ?"text-blue-500" : "text-yellow-500"}`}>
                             {toast.message}
                         </div>
                     </motion.div>

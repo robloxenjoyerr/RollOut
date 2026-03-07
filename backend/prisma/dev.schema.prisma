@@ -25,7 +25,7 @@ model Client {
   gameId String
   isHost Boolean @default(false)
   joinedAt DateTime @default(now())
-  game liveGames @relation(fields: [gameId], references: [id])
+  game liveGames @relation(fields: [gameId], references: [id], onDelete: Cascade)
 }
 
 model liveGames {
@@ -36,5 +36,8 @@ model liveGames {
   isPrivate Boolean @default(false)
   status String @default("waiting")
   hostId String 
+  hostLeft Boolean @default(false)
+  hostLeftAt DateTime?
+  lastActivityAt DateTime @default(now())
   clients Client[]
 }

@@ -64,6 +64,7 @@ export function useGameState({ roomCode, clientId, isHost }: UseGameStateProps) 
   }, [updatePhase, updateClients])
 
   const handleClientJoined = useCallback((data: any) => {
+    console.log("Someone joined!!!")
     updateClients(data.clients)
     addToast(`New Client ${data.name} has connected!`, "info")
     // ✅ FIX: Sende nur den String!
@@ -91,6 +92,10 @@ export function useGameState({ roomCode, clientId, isHost }: UseGameStateProps) 
     addToast("Game ended.", "info")
     updatePhase("finished")
   }, [addToast, updatePhase])
+
+  const handleHostDisconnected = (data: any) => {
+    addToast(`${data.message}`, "warning")
+  }
 
   const handleNextRolled = useCallback((data: any) => {
     const { unrolledPersons, nextRolled } = data
@@ -163,7 +168,8 @@ export function useGameState({ roomCode, clientId, isHost }: UseGameStateProps) 
       gameStartError: handleGameStartError,
       gameEnded: handleGameEnded,
       nextRolled: handleNextRolled,
-      allPersonsRolled: handleAllRolled
+      allPersonsRolled: handleAllRolled,
+      hostDisconnected: handleHostDisconnected
     }
 
     Object.entries(listeners).forEach(([event, handler]) => {
@@ -173,7 +179,7 @@ export function useGameState({ roomCode, clientId, isHost }: UseGameStateProps) 
     // Initial connection
     const onConnect = () => {
       console.log(`[useGameState] Connected! Emitting ${isHost ? 'roomCode' : 'clientId'}`)
-      socket.emit("getGameState", isHost ? roomCode : clientId)
+      socket.emit("getGameState", clientId)
     }
 
     socket.on("connect", onConnect)
@@ -189,7 +195,7 @@ export function useGameState({ roomCode, clientId, isHost }: UseGameStateProps) 
       })
       socket.off("connect", onConnect)
     }
-  }, [socket, roomCode, clientId, isHost, handleGameStateUpdate, handleClientJoined, handleClientDisconnected, handleGameStarted, handleGameStartError, handleGameEnded, handleNextRolled, handleAllRolled])
+  }, [socket, roomCode, clientId])
 
   return {
     gameState,

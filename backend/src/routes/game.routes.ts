@@ -153,6 +153,23 @@ gameRouter.post("/stop", async (req, res) => {
     }
 })
 
+gameRouter.get("/roomsOnline", async (req, res) => {
+    try {
+        const roomsOnline = await prisma.liveGames.count({
+            where: {
+                status: { not: "finished" }  // Nur aktive Räume zählen
+            }
+        })
+
+        return res.send({ roomsOnline })
+    } catch (err) {
+        console.error("[Game-Router - /roomsOnline] ERROR: ", err)
+        return res.status(500).send({ error: "Could not fetch rooms online" })
+    }
+})
+
+
+
 export default gameRouter
 
 // npx prisma generate

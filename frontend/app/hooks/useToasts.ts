@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { randomBytes } from "crypto";
 
-export type ToastType = "success" | "error" | "info";
+export type ToastType = "success" | "error" | "info" | "warning";
 const timer = 3000
 
 export function useToasts() {

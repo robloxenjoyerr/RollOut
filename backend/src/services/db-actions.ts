@@ -41,7 +41,7 @@ export async function verifyRoom(roomCode: string) {
     where: { roomCode: roomCode }
   })
 
-  if(!roomVerified){
+  if (!roomVerified) {
     console.error("[DB-ACTIONS - verifyRoom] ERROR: Room could not be verified.")
   }
 
@@ -59,7 +59,7 @@ export async function findRoomByClient(clientId: string) {
     include: {
       game: {
         include: {
-          clients: true // <- alle Clients des Spiels laden
+          clients: true 
         }
       }
     }
@@ -98,15 +98,17 @@ export async function findRoomByGameCode(roomCode: string) {
     return null
   }
   return await prisma.liveGames.findUnique({
-    where: { roomCode: roomCode }
+    where: { roomCode: roomCode },
+    include: { clients: true }
   })
 }
 
-export async function deleteGame(id: string) {
+export async function deleteRoom(id: string) {
   return await prisma.liveGames.delete({
     where: { id }
   })
 }
+
 
 
 export async function addClientToGame(gameId: string, clientData: { clientId: string; username: string; isHost?: boolean }) {

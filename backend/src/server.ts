@@ -9,6 +9,7 @@ import apiRouter from "./routes/api.routes";
 import cookieParser from "cookie-parser"
 import prisma from "./lib/prisma-client"
 
+
 const PORT = process.env.PORT || 4000
 const app = express();
 const httpServer = createServer(app)
