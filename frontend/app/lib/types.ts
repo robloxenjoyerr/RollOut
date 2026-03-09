@@ -1,6 +1,14 @@
+// export const Modes = [
+//     "wheel",
+//     "random",
+//     "plinko",
+//     "casino"
+// ]
+
+export type Mode = "wheel" | "random" | "plinko" | "casino"
 export const Modes = [
-    "wheel",
     "random",
+    "wheel",
     "plinko",
     "casino"
 ]

@@ -3,16 +3,18 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSocket } from "./useSocket"
 import { useToasts } from "./useToasts"
-import { GamePhase, Client } from "../lib/types"
+import { GamePhase, Client, Mode } from "../lib/types"
 
 interface UseGameStateProps {
   roomCode: string
+  mode: string
   clientId: string
   isHost: boolean
 }
 
 interface GameState {
-  phase: GamePhase
+  status: GamePhase
+  mode: string
   clients: Client[] | null
   rotation: number
   currentRolled: Client | null
@@ -21,13 +23,14 @@ interface GameState {
   isSpinning: boolean
 }
 
-export function useGameState({ roomCode, clientId, isHost }: UseGameStateProps) {
+export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateProps) {
   const { socket } = useSocket({ roomCode, clientId })
   const { addToast } = useToasts()
 
   // ✅ Zentral verwalteter State
   const [gameState, setGameState] = useState<GameState>({
-    phase: "waiting-lobby",
+    status: "waiting-lobby",
+    mode: mode,
     clients: [],
     rotation: 0,
     currentRolled: null,
@@ -37,8 +40,8 @@ export function useGameState({ roomCode, clientId, isHost }: UseGameStateProps) 
   })
 
   // ✅ Helper-Funktionen für State-Updates
-  const updatePhase = useCallback((phase: GamePhase) => {
-    setGameState(prev => ({ ...prev, phase }))
+  const updatePhase = useCallback((status: GamePhase) => {
+    setGameState(prev => ({ ...prev, status }))
   }, [])
 
   const updateClients = useCallback((clients: Client[]) => {

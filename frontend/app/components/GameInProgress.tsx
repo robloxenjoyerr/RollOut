@@ -11,6 +11,7 @@ import Wheel from "./Wheel"
 
 interface GameInProgressProps {
     clients: Client[] | null
+    mode: string
     rotation: number
     currentRolledClient: Client | null
     unrolledClients: Client[] | null
@@ -19,7 +20,7 @@ interface GameInProgressProps {
     onRollNext: () => void
     onStopGame: () => void
 }
-export default function GameInProgress({ clients, rotation, currentRolledClient, unrolledClients, isHost, isSpinning, onRollNext, onStopGame }: GameInProgressProps) {
+export default function GameInProgress({ clients, mode, rotation, currentRolledClient, unrolledClients, isHost, isSpinning, onRollNext, onStopGame }: GameInProgressProps) {
     const { toasts, addToast } = useToasts()
     const router = useRouter()
 
@@ -36,14 +37,22 @@ export default function GameInProgress({ clients, rotation, currentRolledClient,
                     {/* Wheel */}
 
                     <div className="flex flex-col items-center gap-10">
-                        <Wheel persons={unrolledClients} rotation={rotation} />
+                        <Wheel persons={clients} rotation={rotation} />
                     </div>
                 </div>
             </div>
         </AnimatePresence>
-        <div className="absolute bottom-5 left-5 flex gap-5">
-            <Button disabled={isSpinning} onClick={onRollNext}>Roll Next</Button>
-            <Button onClick={onStopGame}>Stop Game</Button>
-        </div>
+        {isHost
+
+            ?
+            <div className="absolute bottom-5 left-5 flex gap-5">
+                <Button disabled={isSpinning} onClick={onRollNext}>Roll Next</Button>
+                <Button onClick={onStopGame}>Stop Game</Button>
+            </div>
+
+            :
+            ""
+        }
+
     </>
 }

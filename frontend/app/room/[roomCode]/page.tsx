@@ -55,7 +55,7 @@ export default async function Page({ params, searchParams }: {
 
         console.log("RES: ", res)
 
-        return <GameView roomCode={res.roomCode} clientId={res.clientId} roomConfig={res.roomConfig} isHost={res.isHost}/>
+        return <GameView roomCode={res.roomCode} mode={res.mode} clientId={res.clientId} roomConfig={res.roomConfig} isHost={res.isHost}/>
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen
         console.error("game/id ERROR : ", error)

@@ -9,22 +9,24 @@ import { useState } from "react"
 
 interface GameViewProps {
     roomCode: string
+    mode: string
     clientId: string
     roomConfig: any
     isHost: boolean
 }
 
-export default function GameView({ roomCode, clientId, roomConfig, isHost }: GameViewProps) {
+export default function GameView({ roomCode, mode, clientId, roomConfig, isHost }: GameViewProps) {
     const [clients, setClients] = useState<Client[]>([])
     const [rotation, setRotation] = useState(0)
     const [isSpinning, setIsSpinning] = useState<boolean>(false)
     const { gameState, rollNext, startGame, stopGame } = useGameState({
         roomCode,
+        mode,
         clientId,
         isHost
     })
-    if(!gameState.phase) return <Loading></Loading>
-    if (gameState.phase === "waiting-lobby") {
+    if(!gameState.status) return <Loading></Loading>
+    if (gameState.status === "waiting-lobby") {
         return (
             <WaitingLobby
                 clients={gameState.clients}
@@ -36,10 +38,11 @@ export default function GameView({ roomCode, clientId, roomConfig, isHost }: Gam
         )
     }
 
-    if (gameState.phase === "in-progress") {
+    if (gameState.status === "in-progress") {
         return (
             <GameInProgress
                 clients={gameState.clients}
+                mode={gameState.mode}
                 rotation={gameState.rotation}
                 currentRolledClient={gameState.currentRolled}
                 unrolledClients={gameState.availablePersons}
