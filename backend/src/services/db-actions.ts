@@ -125,4 +125,10 @@ export async function addClientToGame(gameId: string, clientData: { clientId: st
   })
 }
 
+
+export async function getRoomClients(roomCode: string){
+  const room = await findRoomByClient
+}
+
+
 // export async function findClientBy

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react"
 import { useSocket } from "./useSocket"
 import { useToasts } from "./useToasts"
 import { GamePhase, Client, Mode } from "../lib/types"
+import { chownSync } from "fs"
+import { constrainedMemory } from "process"
 
 interface UseGameStateProps {
   roomCode: string
@@ -101,19 +103,16 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   }
 
   const handleNextRolled = useCallback((data: any) => {
-    const { unrolledPersons, nextRolled } = data
-    const effectivePersons = gameState.pendingUpdate || gameState.availablePersons
-    
+    const { unrolledClients, nextRolled } = data
 
-    if(!effectivePersons) return null
+    console.log("Next rolled: ", nextRolled)
 
-
-    const winnerIndex = effectivePersons.findIndex((p: Client) => p.clientId === nextRolled.clientId)
+    const winnerIndex = unrolledClients.findIndex((p: Client) => p.clientId === nextRolled.clientId)
 
     if (winnerIndex !== -1) {
       setGameState(prev => ({ ...prev, isSpinning: true }))
 
-      const segmentAngle = 360 / effectivePersons.length
+      const segmentAngle = 360 / unrolledClients.length
       const extraSpins = 360 * 5
       const currentNormalized = gameState.rotation % 360
       const targetAngle = 270 - (winnerIndex * segmentAngle) - (segmentAngle / 2)
@@ -130,7 +129,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
 
     setGameState(prev => ({
       ...prev,
-      pendingUpdate: unrolledPersons.filter((p: any) => p.state === "unrolled")
+      pendingUpdate: unrolledClients.filter((p: any) => p.state === "unrolled")
     }))
     updateCurrentRolled(null)
     
@@ -158,6 +157,10 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     }, 3000)
   }, [addToast, updateCurrentRolled])
 
+  const handleRollNextError = useCallback(()=> {
+    addToast("ERROR with rolling Next Client", "error")
+  }, [addToast])
+
   // ✅ Socket-Setup einmalig
   useEffect(() => {
     if (!socket) return
@@ -172,7 +175,8 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
       gameEnded: handleGameEnded,
       nextRolled: handleNextRolled,
       allPersonsRolled: handleAllRolled,
-      hostDisconnected: handleHostDisconnected
+      hostDisconnected: handleHostDisconnected,
+      rollNextError: handleRollNextError
     }
 
     Object.entries(listeners).forEach(([event, handler]) => {
@@ -207,7 +211,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     rollNext: () => {
       if (!socket || gameState.isSpinning) return
       updateCurrentRolled(null)
-      socket.emit("rollNext", { roomCode })
+      socket.emit("rollNext", { roomCode, clientId })
     },
     startGame: () => {
       if (!socket) return

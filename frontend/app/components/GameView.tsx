@@ -3,6 +3,7 @@ import { useGameState } from "../hooks/useGameState"
 import Loading from "./Loading"
 import WaitingLobby from "./WaitingLobby"
 import GameInProgress from "./GameInProgress"
+import GameFinished from "./GameFinished"
 import { useSocket } from "../hooks/useSocket"
 import { Client } from "../lib/types"
 import { useState } from "react"
@@ -51,6 +52,12 @@ export default function GameView({ roomCode, mode, clientId, roomConfig, isHost 
                 onRollNext={rollNext}
                 onStopGame={stopGame}
             />
+        )
+    }
+
+    if(gameState.status === "finished"){
+        return(
+            <GameFinished /> 
         )
     }
 

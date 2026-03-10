@@ -30,7 +30,7 @@ export default function Wheel({
   if (total === 0)
     return <div className="text-black italic">No one left to roll!</div>;
 
-  if(!persons || !total) return null
+  if (!persons || !total) return null
   return (
     <div className="relative select-none w-120 h-120 flex items-center justify-center">
       {/* Pointer */}
@@ -48,20 +48,20 @@ export default function Wheel({
         <defs>
           {/* Gold */}
           <radialGradient id="goldGradient">
-            <stop offset="0%" stopColor="#fff2b0" />
-            <stop offset="60%" stopColor="#d4af37" />
-            <stop offset="100%" stopColor="#8b6b1f" />
+            <stop offset="0%" stopColor="rgba(255,255,255,0.9)" />
+            <stop offset="60%" stopColor="rgba(148,163,255,0.7)" />
+            <stop offset="100%" stopColor="rgba(99,102,241,0.5)" />
           </radialGradient>
 
           {/* Center */}
           <radialGradient id="centerGradient">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#b8860b" />
+            <stop offset="0%" stopColor="rgba(255,255,255,1)" />
+            <stop offset="100%" stopColor="rgba(148,163,255,0.8)" />
           </radialGradient>
 
           {/* Glow */}
           <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -73,8 +73,10 @@ export default function Wheel({
         <circle
           cx={center}
           cy={center}
-          r={radius + 16}
-          fill="url(#goldGradient)"
+          r={radius + 20}
+          fill="none"
+          stroke="rgba(148,163,255,0.3)"
+          strokeWidth={8}
           filter="url(#glow)"
         />
 
@@ -87,8 +89,8 @@ export default function Wheel({
               key={i}
               cx={center + r * Math.cos(a)}
               cy={center + r * Math.sin(a)}
-              r="4"
-              fill="#ffd966"
+              r="3"
+              fill="rgba(255,255,255,0.8)"
               filter="url(#glow)"
             />
           );
@@ -102,6 +104,7 @@ export default function Wheel({
               cy={center}
               r={radius}
               fill={getPersonColor(persons[0].name)}
+              opacity="0.85"
             />
             <text
               x={center}
@@ -111,9 +114,7 @@ export default function Wheel({
               fontWeight="900"
               textAnchor="middle"
               dominantBaseline="middle"
-              style={{
-                filter: "drop-shadow(2px 2px 3px rgba(0,0,0,0.9))",
-              }}
+              style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.8))" }}
             >
               {persons[0].name}
             </text>
@@ -172,7 +173,7 @@ export default function Wheel({
           cy={center}
           r="14"
           fill="url(#centerGradient)"
-          stroke="#6b4e00"
+          stroke="rgba(148,163,255,0.8)"
           strokeWidth="2"
         />
       </svg>

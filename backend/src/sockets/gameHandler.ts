@@ -1,6 +1,6 @@
 import { Socket, Server } from "socket.io";
 import prisma from "../lib/prisma-client";
-import { findRoomByClient, findRoomByGameCode, updateRoomStatus, deleteRoom } from "../services/db-actions";
+import { findRoomByClient, findRoomByGameCode, updateRoomStatus, deleteRoom, getRoomClients } from "../services/db-actions";
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   const client = socket.data.client
@@ -181,7 +181,32 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     io.to(client.gameId).emit("gameEnded");
   });
 
-  socket.on("rollNext", async () => {
+  socket.on("rollNext", async ({ clientId }) => {
+    try {
+      console.log("[GameHandler] Rolling Next Client NOW!")
 
+      const room = await findRoomByClient(clientId)
+      const clients = room?.game.clients
+
+      console.log("[GameHandler] Current clients: ", clients)
+      if (!room || !clients) return io.to(client.gameId).emit("rollNextError", { message: "ERROR: Could not roll next => Either room or clients is undefined." })
+
+      const unrolledClients = Array.from(clients.filter((c) => c.isRolled === false && c.isHost === false))
+
+      if (unrolledClients.length === 0) return io.to(client.gameId).emit("gameEnded")
+
+      const randomInt = Math.floor(Math.random() * unrolledClients.length)
+      const nextRolled = unrolledClients[randomInt]
+
+      await prisma.client.update({
+        where: { id: nextRolled.id },
+        data: { isRolled: true }
+      })
+
+      return io.to(client.gameId).emit("nextRolled", {nextRolled, unrolledClients})
+
+    } catch (err) {
+      console.error("[GameHandler] Try-Catch Error: ", err)
+    }
   });
 };
