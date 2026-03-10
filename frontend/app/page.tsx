@@ -71,7 +71,7 @@ export default function Home() {
           <span>🎉 Start Rolling!</span>
         </div> */}
       </div>
-      <FloatingActionButton onClick={()=> addToast("Currently not working.", "error")}></FloatingActionButton>
+      <FloatingActionButton ></FloatingActionButton>
       <ToastContainer toasts={toasts}/>
       <Footer></Footer>
     </>
