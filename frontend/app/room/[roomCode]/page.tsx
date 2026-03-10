@@ -1,8 +1,6 @@
 
 import { apiFetch } from "@/app/lib/api"
 import { redirect } from "next/navigation"
-import GameClientView from "@/app/components/GameClientView"
-import GameHostView from "@/app/components/GameHostView"
 import { cookies } from "next/headers"
 import GameView from "@/app/components/GameView"
 
