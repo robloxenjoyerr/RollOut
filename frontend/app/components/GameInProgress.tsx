@@ -14,15 +14,24 @@ interface GameInProgressProps {
     mode: string
     rotation: number
     currentRolledClient: Client | null
-    unrolledClients: Client[] | null
     isHost: boolean
+    clientId: string
     isSpinning: boolean
     onRollNext: () => void
     onStopGame: () => void
 }
-export default function GameInProgress({ clients, mode, rotation, currentRolledClient, unrolledClients, isHost, isSpinning, onRollNext, onStopGame }: GameInProgressProps) {
+export default function GameInProgress({ clients, mode, rotation, currentRolledClient, isHost, clientId, isSpinning, onRollNext, onStopGame }: GameInProgressProps) {
     const { toasts, addToast } = useToasts()
     const router = useRouter()
+
+    const wheelClients = clients?.filter(
+        c =>
+            !c.isRolled &&
+            !c.isHost &&
+            !(isHost && c.clientId === clientId)
+    ) ?? null
+
+    console.log("Wheel clients: ", wheelClients)
 
     return <>
         <AnimatePresence>
@@ -37,7 +46,7 @@ export default function GameInProgress({ clients, mode, rotation, currentRolledC
                     {/* Wheel */}
 
                     <div className="flex flex-col items-center gap-10">
-                        <Wheel persons={clients} rotation={rotation} />
+                        <Wheel clients={wheelClients} rotation={rotation} />
                     </div>
                 </div>
             </div>

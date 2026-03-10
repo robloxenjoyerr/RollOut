@@ -20,7 +20,6 @@ interface GameState {
   clients: Client[] | null
   rotation: number
   currentRolled: Client | null
-  availablePersons: Client[] | null
   pendingUpdate: Client[] | null
   isSpinning: boolean
 }
@@ -36,7 +35,6 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     clients: [],
     rotation: 0,
     currentRolled: null,
-    availablePersons: [],
     isSpinning: false,
     pendingUpdate: null
   })
@@ -61,10 +59,10 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   // ✅ Zentrale Event-Handler
   const handleGameStateUpdate = useCallback((data: any) => {
     updatePhase(data.status)
-    updateClients(data.clients)
+    updateClients(data.clients || [])
     setGameState(prev => ({
       ...prev,
-      availablePersons: data.availablePersons || prev.availablePersons
+      availablePersons: data.availablePersons || prev.clients
     }))
   }, [updatePhase, updateClients])
 
@@ -107,36 +105,37 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
 
     console.log("Next rolled: ", nextRolled)
 
-    const winnerIndex = unrolledClients.findIndex((p: Client) => p.clientId === nextRolled.clientId)
+    setGameState(prev => {
+      const updatedClients = prev.clients?.map(c =>
+        c.clientId === nextRolled.clientId ? { ...c, isRolled: true } : c
+      ) || []
 
-    if (winnerIndex !== -1) {
-      setGameState(prev => ({ ...prev, isSpinning: true }))
+      const unrolledClients = updatedClients.filter(c => !c.isRolled && !c.isHost)
+      const winnerIndex = unrolledClients.findIndex(c => c.clientId === nextRolled.clientId)
 
-      const segmentAngle = 360 / unrolledClients.length
+      // Rotation berechnen
+      const segmentAngle = 360 / (unrolledClients.length + 1) // +1 weil winner noch drin war
       const extraSpins = 360 * 5
-      const currentNormalized = gameState.rotation % 360
+      const currentNormalized = prev.rotation % 360
       const targetAngle = 270 - (winnerIndex * segmentAngle) - (segmentAngle / 2)
       let diff = targetAngle - currentNormalized
-      const finalRotation = gameState.rotation + extraSpins + (diff < 0 ? diff + 360 : diff)
+      const finalRotation = prev.rotation + extraSpins + (diff < 0 ? diff + 360 : diff)
 
-      updateRotation(finalRotation)
+      return {
+        ...prev,
+        clients: updatedClients,
+        isSpinning: true,
+        rotation: finalRotation,
+        currentRolled: null
+      }
+    })
 
-      setTimeout(() => {
-        updateCurrentRolled(nextRolled)
-        setGameState(prev => ({ ...prev, isSpinning: false }))
-      }, 4000)
-    }
 
-    setGameState(prev => ({
-      ...prev,
-      pendingUpdate: unrolledClients.filter((p: any) => p.state === "unrolled")
-    }))
-    updateCurrentRolled(null)
-    
     setTimeout(() => {
       updateCurrentRolled(nextRolled)
-    }, 3000)
-  }, [gameState.pendingUpdate, gameState.availablePersons, gameState.rotation, updateRotation, updateCurrentRolled])
+      setGameState(prev => ({ ...prev, isSpinning: false }))
+    }, 4000)
+  }, [gameState.pendingUpdate, gameState.clients, gameState.rotation, updateRotation, updateCurrentRolled])
 
   const handleAllRolled = useCallback(() => {
     setTimeout(() => {
@@ -157,7 +156,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     }, 3000)
   }, [addToast, updateCurrentRolled])
 
-  const handleRollNextError = useCallback(()=> {
+  const handleRollNextError = useCallback(() => {
     addToast("ERROR with rolling Next Client", "error")
   }, [addToast])
 

@@ -18,6 +18,7 @@ export type GamePhase = "unstarted" | "waiting-lobby" | "in-progress" | "finishe
 export interface Client {
     clientId: string,
     name: string,
+    isRolled: boolean,
     isHost: boolean,
     state: PersonState,
     socket_id: string,

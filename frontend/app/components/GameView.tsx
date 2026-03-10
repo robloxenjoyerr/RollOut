@@ -46,8 +46,8 @@ export default function GameView({ roomCode, mode, clientId, roomConfig, isHost 
                 mode={gameState.mode}
                 rotation={gameState.rotation}
                 currentRolledClient={gameState.currentRolled}
-                unrolledClients={gameState.availablePersons}
                 isHost={isHost}
+                clientId={clientId}
                 isSpinning={gameState.isSpinning}
                 onRollNext={rollNext}
                 onStopGame={stopGame}
