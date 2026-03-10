@@ -8,9 +8,12 @@ import RollOutHeader from "./components/RollOutHeader";
 import { useRouter } from "next/navigation";
 import Header from "./components/Header";
 import FloatingActionButton from "./components/FloatingActionButton";
+import { useToasts } from "./hooks/useToasts";
+import ToastContainer from "./components/ToastContainer";
 
 export default function Home() {
   const userName = Cookies.get("userName")
+  const {toasts, addToast} = useToasts()
   const router = useRouter()
   return (
     <>
@@ -68,7 +71,8 @@ export default function Home() {
           <span>🎉 Start Rolling!</span>
         </div> */}
       </div>
-      <FloatingActionButton></FloatingActionButton>
+      <FloatingActionButton onClick={()=> addToast("Currently not working.", "error")}></FloatingActionButton>
+      <ToastContainer toasts={toasts}/>
       <Footer></Footer>
     </>
 

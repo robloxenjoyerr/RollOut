@@ -207,3 +207,20 @@ body::after {
     transform: translate(50px, -50px) scale(1.1) rotate(360deg);
   }
 }
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* entfernt den weißen Hintergrund */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3); /* scrollbar selbst */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.5);
+}

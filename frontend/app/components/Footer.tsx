@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
+import Loading from "./Loading";
 
 export default function Footer() {
     const router = useRouter()
@@ -53,7 +54,7 @@ export default function Footer() {
                 <div className="flex justify-around gap-5">
                     <span className="text-[10px] select-none w-fit self-center flex text-center text-white/50 backdrop-blur-md bg-white/5 border border-white/10 p-1 rounded-xl uppercase">
                         <div className="self-center w-1.5 h-1.5 m-1 rounded-full bg-green-500 animate-pulse" />
-                        currently <span className={`${!roomsOnline || roomsOnline=== 0 ? "text-red-400" : "text-green-400"} mr-2 ml-2 animate-pulse`}> {roomsOnline || 0} </span>  rooms active 🔥
+                        currently <span className={`${!roomsOnline || roomsOnline=== 0 ? "text-red-400" : "text-green-400"} mr-2 ml-2 animate-pulse`}> {roomsOnline || "..."} </span>  rooms active 🔥
                     </span>
                 </div>
 
