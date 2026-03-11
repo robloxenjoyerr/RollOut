@@ -35,7 +35,8 @@ export default function GameInProgress({ clients, toasts, mode, rotation, curren
         <AnimatePresence>
             <div className="flex flex-col gap-10 absolute items-center justify-center w-screen h-screen box-content overflow-hidden m-0 p-0">
                 <div className="flex flex-col">
-                    <h1 className="text-7xl font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">Game is running!</h1>
+                    <h1 className="text-7xl absolute top-5 align-middle font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">Game is running!</h1>
+                    <span  className="text-white">{currentRolledClient?.name}</span>
                 </div>
                 <div className="flex text-black flex-row gap-4 flex-wrap">
                     {/* Wheel */}
@@ -49,8 +50,8 @@ export default function GameInProgress({ clients, toasts, mode, rotation, curren
         {isHost
 
             ?
-            <div className="absolute bottom-5 left-5 flex gap-5">
-                <Button disabledTimer={3000} onClick={onToggleLateJoin}>Allow Late Join</Button>
+            <div className="absolute bottom-5 align-middle flex gap-5">
+                <Button className="bg-red-500" disabledTimer={3000} onClick={onToggleLateJoin}>Allow Late Join</Button>
                 <Button disabled={isSpinning} onClick={onRollNext}>Roll Next</Button>
                 <Button onClick={onStopGame}>Stop Game</Button>
             </div>

@@ -97,7 +97,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     updatePhase("finished")
     console.log("adsdadadasd")
     addToast("Rederecting to Home in 5s.", "info")
-    setTimeout(()=> {
+    setTimeout(() => {
       router.push("/")
     }, 5000)
   }, [addToast, updatePhase])
@@ -107,7 +107,13 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   }
 
   const handleNextRolled = useCallback((data: any) => {
-    spinTo(data.nextRolled)  // ← alles im wheel hook
+    console.log("handleNextRolled", data)  // ← kommt das Event an?
+
+    spinTo(data.nextRolled, data.randomOffset)  // ← alles im wheel hook
+
+    setTimeout(()=> {
+      addToast(`Next Rolled is ${data.nextRolled.name}`, "info")
+    }, 4000)
   }, [spinTo])
 
   const handleAllRolled = useCallback(() => {
@@ -191,7 +197,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     isSpinning,
     // ✅ Helper-Funktionen für Components
     rollNext: () => {
-      if (!socket || gameState.isSpinning) return
+      if (!socket || isSpinning) return
       updateCurrentRolled(null)
       socket.emit("rollNext", { roomCode, clientId })
     },

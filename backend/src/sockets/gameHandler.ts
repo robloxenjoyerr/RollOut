@@ -212,17 +212,17 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   })
 
   socket.on("stopGame", async (data: any) => {
-    try{
-      const { roomCode, clientId} = data
+    try {
+      const { roomCode, clientId } = data
       const room = await findRoomByClient(clientId)
-      
-      if(!room) return io.to(client.gameId).emit("error", { message: "ERROR: Could not stop Room. Room not found."})
-      
-        console.log("Deleting game?!?!?")
+
+      if (!room) return io.to(client.gameId).emit("error", { message: "ERROR: Could not stop Room. Room not found." })
+
+      console.log("Deleting game?!?!?")
       await deleteRoom(client.gameId)
-      
-      io.to(client.gameId).emit("gameEnded", {message: "Game has ended!"});
-    } catch(err){
+
+      io.to(client.gameId).emit("gameEnded", { message: "Game has ended!" });
+    } catch (err) {
       console.error(err)
     }
 
@@ -263,7 +263,13 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       // Nach dem Update nochmal aus DB holen - korrekte Liste
       const updatedClients = unrolledClients.filter(c => c.id !== nextRolled.id)
 
-      return io.to(client.gameId).emit("nextRolled", { nextRolled, unrolledClients: updatedClients })
+      const segmentAngle = 360 / unrolledClients.length
+      const margin = segmentAngle * 0.15
+      const randomOffset = margin + Math.random() * (segmentAngle - margin * 2)
+
+      console.log("randomOffset:", randomOffset, "segmentAngle:", segmentAngle, "unrolledClients.length:", unrolledClients.length)
+
+      return io.to(client.gameId).emit("nextRolled", { nextRolled, unrolledClients: updatedClients, randomOffset })
 
     } catch (err) {
       console.error("[GameHandler] Try-Catch Error: ", err)
