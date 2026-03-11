@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react"
 import { useSocket } from "./useSocket"
 import { useToasts } from "./useToasts"
 import { GamePhase, Client, Mode } from "../lib/types"
-import { chownSync } from "fs"
-import { constrainedMemory } from "process"
+import { useWheelState } from "./useWheelState"
+import { apiFetch } from "../lib/api"
+import { useRouter } from "next/navigation"
 
 interface UseGameStateProps {
   roomCode: string
@@ -25,8 +26,10 @@ interface GameState {
 }
 
 export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateProps) {
+  const { wheelClients, rotation, isSpinning, initWheel, spinTo } = useWheelState()
+  const router = useRouter()
   const { socket } = useSocket({ roomCode, clientId })
-  const { addToast } = useToasts()
+  const { toasts, addToast } = useToasts()
 
   // ✅ Zentral verwalteter State
   const [gameState, setGameState] = useState<GameState>({
@@ -60,10 +63,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   const handleGameStateUpdate = useCallback((data: any) => {
     updatePhase(data.status)
     updateClients(data.clients || [])
-    setGameState(prev => ({
-      ...prev,
-      availablePersons: data.availablePersons || prev.clients
-    }))
+    initWheel(data.clients || [])  // ← wheel initialisieren
   }, [updatePhase, updateClients])
 
   const handleClientJoined = useCallback((data: any) => {
@@ -91,9 +91,15 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     addToast(`${data.message}`, "error")
   }, [addToast])
 
-  const handleGameEnded = useCallback(() => {
-    addToast("Game ended.", "info")
+  const handleGameEnded = useCallback(async (data: any) => {
+    await apiFetch("/api/clearClient", { method: "POST", credentials: "include" })
+    addToast(data.message, "info")
     updatePhase("finished")
+    console.log("adsdadadasd")
+    addToast("Rederecting to Home in 5s.", "info")
+    setTimeout(()=> {
+      router.push("/")
+    }, 5000)
   }, [addToast, updatePhase])
 
   const handleHostDisconnected = (data: any) => {
@@ -101,41 +107,8 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   }
 
   const handleNextRolled = useCallback((data: any) => {
-    const { unrolledClients, nextRolled } = data
-
-    console.log("Next rolled: ", nextRolled)
-
-    setGameState(prev => {
-      const updatedClients = prev.clients?.map(c =>
-        c.clientId === nextRolled.clientId ? { ...c, isRolled: true } : c
-      ) || []
-
-      const unrolledClients = updatedClients.filter(c => !c.isRolled && !c.isHost)
-      const winnerIndex = unrolledClients.findIndex(c => c.clientId === nextRolled.clientId)
-
-      // Rotation berechnen
-      const segmentAngle = 360 / (unrolledClients.length + 1) // +1 weil winner noch drin war
-      const extraSpins = 360 * 5
-      const currentNormalized = prev.rotation % 360
-      const targetAngle = 270 - (winnerIndex * segmentAngle) - (segmentAngle / 2)
-      let diff = targetAngle - currentNormalized
-      const finalRotation = prev.rotation + extraSpins + (diff < 0 ? diff + 360 : diff)
-
-      return {
-        ...prev,
-        clients: updatedClients,
-        isSpinning: true,
-        rotation: finalRotation,
-        currentRolled: null
-      }
-    })
-
-
-    setTimeout(() => {
-      updateCurrentRolled(nextRolled)
-      setGameState(prev => ({ ...prev, isSpinning: false }))
-    }, 4000)
-  }, [gameState.pendingUpdate, gameState.clients, gameState.rotation, updateRotation, updateCurrentRolled])
+    spinTo(data.nextRolled)  // ← alles im wheel hook
+  }, [spinTo])
 
   const handleAllRolled = useCallback(() => {
     setTimeout(() => {
@@ -160,6 +133,11 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     addToast("ERROR with rolling Next Client", "error")
   }, [addToast])
 
+  const handleToggleLateJoinUpdate = useCallback((data: any) => {
+    addToast(data.message, "info")
+    console.log("GOTT new toggle state")
+  }, [addToast])
+
   // ✅ Socket-Setup einmalig
   useEffect(() => {
     if (!socket) return
@@ -175,7 +153,8 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
       nextRolled: handleNextRolled,
       allPersonsRolled: handleAllRolled,
       hostDisconnected: handleHostDisconnected,
-      rollNextError: handleRollNextError
+      rollNextError: handleRollNextError,
+      toggleLateJoinUpdated: handleToggleLateJoinUpdate
     }
 
     Object.entries(listeners).forEach(([event, handler]) => {
@@ -206,6 +185,10 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   return {
     gameState,
     socket,
+    toasts,
+    wheelClients,
+    rotation,
+    isSpinning,
     // ✅ Helper-Funktionen für Components
     rollNext: () => {
       if (!socket || gameState.isSpinning) return
@@ -219,7 +202,12 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     stopGame: async () => {
       // API-Call + Socket-Emit
       if (!socket) return
-      socket.emit("stopGame", { roomCode })
+      socket.emit("stopGame", { roomCode, clientId })
+    },
+    toggleLateJoin: async () => {
+      if (!socket) return
+      console.log("toggling late join now")
+      socket.emit("toggleLateJoin", { roomCode, clientId })
     }
   }
 }

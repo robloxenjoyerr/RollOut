@@ -7,8 +7,14 @@ const apiRouter = Router()
 
 apiRouter.use("/user", userRouter)
 apiRouter.use("/game", gameRouter)
-apiRouter.get("/livegames", async (req, res) => {
-  
+apiRouter.post("/clearClient", (req, res) => {
+    res.clearCookie("clientId", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: process.env.NODE_ENV === "production" ? ".rollout.live" : undefined,
+    })
+    res.json({ ok: true })
 })
 
 export default apiRouter

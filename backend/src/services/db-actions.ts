@@ -104,6 +104,7 @@ export async function findRoomByGameCode(roomCode: string) {
 }
 
 export async function deleteRoom(id: string) {
+  console.log("[DB - ACTIONS - deleteRoom] Deleting Room now..")
   return await prisma.liveGames.delete({
     where: { id }
   })

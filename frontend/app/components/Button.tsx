@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link"
-import { ReactNode } from "react"
+import { ReactNode, useState } from "react"
 
-interface ButtonProps{
+
+interface ButtonProps {
     children: ReactNode;
     textColor?: string,
     marginx?: string,
@@ -12,6 +13,7 @@ interface ButtonProps{
     className?: string | undefined,
     href?: string,
     disabled?: boolean,
+    disabledTimer?: number | null,
     type?: "submit" | "reset" | "button" | undefined,
     [key: string]: any
 }
@@ -24,26 +26,40 @@ export default function Button({
     className = "",
     href,
     disabled = false,
-    type=undefined,
+    disabledTimer = null,
+    type = undefined,
     onClick,
     ...props
 }: ButtonProps) {
-    function handleClick(e: React.MouseEvent<HTMLButtonElement>){
-        if (!disabled) onClick?.(e)
+    const [timerDisabled, setTimerDisabled] = useState(false)
+
+    const isDisabled = disabled || timerDisabled  // ← außen oder timer
+
+    function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
+        if (isDisabled) return
+        onClick?.(e)
+
+        if (disabledTimer) {
+            setTimerDisabled(true)
+            setTimeout(() => setTimerDisabled(false), disabledTimer)
+        }
     }
 
-    const style = `select-none ${padding} text-${textColor} font-semibold rounded-xl shadow-md transition-all duration-150 ease-in-out ${disabled ? "opacity-50 cursor-not-allowed bg-gray-500/50" : `transition-all duration-150 ease-in-out bg-blue-400 hover:bg-blue-500 cursor-pointer active:scale-95 ${className}` } 
-`;
+    const style = `select-none ${padding} text-${textColor} font-semibold rounded-xl shadow-md transition-all duration-150 ease-in-out ${isDisabled ? "opacity-50 cursor-not-allowed bg-gray-500/50" : `transition-all duration-150 ease-in-out bg-blue-400 hover:bg-blue-500 cursor-pointer active:scale-95 ${className}`} 
+    `;
 
-    if(href){
-        return(
-            <Link href={disabled ? "" : href} type={type} className={style} {...props} >
+
+
+
+    if (href) {
+        return (
+            <Link href={isDisabled ? "" : href} type={type} className={style} {...props} >
                 {children}
             </Link>
         )
     }
 
-    return(
+    return (
         <button className={style} type={type} onClick={handleClick} {...props}>
             {children}
         </button>

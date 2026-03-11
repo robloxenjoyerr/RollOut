@@ -8,14 +8,13 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   console.log(`[GameHandler] Initial client ${client.name} (${client.clientId}) socket registered`)
 
 
-  const getClientsWithHostFlag = (room: any) => {
+  const getClientsWithoutHost = (room: any) => {
     const clients = room.game?.clients ?? room.clients
     const hostId = room.game?.hostId ?? room.hostId
 
-    return clients.map((c: any) => ({
-      ...c,
-      isHost: c.clientId === hostId,
-    }))
+    return clients
+      .filter((c: any) => c.clientId !== hostId)
+      .map((c: any) => ({ ...c, isHost: false }))
   }
 
   socket.on("getGameState", async (clientId: string) => {
@@ -27,7 +26,9 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
     io.to(client.gameId).emit("gameStateUpdate", {
       status: room.game.status,
-      clients: getClientsWithHostFlag(room)
+      clients: getClientsWithoutHost(room),
+      allowLateRoll: room.game.allowLateRoll
+
     })
   })
 
@@ -80,7 +81,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       io.to(client.gameId).emit("clientDisconnected", {
         clientId: client.clientId,
         name: client.name,
-        clients: getClientsWithHostFlag(room)
+        clients: getClientsWithoutHost(room)
       });
     }
   });
@@ -117,7 +118,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       io.to(room.id).emit("hostReconnected", {
         clientId: client.clientId,
         name: client.name,
-        clients: getClientsWithHostFlag(room)
+        clients: getClientsWithoutHost(room)
       })
 
     }
@@ -139,7 +140,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       clientId: client.clientId,
       name: client.name,
       isHost: room.hostId === client.clientId,
-      clients: getClientsWithHostFlag(room)
+      clients: getClientsWithoutHost(room)
     });
 
     console.log(`[GameHandler] Broadcast clientJoined for ${client.name} to room ${room.id}`)
@@ -147,7 +148,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
     socket.emit("gameStateUpdate", {
       status: room.status,
-      clients: getClientsWithHostFlag(room)
+      clients: getClientsWithoutHost(room)
     });
 
   });
@@ -187,8 +188,44 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     }
   });
 
-  socket.on("stopGame", () => {
-    io.to(client.gameId).emit("gameEnded");
+  socket.on("toggleLateJoin", async () => {
+    try {
+      const room = await findRoomByClient(client.clientId)
+      if (!room) return io.to(client.gameId).emit("error", { message: "ERROR: Could not toggle Late Join." })
+
+      const newValue = !room.game.allowLateRoll
+      await prisma.liveGames.update({
+        where: { id: room.game.id },
+        data: { allowLateRoll: newValue }
+      })
+
+      io.to(client.gameId).emit("toggleLateJoinUpdated", {
+        allowLateRoll: newValue,
+        message: newValue
+          ? "New joined Clients can now be rolled again."
+          : "New joined Clients can now only spectate."
+      })
+
+    } catch (err) {
+      console.error(err)
+    }
+  })
+
+  socket.on("stopGame", async (data: any) => {
+    try{
+      const { roomCode, clientId} = data
+      const room = await findRoomByClient(clientId)
+      
+      if(!room) return io.to(client.gameId).emit("error", { message: "ERROR: Could not stop Room. Room not found."})
+      
+        console.log("Deleting game?!?!?")
+      await deleteRoom(client.gameId)
+      
+      io.to(client.gameId).emit("gameEnded", {message: "Game has ended!"});
+    } catch(err){
+      console.error(err)
+    }
+
   });
 
   socket.on("rollNext", async ({ clientId }) => {
@@ -201,6 +238,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       console.log("[GameHandler] Current clients: ", clients)
       if (!room || !clients) return io.to(client.gameId).emit("rollNextError", { message: "ERROR: Could not roll next => Either room or clients is undefined." })
 
+
       const hostId = room.game.hostId
       const clientsWithHostFlag = clients.map(c => ({
         ...c,
@@ -211,7 +249,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
         c => c.isRolled === false && c.clientId !== hostId
       )
 
-      if (unrolledClients.length === 0) return io.to(client.gameId).emit("gameEnded")
+      if (unrolledClients.length === 0) return io.to(client.gameId).emit("gameEnded", { message: "All Clients have been Rolled. Closing in 10s." })
 
       const randomInt = Math.floor(Math.random() * unrolledClients.length)
       const nextRolled = unrolledClients[randomInt]

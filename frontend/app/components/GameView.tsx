@@ -18,9 +18,7 @@ interface GameViewProps {
 
 export default function GameView({ roomCode, mode, clientId, roomConfig, isHost }: GameViewProps) {
     const [clients, setClients] = useState<Client[]>([])
-    const [rotation, setRotation] = useState(0)
-    const [isSpinning, setIsSpinning] = useState<boolean>(false)
-    const { gameState, rollNext, startGame, stopGame } = useGameState({
+    const { gameState, toasts, rollNext, wheelClients, rotation, isSpinning, startGame, stopGame, toggleLateJoin } = useGameState({
         roomCode,
         mode,
         clientId,
@@ -42,13 +40,15 @@ export default function GameView({ roomCode, mode, clientId, roomConfig, isHost 
     if (gameState.status === "in-progress") {
         return (
             <GameInProgress
-                clients={gameState.clients}
+                toasts={toasts}
+                clients={wheelClients}
                 mode={gameState.mode}
-                rotation={gameState.rotation}
+                rotation={rotation}
                 currentRolledClient={gameState.currentRolled}
                 isHost={isHost}
                 clientId={clientId}
-                isSpinning={gameState.isSpinning}
+                isSpinning={isSpinning}
+                onToggleLateJoin={toggleLateJoin}
                 onRollNext={rollNext}
                 onStopGame={stopGame}
             />

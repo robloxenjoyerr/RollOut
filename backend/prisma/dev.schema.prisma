@@ -12,7 +12,6 @@ generator client {
 datasource db {
   // Dieses Schema ist explizit für SQLite
   provider     = "sqlite" 
-  relationMode = "prisma"
   // Keine URL hier, die kommt aus der config
 }
 
@@ -36,6 +35,7 @@ model liveGames {
   mode String @default("wheel")
   isPrivate Boolean @default(false)
   status String @default("waiting")
+  allowLateRoll Boolean @default(true)
   hostId String 
   hostLeft Boolean @default(false)
   hostLeftAt DateTime?

@@ -15,8 +15,9 @@ interface WaitingLobbyProps {
 
 export default function WaitingLobby({ clients = [], isHost = false, roomCode = "", onStartGame, onStopGame }: WaitingLobbyProps) {
     const { toasts } = useToasts()
+    console.log("WAITING-LOBBY-SCREEN")
     return <>
-        <div className="relative w-full h-screen overflow-hidden bg-linear-to-r from-slate-950 via-slate-900 to-slate-950">
+        <div className="relative w-full h-screen overflow-hidden bg-linear-to-r from-slate-850 via-slate-800 to-slate-850">
             {/* Animated background gradient blobs */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div
@@ -59,7 +60,7 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
                         </motion.span>
                     </div>
                     <p className="text-lg text-slate-400 font-light tracking-wide">
-                        Waiting for players to join. Ready to start whenever you are!
+                        Waiting for Clients to join. Ready to start whenever you are!
                     </p>
                 </motion.div>
 
@@ -75,26 +76,30 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
                         <div className="mb-8">
                             <h2 className="text-2xl font-bold text-white/80 flex items-center gap-3">
                                 <span className="w-2 h-2 rounded-full bg-linear-to-r from-green-400 to-blue-500"></span>
-                                Players Connected
+                                Clients Connected
                                 <span className="ml-auto text-base font-normal text-slate-400">
-                                    {clients && clients.length} {clients && clients.length === 1 ? "player" : "players"}
+                                    {clients && clients.length} {clients && clients.length === 1 ? <span className="font-bold">client</span> : <span className="font-bold">clients</span>}
                                 </span>
                             </h2>
                         </div>
 
                         {/* Clients display */}
-                        <div className="min-h-32 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 p-8 shadow-2xl">
+                        <div className="min-h-32 rounded-2xl backdrop-blur-xl bg-white/5 transition-all ease-in-out border border-white/10 p-8 shadow-2xl">
                             {clients && clients.length === 0 ? (
                                 <motion.div
+                                    layout
+                                    key="empty"
                                     className="flex flex-col items-center justify-center h-32 text-slate-400"
                                     animate={{ opacity: [0.6, 1, 0.6] }}
                                     transition={{ duration: 1, repeat: Infinity }}
                                 >
                                     <div className="text-5xl mb-3">👥</div>
-                                    <p className="text-lg font-medium">Waiting for the first player...</p>
+                                    <p className="text-lg font-medium">Waiting for the first Client...</p>
                                 </motion.div>
                             ) : (
                                 <motion.div
+
+                                    key="clients"
                                     className="flex flex-row gap-4 flex-wrap"
                                     layout
                                 >

@@ -17,21 +17,16 @@ interface GameInProgressProps {
     isHost: boolean
     clientId: string
     isSpinning: boolean
+    toasts: any,
     onRollNext: () => void
     onStopGame: () => void
+    onToggleLateJoin: () => void
 }
-export default function GameInProgress({ clients, mode, rotation, currentRolledClient, isHost, clientId, isSpinning, onRollNext, onStopGame }: GameInProgressProps) {
-    const { toasts, addToast } = useToasts()
+
+export default function GameInProgress({ clients, toasts, mode, rotation, currentRolledClient, isHost, clientId, isSpinning, onRollNext, onStopGame, onToggleLateJoin }: GameInProgressProps) {
     const router = useRouter()
 
-    const wheelClients = clients?.filter(
-        c =>
-            !c.isRolled &&
-            !c.isHost &&
-            !(isHost && c.clientId === clientId)
-    ) ?? null
-
-    console.log("Wheel clients: ", wheelClients)
+    console.log("GAME-IN-PROGRESS-VIEW")
 
     return <>
         <AnimatePresence>
@@ -40,13 +35,13 @@ export default function GameInProgress({ clients, mode, rotation, currentRolledC
         <AnimatePresence>
             <div className="flex flex-col gap-10 absolute items-center justify-center w-screen h-screen box-content overflow-hidden m-0 p-0">
                 <div className="flex flex-col">
-                    <span className="text-black font-bold text-7xl select-none ">Game is running!</span>
+                    <h1 className="text-7xl font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">Game is running!</h1>
                 </div>
                 <div className="flex text-black flex-row gap-4 flex-wrap">
                     {/* Wheel */}
 
                     <div className="flex flex-col items-center gap-10">
-                        <Wheel clients={wheelClients} rotation={rotation} />
+                        <Wheel clients={clients} rotation={rotation} />
                     </div>
                 </div>
             </div>
@@ -55,6 +50,7 @@ export default function GameInProgress({ clients, mode, rotation, currentRolledC
 
             ?
             <div className="absolute bottom-5 left-5 flex gap-5">
+                <Button disabledTimer={3000} onClick={onToggleLateJoin}>Allow Late Join</Button>
                 <Button disabled={isSpinning} onClick={onRollNext}>Roll Next</Button>
                 <Button onClick={onStopGame}>Stop Game</Button>
             </div>
@@ -62,6 +58,5 @@ export default function GameInProgress({ clients, mode, rotation, currentRolledC
             :
             ""
         }
-
     </>
 }
