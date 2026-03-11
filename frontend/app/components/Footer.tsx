@@ -59,7 +59,7 @@ export default function Footer() {
                 </div>
 
                 <a
-                    href="https://buymeacoffee.com/nikolaspasic"
+                    // href="https://buymeacoffee.com/nikolaspasic"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-indigo-400 animate-pulse hover:border-(--accent-indigo) transition-all cursor-pointer"

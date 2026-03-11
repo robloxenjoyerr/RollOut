@@ -28,7 +28,7 @@ export default function Wheel({
 
   if (!isMounted) return <div className="w-87.5 h-87.5" />;
   if (total === 0)
-    return <div className="text-black italic">No one left to roll!</div>;
+    return <div className="text-white italic font-bold">No one left to roll!</div>;
 
   if (!clients || !total) return null
   return (
