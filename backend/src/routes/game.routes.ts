@@ -11,27 +11,26 @@ const gameRouter = Router()
 gameRouter.post("/start", async (req, res) => {
     try {
         const { roomConfig } = req.body
-        console.log("/START: Trying to start new Room with Config: ", roomConfig, "\n")
 
+        if(!roomConfig.roomName) return res.status(400).send({valid: false, message: "Room Name must be specified. "})
+        else if(!roomConfig.mode) return res.status(400).send({valid: false, message: "Mode cant be undefind."})
+        
         const clientId = getOrCreateClientId(req, res)
-        console.log("/START: ClientID is: ", clientId, "\n")
         if (!clientId) {
-            console.log("/START: getOrCreateClientId ERROR => Returned NULL.", "\n")
+            console.log("[Game-Router - /START]: getOrCreateClientId ERROR => Returned NULL.", "\n")
             return null
         }
 
         const alreadyInRoom = await findRoomByClient(clientId)
-        console.log(`/START: Is ClientID ${clientId} in a room already: `, alreadyInRoom, "\n")
-
         if (alreadyInRoom) {
-            return res.send({ roomCode: alreadyInRoom.game.roomCode, reconnect: true })
+            console.log(`[Game-Router - /START]: Client with ID '${clientId}' is already in a room with id '${alreadyInRoom.game.id}'\n`)
+            return res.send({ valid: true, roomCode: alreadyInRoom.game.roomCode, reconnect: true })
         }
 
-        console.log("/START: Trying to create new Room..", "\n")
         const room = await createRoom(roomConfig, clientId)
-        console.log("/START: Room creation successful?: ", room ? true : false, "\n")
+        console.log("[Game-Router - /START]: Room creation successful?: ", room ? true : false, "\n")
 
-        if (!room) return res.status(500).send({ error: true })
+        if (!room) return res.status(500).send({ valid: false, message: "Room could not be started." })
 
         await prisma.client.create({
             data: {
@@ -42,10 +41,10 @@ gameRouter.post("/start", async (req, res) => {
             }
         })
 
-        return res.send({ roomId: room.id, roomCode: room.roomCode })
+        return res.send({ valid: true, roomId: room.id, roomCode: room.roomCode, roomName: room.roomName })
 
     } catch (err) {
-        console.error("/START ERROR: ", err, "\n")
+        console.error("[Game-Router - /START]: ERROR => ", err, "\n")
     }
 })
 
@@ -85,6 +84,7 @@ gameRouter.post("/verify", async (req, res) => {
             console.log("[Game-Router - /VERIFY]: Sending back client info: ", alreadyInRoom)
             return res.send({
                 roomCode: alreadyInRoom.game.roomCode,
+                roomName: alreadyInRoom.game.roomName,
                 reconnect: true,
                 valid: true,
                 isHost: alreadyInRoom.isHost,
@@ -109,7 +109,8 @@ gameRouter.post("/verify", async (req, res) => {
             status: room.status,
             clientId,
             userName: newClient.name,
-            roomCode: room.roomCode
+            roomCode: room.roomCode,
+            roomName: room.roomName
         })
 
     } catch (err) {

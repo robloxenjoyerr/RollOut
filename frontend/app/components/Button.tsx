@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { ReactNode, useState } from "react"
+import { twMerge } from "tailwind-merge"
 
 
 interface ButtonProps {
@@ -45,9 +46,15 @@ export default function Button({
         }
     }
 
-    const style = `select-none ${padding} text-${textColor} font-semibold rounded-xl shadow-md transition-all duration-150 ease-in-out ${isDisabled ? "opacity-50 cursor-not-allowed bg-gray-500/50" : `transition-all duration-150 ease-in-out bg-blue-400 hover:bg-blue-500 cursor-pointer active:scale-95 ${className}`} 
-    `;
-
+    const style = twMerge(
+        "select-none font-semibold rounded-2xl shadow-md transition-all duration-150 ease-in-out",
+        padding,                    
+        `text-${textColor}`,
+        isDisabled
+            ? "opacity-50 cursor-not-allowed bg-gray-500/50"
+            : "bg-transparent cursor-pointer active:scale-95",
+        !isDisabled && className    
+    )
 
 
 

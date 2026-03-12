@@ -28,7 +28,15 @@ export default function Host() {
     const privateRoomRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
     const [selectingMode, setSelectingMode] = useState<boolean>(false)
-    const {toasts, addToast } = useToasts()
+    const { toasts, addToast } = useToasts()
+    const [shakeFeedback, setShakeFeedback] = useState<boolean>(false)
+
+    function shakeFeedbackTimeout() {
+        setShakeFeedback(true)
+        const timer = setTimeout(() => {
+            setShakeFeedback(false)
+        }, 500)
+    }
 
     async function startGame() {
         try {
@@ -47,23 +55,28 @@ export default function Host() {
                 credentials: "include",
                 body: JSON.stringify({ roomConfig: currentRoomConfig })
             })
-            if (res) {
+
+            if (res.valid) {
                 console.log("Reconnect to existing Room: ", res.reconnect)
-                router.push(`/room/${res.roomCode}`)
+                return router.push(`/room/${res.roomCode}`)
             }
+
+            addToast(res.message, "error")
+            shakeFeedbackTimeout()
+            console.log(res.message)
         }
         catch (err) {
             console.log(err)
         }
     }
 
-    async function loadPreset(){
+    async function loadPreset() {
         addToast("This feature is still in development.", "error")
     }
 
     return (
         <>
-            <Header useRedirect={true}/>
+            <Header useRedirect={true} />
             <AnimatePresence>
                 <Overlay className="w-50 h-70 flex flex-col" bgClassName="" isOpen={selectingMode} onClose={() => setSelectingMode(false)}>
                     {Modes && Modes.map((m) => (
@@ -80,12 +93,18 @@ export default function Host() {
 
             <Card
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                animate={{
+                    scale: 1,
+                    opacity: 1,
+                    x: shakeFeedback ? [0, -10, 10, -10, 10, 0] : 0  // ← shake
+                }}
                 transition={{
                     type: "spring",
                     stiffness: 250,
                     damping: 20,
+                    x: { duration: 0.4 }  // ← shake schneller als entry
                 }}
+
                 className="text-white font-bold text-l shadow-black/20 shadow-sm  backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl" alignItems="center" width="w-fit" gap="gap-5" height="h-fit" justifyContent="around">
                 <div className="flex flex-col items-center ">
                     <span className="items-center justify-items-center">Host a Room</span>
@@ -108,12 +127,12 @@ export default function Host() {
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-white/30 italic gap-2">
 
-                        <Button onClick={loadPreset}>Load Preset</Button>
+                        <Button className="rounded-3xl" onClick={loadPreset}>Load Preset</Button>
                         <span className="border-2 w-20 h-full p-2 rounded-xl self-center text-center">no preset available</span>
 
                     </div>
                 </div>
-                <Button className="w-full h-15 items-center justify-items-center" onClick={startGame}>Host</Button>
+                <Button className="w-full h-15 items-center rounded-3xl justify-items-center" onClick={startGame}>Host</Button>
             </Card>
 
             <Footer></Footer>

@@ -17,6 +17,7 @@ interface UseGameStateProps {
 
 interface GameState {
   status: GamePhase
+  roomName: string
   mode: string
   clients: Client[] | null
   rotation: number
@@ -30,10 +31,12 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   const router = useRouter()
   const { socket } = useSocket({ roomCode, clientId })
   const { toasts, addToast } = useToasts()
+  const [rollHistory, setRollHistory] = useState<Client[] | null>(null)
 
   // ✅ Zentral verwalteter State
   const [gameState, setGameState] = useState<GameState>({
     status: "waiting-lobby",
+    roomName: "",
     mode: mode,
     clients: [],
     rotation: 0,
@@ -61,6 +64,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
 
   // ✅ Zentrale Event-Handler
   const handleGameStateUpdate = useCallback((data: any) => {
+    setGameState(prev => ({...prev, roomName: data.roomName}))
     updatePhase(data.status)
     updateClients(data.clients || [])
     initWheel(data.clients || [])  // ← wheel initialisieren
@@ -89,13 +93,13 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
 
   const handleGameStartError = useCallback((data: any) => {
     addToast(`${data.message}`, "error")
+    console.log(data.message)
   }, [addToast])
 
   const handleGameEnded = useCallback(async (data: any) => {
     await apiFetch("/api/clearClient", { method: "POST", credentials: "include" })
     addToast(data.message, "info")
     updatePhase("finished")
-    console.log("adsdadadasd")
     addToast("Rederecting to Home in 5s.", "info")
     setTimeout(() => {
       router.push("/")
@@ -113,7 +117,8 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
 
     setTimeout(()=> {
       addToast(`Next Rolled is ${data.nextRolled.name}`, "info")
-    }, 4000)
+      setRollHistory(prev => [...(prev ?? []), data.nextRolled])
+    }, 8000) // =>>>>>>>>>>>>> DELAY TO DISPLAY NEXTROLLED VIA TOASTMESSAGE
   }, [spinTo])
 
   const handleAllRolled = useCallback(() => {
@@ -154,7 +159,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
       clientJoined: handleClientJoined,
       clientDisconnected: handleClientDisconnected,
       gameStarted: handleGameStarted,
-      gameStartError: handleGameStartError,
+      startGameError: handleGameStartError,
       gameEnded: handleGameEnded,
       nextRolled: handleNextRolled,
       allPersonsRolled: handleAllRolled,
@@ -192,7 +197,9 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     gameState,
     socket,
     toasts,
+    addToast,
     wheelClients,
+    rollHistory,
     rotation,
     isSpinning,
     // ✅ Helper-Funktionen für Components

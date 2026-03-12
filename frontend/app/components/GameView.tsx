@@ -4,7 +4,6 @@ import Loading from "./Loading"
 import WaitingLobby from "./WaitingLobby"
 import GameInProgress from "./GameInProgress"
 import GameFinished from "./GameFinished"
-import { useSocket } from "../hooks/useSocket"
 import { Client } from "../lib/types"
 import { useState } from "react"
 
@@ -18,7 +17,7 @@ interface GameViewProps {
 
 export default function GameView({ roomCode, mode, clientId, roomConfig, isHost }: GameViewProps) {
     const [clients, setClients] = useState<Client[]>([])
-    const { gameState, toasts, rollNext, wheelClients, rotation, isSpinning, startGame, stopGame, toggleLateJoin } = useGameState({
+    const { gameState, toasts, addToast, rollNext, wheelClients, rollHistory, rotation, isSpinning, startGame, stopGame, toggleLateJoin } = useGameState({
         roomCode,
         mode,
         clientId,
@@ -28,7 +27,10 @@ export default function GameView({ roomCode, mode, clientId, roomConfig, isHost 
     if (gameState.status === "waiting-lobby") {
         return (
             <WaitingLobby
+                roomName={gameState.roomName}
                 clients={gameState.clients}
+                toasts={toasts}
+                addToast={addToast}
                 isHost={isHost}
                 onStartGame={startGame}
                 onStopGame={stopGame}
@@ -40,11 +42,14 @@ export default function GameView({ roomCode, mode, clientId, roomConfig, isHost 
     if (gameState.status === "in-progress") {
         return (
             <GameInProgress
+                roomCode={roomCode}
                 toasts={toasts}
+                addToast={addToast}
                 clients={wheelClients}
                 mode={gameState.mode}
                 rotation={rotation}
                 currentRolledClient={gameState.currentRolled}
+                rollHistory={rollHistory}
                 isHost={isHost}
                 clientId={clientId}
                 isSpinning={isSpinning}

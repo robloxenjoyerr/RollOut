@@ -24,19 +24,23 @@ export default function Wheel({
     if (!isMounted || rotation === prevRotationRef.current) return
 
     const prev = prevRotationRef.current
-    const kickback = prev - Math.random() * 50 - 30
+const kickback = prev - Math.random() * 40 - 10  // war 50-30, jetzt 20-10
 
     const spins = 5
     const target = rotation + spins * 360
 
-    controls.start({
-      rotate: [prev, prev - 50, target + 8, target],
-      transition: {
-        duration: 5,
-        times: [0, 0.08, 0.96, 1],
-        ease: [0.08, 0.82, 0.17, 1]
-      }
-    })
+    
+controls.start({
+  rotate: [prev, kickback, rotation],
+  transition: {
+    duration: 9,
+    times: [0, 0.12, 1],  // Kickback nimmt 12% der Zeit → spürbarer
+    ease: [
+      [0.4, 0, 0.6, 1],   // Kickback: sanfter rein, nicht so abrupt
+      [0.16, 1, 0.3, 1],  // Auslauf: bleibt gleich
+    ]
+  }
+})
 
     prevRotationRef.current = rotation
   }, [rotation, isMounted])

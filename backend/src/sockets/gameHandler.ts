@@ -23,9 +23,12 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     if (!room) {
       return io.to(client.gameId).emit("error", { message: "Could not find Room for ClientId: ", clientId })
     }
+    console.log("ROOMNAME: ", room.game.roomName)
 
+    
     io.to(client.gameId).emit("gameStateUpdate", {
       status: room.game.status,
+      roomName: room.game.roomName,
       clients: getClientsWithoutHost(room),
       allowLateRoll: room.game.allowLateRoll
 
@@ -154,22 +157,30 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
   });
 
   socket.on("startGame", async (data) => {
-    const { roomCode, clientId } = data
-
-    console.log(`[GameHandler] startGame event received from ${client.name} in room ${client.gameId}`)
-    if (!roomCode || !clientId) {
-      console.log("[GameHandler] startGame Event failed, either roomCode or clientId was not provided.")
-      return io.to(client.gameId).emit("startGameError", { message: "ERROR: Either roomCode or ClientId was not provided." })
-    }
-
-    const clientInRoomAndHost = await findRoomByClient(clientId)
-
-    if (!clientInRoomAndHost) {
-      return io.to(client.gameId).emit("startGameError", { message: "ERROR: Client is not in provided Room or is not Host." })
-    }
-
-
     try {
+      const { roomCode, clientId } = data
+
+      const room = await findRoomByClient(clientId)
+
+      if (room && room?.game.clients.length <= 2) {
+        return io.to(client.gameId).emit("startGameError", { message: `Not enough Clients. Need atleast ${3 - room.game.clients.length} more.` })
+      }
+      else if(!room){
+        
+        return io.to(client.gameId).emit("startGameError", { message: "Room was not found." })
+      }
+
+      console.log(`[GameHandler] startGame event received from ${client.name} in room ${client.gameId}`)
+      if (!roomCode || !clientId) {
+        console.log("[GameHandler] startGame Event failed, either roomCode or clientId was not provided.")
+        return io.to(client.gameId).emit("startGameError", { message: "Either roomCode or ClientId was not provided." })
+      }
+
+      const clientInRoomAndHost = await findRoomByClient(clientId)
+
+      if (!clientInRoomAndHost) {
+        return io.to(client.gameId).emit("startGameError", { message: "Client is not in provided Room or is not Host." })
+      }
       const updatedRoomStatus = await updateRoomStatus(roomCode, "in-progress")
       if (!updatedRoomStatus) {
         console.log("[GameHandler] Room-Status update failed => provided roomCode was invalid.")
@@ -184,14 +195,14 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
     } catch (err) {
       console.log("[GameHandler] Try-Catch Error: ", err)
-      return io.to(client.gameId).emit("startGameError", { message: "ERROR: An Error occurred inside the GameHandler." })
+      return io.to(client.gameId).emit("startGameError", { message: "An Error occurred inside the GameHandler." })
     }
   });
 
   socket.on("toggleLateJoin", async () => {
     try {
       const room = await findRoomByClient(client.clientId)
-      if (!room) return io.to(client.gameId).emit("error", { message: "ERROR: Could not toggle Late Join." })
+      if (!room) return io.to(client.gameId).emit("error", { message: "Could not toggle Late Join." })
 
       const newValue = !room.game.allowLateRoll
       await prisma.liveGames.update({
@@ -216,7 +227,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       const { roomCode, clientId } = data
       const room = await findRoomByClient(clientId)
 
-      if (!room) return io.to(client.gameId).emit("error", { message: "ERROR: Could not stop Room. Room not found." })
+      if (!room) return io.to(client.gameId).emit("error", { message: "Could not stop Room. Room not found." })
 
       console.log("Deleting game?!?!?")
       await deleteRoom(client.gameId)
@@ -236,7 +247,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       const clients = room?.game.clients
 
       console.log("[GameHandler] Current clients: ", clients)
-      if (!room || !clients) return io.to(client.gameId).emit("rollNextError", { message: "ERROR: Could not roll next => Either room or clients is undefined." })
+      if (!room || !clients) return io.to(client.gameId).emit("rollNextError", { message: "Could not roll next => Either room or clients is undefined." })
 
 
       const hostId = room.game.hostId

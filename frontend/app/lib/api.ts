@@ -41,7 +41,7 @@ export async function apiFetch(endpoint: string, options: CustomRequestInit = {}
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Error: ${response.status}`);
+    return { valid: false, message: errorData.message || `Error: ${response.status}`}
   }
 
   return response.json();

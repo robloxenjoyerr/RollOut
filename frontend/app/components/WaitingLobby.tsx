@@ -1,22 +1,70 @@
 import { Client } from "../lib/types"
-import { useToasts } from "../hooks/useToasts"
+import { ToastType, useToasts } from "../hooks/useToasts"
 import { motion, AnimatePresence } from "framer-motion"
 import ToastContainer from "./ToastContainer"
+import Overlay from "./Overlay"
+import { useState } from "react"
+import Button from "./Button"
 
 interface WaitingLobbyProps {
 
-    clients: Client[] |null
+    clients: Client[] | null
     isHost: boolean
+    toasts: any
     roomCode: string
+    roomName: string
+    addToast: (message: string, type: ToastType) => void
     onStartGame: () => void
     onStopGame: () => void
 }
 
 
-export default function WaitingLobby({ clients = [], isHost = false, roomCode = "", onStartGame, onStopGame }: WaitingLobbyProps) {
-    const { toasts } = useToasts()
+export default function WaitingLobby({ clients = [], isHost = false, roomCode = "", roomName, onStartGame, onStopGame, toasts, addToast }: WaitingLobbyProps) {
+    const [isGameEnding, setIsGameEnding] = useState<boolean>(false)
     console.log("WAITING-LOBBY-SCREEN")
+    console.log(roomName)
     return <>
+        <Overlay isOpen={isGameEnding} onClose={() => setIsGameEnding(false)}>
+            <div className="flex flex-col gap-5">
+                <span className="font-bold ">Do you really want to Stop?</span>
+                <div className="flex gap-5 items-stretch">
+                    <motion.button
+                        onClick={onStopGame}
+                        className="group relative hover:cursor-pointer px-8 py-4 rounded-xl font-bold text-lg text-white  overflow-hidden"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        {/* Background */}
+                        <div className="absolute inset-0 bg-linear-to-r from-green-500 via-emerald-500 to-green-600 group-hover:from-green-400 group-hover:via-emerald-400 group-hover:to-green-500 transition-all duration-300" />
+                        {/* Content */}
+                        <div className="relative flex items-center gap-2 justify-center">
+                            <span>Yes</span>
+                        </div>
+                        {/* Shadow */}
+                        <div className="absolute inset-0 bg-black/20 rounded-xl blur-lg -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </motion.button>
+                    <motion.button
+                        onClick={() => setIsGameEnding(false)}
+                        className="group relative hover:cursor-pointer px-8 py-4 rounded-xl font-bold text-lg text-white  overflow-hidden"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        {/* Background */}
+                        <div className="absolute inset-0 bg-linear-to-r from-red-500 via-rose-500 to-red-600 group-hover:from-red-400 group-hover:via-rose-400 group-hover:to-red-500 transition-all duration-300" />
+                        {/* Content */}
+                        <div className="relative flex items-center gap-2 justify-center">
+                            <span>No</span>
+                        </div>
+                        {/* Shadow */}
+                        <div className="absolute inset-0 bg-black/20 rounded-xl blur-lg -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </motion.button>
+
+                </div>
+            </div>
+        </Overlay>
+
+
+
         <div className="relative w-full h-screen overflow-hidden ">
             {/* Animated background gradient blobs */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -38,30 +86,38 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
                 />
             </div>
 
+
+
+
+
+
+
             {/* Content */}
-            <div className="relative z-10 flex flex-col h-screen">
+            <div className="relative z-10 flex flex-col h-screen select-none">
                 {/* Header section */}
                 <motion.div
-                    className="flex flex-col gap-3 pt-16 px-12"
+                    className="flex flex-col items-center gap-2 mt-8 md:mt-16 text-center px-4"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <div className="flex items-baseline gap-3">
-                        <h1 className="text-7xl font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">
-                            Waiting Lobby
-                        </h1>
-                        <motion.span
-                            className="px-4 py-2 rounded-full text-xl items-center text-center justify-center font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50 backdrop-blur-sm"
-                            animate={{ scale: [1, 1.05, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                        >
-                            {roomCode}
-                        </motion.span>
-                    </div>
-                    <p className="text-lg text-slate-400 font-light tracking-wide">
+                    <h1 className="text-4xl md:text-7xl font-black bg-linear-to-r from-red-400 via-green-200 to-indigo-300 bg-clip-text text-transparent">
+                        {roomName}
+                    </h1>
+                    <h2 className="text-3xl md:text-6xl font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent">
+                        Waiting Lobby
+                    </h2>
+                    <p className="text-sm md:text-lg text-slate-400 font-light tracking-wide">
                         Waiting for Clients to join. Ready to start whenever you are!
                     </p>
+                    <motion.span
+                        className="px-4 py-2 rounded-2xl hover:cursor-pointer mt-3 text-3xl md:text-5xl font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50"
+                        animate={{ scale: [1, 1.15, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        onClick={() => { navigator.clipboard.writeText(roomCode); addToast("RoomCode copied!", "info") }}
+                    >
+                        {roomCode}
+                    </motion.span>
                 </motion.div>
 
                 {/* Main content - centered */}
@@ -123,23 +179,14 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    {client.isHost ? (
-                                                        <>
-                                                            <span className="text-lg">👑</span>
-                                                            <span className="font-bold tracking-wide">HOST</span>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <motion.span
-                                                                className="inline-block text-lg"
-                                                                animate={{ scale: [1, 1.2, 1] }}
-                                                                transition={{ duration: 2, repeat: Infinity }}
-                                                            >
-                                                                🎮
-                                                            </motion.span>
-                                                            <span className="select-none">{client.name}</span>
-                                                        </>
-                                                    )}
+                                                    <>
+                                                        <motion.span
+                                                            className="inline-block text-lg"
+                                                            animate={{ scale: [1, 1.2, 1] }}
+                                                            transition={{ duration: 2, repeat: Infinity }}
+                                                        />
+                                                        <span className="select-none">{client.name}</span>
+                                                    </>
                                                 </div>
                                             </motion.div>
                                         ))}
@@ -153,14 +200,14 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
                 {/* Bottom action buttons */}
                 {isHost &&
                     <motion.div
-                        className="pb-12 px-12 flex gap-4 justify-center"
+                        className="mt-auto pb-8 flex gap-4 justify-center flex-wrap px-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
                     >
                         <motion.button
                             onClick={onStartGame}
-                            className="group relative px-8 py-4 rounded-xl font-bold text-lg text-white overflow-hidden"
+                            className="group relative hover:cursor-pointer px-8 py-4 rounded-xl font-bold text-lg text-white overflow-hidden"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >
@@ -183,8 +230,8 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
                         </motion.button>
 
                         <motion.button
-                            onClick={onStopGame}
-                            className="group relative px-8 py-4 rounded-xl font-bold text-lg text-white overflow-hidden"
+                            onClick={() => setIsGameEnding(true)}
+                            className="group hover:cursor-pointer relative px-8 py-4 rounded-xl font-bold text-lg text-white  overflow-hidden"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >

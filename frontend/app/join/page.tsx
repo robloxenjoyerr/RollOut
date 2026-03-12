@@ -22,10 +22,22 @@ export default function JoinPage() {
     const [username, setUsername] = useState<string>("")
     const [roomCode, setRoomCode] = useState<string>("")
     const [clientId, setClientId] = useState<string>("");
+    const [shakeFeedback, setShakeFeedback] = useState<boolean>(false)
 
+    function shakeFeedbackTimeout() {
+        setShakeFeedback(true)
+        const timer = setTimeout(() => {
+            setShakeFeedback(false)
+        }, 500)
+
+        
+    }
 
     async function verifyRoom() {
-        if (!roomCode) return null
+        if (!roomCode){
+            shakeFeedbackTimeout()
+            return null
+        }
 
         try {
             const data = await apiFetch("/api/game/join", {
@@ -41,6 +53,7 @@ export default function JoinPage() {
             if (!data.valid) {
                 console.log("JOIN RESPONSE: ", data)
                 addToast(data.message, "error")
+                shakeFeedbackTimeout()
                 setEnteringUsername(false)
                 return
             }
@@ -51,7 +64,6 @@ export default function JoinPage() {
                 if (usernameInputRef.current) {
                     usernameInputRef.current.value = ""
                 }
-
             }
 
         } catch (err) {
@@ -63,7 +75,8 @@ export default function JoinPage() {
         console.log(`roomCode: ${roomCode} and username: ${username}`)
         if (!roomCode || !username) {
             addToast("Either Room-Code or Username was invalid.", "error")
-            return 
+            shakeFeedbackTimeout()
+            return
         }
         router.push(`/room/${roomCode}?username=${encodeURIComponent(username)}&clientId=${clientId}`)
     }
@@ -76,18 +89,23 @@ export default function JoinPage() {
 
                     ? <motion.div
                         initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
+                        animate={{
+                            scale: 1,
+                            opacity: 1,
+                            x: shakeFeedback ? [0, -10, 10, -10, 10, 0] : 0  // ← shake
+                        }}
                         transition={{
                             type: "spring",
                             stiffness: 250,
                             damping: 20,
+                            x: { duration: 0.4 }  // ← shake schneller als entry
                         }}
                         className="flex flex-col h-fit gap-2 absolute">
                         <span className="text-center font-extrabold"></span>
                         <div className="flex flex-col top-32 p-2 h-fit text-white font-bold text-2xl shadow-black/20 shadow-sm  backdrop-blur-md bg-white/15 border border-white/30 rounded-3xl">
                             <div className="flex w-100 h-20 gap-1 rounded-2xl p-2">
 
-                                <Input name="username-input" placeholder="Username" value={username} autoComplete="off" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} className="text-center text-white rounded-xl" ></Input>
+                                <Input name="username-input" placeholder="Username" value={username} autoComplete="off" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} className="text-center text-white rounded-xl"></Input>
                             </div>
                             <Button onClick={joinRoom} className="w-fill m-2">Enter</Button>
                         </div>
@@ -95,11 +113,16 @@ export default function JoinPage() {
 
                     : <motion.div
                         initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
+                        animate={{
+                            scale: 1,
+                            opacity: 1,
+                            x: shakeFeedback ? [0, -10, 10, -10, 10, 0] : 0  // ← shake
+                        }}
                         transition={{
                             type: "spring",
                             stiffness: 250,
                             damping: 20,
+                            x: { duration: 0.4 }  // ← shake schneller als entry
                         }}
                         className="flex flex-col h-fit gap-2 absolute">
                         <span className="text-center font-extrabold"></span>

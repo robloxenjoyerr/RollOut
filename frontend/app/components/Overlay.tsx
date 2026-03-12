@@ -23,7 +23,7 @@ export default function Overlay({ isOpen, onClose, children, className = "", bgC
             exit={{ opacity: 0 }}
             transition={{ duration: 0.1 }}
             onClick={onClose}
-            className={`fixed inset-0 z-50 flex justify-center items-center backdrop-blur bg-black/30 ${bgClassName}`}
+            className={`fixed inset-0 z-50 flex justify-center items-center backdrop-blur-xs bg-black/10 ${bgClassName}`}
         >
             <motion.div
                 // Fenster-Animation
@@ -37,7 +37,7 @@ export default function Overlay({ isOpen, onClose, children, className = "", bgC
                 <Button 
                     onClick={onClose} 
                     padding="p-0" 
-                    className="hover:rotate-90 absolute top-0 right-0 rounded-md p-1 shadow-none bg-none h-7 w-7"
+                    className="hover:rotate-90 absolute top-0 right-0 p-1 h-7 w-7"
                 >
                     <img src="/close.svg" alt="close" />
                 </Button>
