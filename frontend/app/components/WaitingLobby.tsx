@@ -17,7 +17,7 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
     const { toasts } = useToasts()
     console.log("WAITING-LOBBY-SCREEN")
     return <>
-        <div className="relative w-full h-screen overflow-hidden bg-linear-to-r from-slate-850 via-slate-800 to-slate-850">
+        <div className="relative w-full h-screen overflow-hidden ">
             {/* Animated background gradient blobs */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div

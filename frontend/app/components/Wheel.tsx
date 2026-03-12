@@ -24,17 +24,17 @@ export default function Wheel({
     if (!isMounted || rotation === prevRotationRef.current) return
 
     const prev = prevRotationRef.current
-    const kickback = prev - 25
+    const kickback = prev - Math.random() * 50 - 30
+
+    const spins = 5
+    const target = rotation + spins * 360
 
     controls.start({
-      rotate: [prev, kickback, rotation],
+      rotate: [prev, prev - 50, target + 8, target],
       transition: {
-        duration: 6,
-        times: [0, 0.15, 1],
-        ease: [
-          [0.4, 0, 1, 1],
-          [0.15, 0, 0.1, 1],
-        ]
+        duration: 5,
+        times: [0, 0.08, 0.96, 1],
+        ease: [0.08, 0.82, 0.17, 1]
       }
     })
 
@@ -53,7 +53,7 @@ export default function Wheel({
   if (total === 0) return <div className="text-white italic font-bold">No one left to roll!</div>;
   if (!clients || !total) return null
 
-    return (
+  return (
     <div className="relative select-none flex items-center justify-center" style={{ width: 450, height: 450 }}>
 
       {/* Outer glow ring */}
@@ -244,9 +244,15 @@ export default function Wheel({
       </motion.svg>
 
       {/* Outer sparkle lights — outside SVG for extra glow */}
-      <div className="absolute inset-0 rounded-full pointer-events-none" style={{
-        boxShadow: "0 0 40px rgba(59,130,246,0.4), 0 0 80px rgba(59,130,246,0.15), inset 0 0 30px rgba(0,0,0,0.5)"
-      }} />
+      <div
+        className="absolute rounded-full -z-15"
+        style={{
+          width: 430,
+          height: 430,
+          background: "radial-gradient(circle at center, rgba(59,130,246,0.4) 50%, rgba(59,130,246,0.2) 70%, transparent 85%)",
+          filter: "blur(18px)"
+        }}
+      />
     </div>
   );
 }

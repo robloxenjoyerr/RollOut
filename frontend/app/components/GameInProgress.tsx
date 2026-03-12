@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import ToastContainer from "./ToastContainer"
 import Button from "./Button"
 import Wheel from "./Wheel"
+import Card from "./Card"
 
 interface GameInProgressProps {
     clients: Client[] | null
@@ -35,8 +36,8 @@ export default function GameInProgress({ clients, toasts, mode, rotation, curren
         <AnimatePresence>
             <div className="flex flex-col gap-10 absolute items-center justify-center w-screen h-screen box-content overflow-hidden m-0 p-0">
                 <div className="flex flex-col">
-                    <h1 className="text-7xl absolute top-5 align-middle font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">Game is running!</h1>
-                    <span  className="text-white">{currentRolledClient?.name}</span>
+                    <h1 className="text-7xl absolute top-5 self-center font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none">Game is running!</h1>
+                    <span className="text-white">{currentRolledClient?.name}</span>
                 </div>
                 <div className="flex text-black flex-row gap-4 flex-wrap">
                     {/* Wheel */}
@@ -47,10 +48,16 @@ export default function GameInProgress({ clients, toasts, mode, rotation, curren
                 </div>
             </div>
         </AnimatePresence>
+        <div className="text-black absolute top-1/2 right-5">
+           
+           
+
+
+        </div>
         {isHost
 
             ?
-            <div className="absolute bottom-5 align-middle flex gap-5">
+            <div className="absolute bottom-5 self-center flex gap-5">
                 <Button className="bg-red-500" disabledTimer={3000} onClick={onToggleLateJoin}>Allow Late Join</Button>
                 <Button disabled={isSpinning} onClick={onRollNext}>Roll Next</Button>
                 <Button onClick={onStopGame}>Stop Game</Button>
@@ -59,5 +66,6 @@ export default function GameInProgress({ clients, toasts, mode, rotation, curren
             :
             ""
         }
+
     </>
 }
