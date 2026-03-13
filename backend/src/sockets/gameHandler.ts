@@ -229,7 +229,6 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
       if (!room) return io.to(client.gameId).emit("error", { message: "Could not stop Room. Room not found." })
 
-      console.log("Deleting game?!?!?")
       await deleteRoom(client.gameId)
 
       io.to(client.gameId).emit("gameEnded", { message: "Game has ended!" });
@@ -260,7 +259,10 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
         c => c.isRolled === false && c.clientId !== hostId
       )
 
-      if (unrolledClients.length === 0) return io.to(client.gameId).emit("gameEnded", { message: "All Clients have been Rolled. Closing in 10s." })
+      if (unrolledClients.length === 0){
+        await deleteRoom(client.gameId)
+        return io.to(client.gameId).emit("gameEnded", { message: "All Clients have been Rolled. Closing in 5s." })
+      } 
 
       const randomInt = Math.floor(Math.random() * unrolledClients.length)
       const nextRolled = unrolledClients[randomInt]
