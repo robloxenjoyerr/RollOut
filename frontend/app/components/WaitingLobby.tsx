@@ -96,7 +96,7 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
             <div className="relative z-10 flex flex-col h-screen select-none">
                 {/* Header section */}
                 <motion.div
-                    className="flex flex-col items-center gap-2 mt-8 md:mt-16 text-center px-4"
+                    className="flex flex-col items-center gap-2 md:mt-10 text-center px-4"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
@@ -111,7 +111,7 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
                         Waiting for Clients to join. Ready to start whenever you are!
                     </p>
                     <motion.span
-                        className="px-4 py-2 rounded-2xl hover:cursor-pointer mt-3 text-3xl md:text-5xl font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50"
+                        className="px-4 py-2 rounded-2xl hover:cursor-pointer transition-all duration-250 ease-in-out active:scale-90 hover:bg-green-500/20 hover:border-green-400/50 hover:text-green-300 mt-3 text-3xl md:text-5xl font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50"
                         animate={{ scale: [1, 1.15, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
                         onClick={() => { navigator.clipboard.writeText(roomCode); addToast("RoomCode copied!", "info") }}
