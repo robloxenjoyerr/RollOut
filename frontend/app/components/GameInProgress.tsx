@@ -7,6 +7,7 @@ import ToastContainer from "./ToastContainer"
 import Button from "./Button"
 import { motion } from "framer-motion"
 import Wheel from "./Wheel"
+import { useEffect } from "react"
 
 interface GameInProgressProps {
     clients: Client[] | null
@@ -30,6 +31,10 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
 
     console.log("GAME-IN-PROGRESS-VIEW")
 
+    useEffect(()=> {
+        console.log(currentRolledClient)
+    }, [currentRolledClient])
+
     return <>
         <ToastContainer toasts={toasts} />
 
@@ -43,7 +48,7 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
                 transition={{ duration: 10, repeat: Infinity }} />
         </div>
 
-        <div className="relative min-h-screen flex flex-col items-center px-4 py-6 gap-30">
+        <div className="relative min-h-screen flex flex-col items-center px-4 py-6 gap-15 ">
 
             {/* Header */}
             <h1 className="text-4xl md:text-7xl font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none text-center">
@@ -61,7 +66,7 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
             </motion.span>
 
             {/* Main area - Wheel + Sidebars */}
-            <div className="flex flex-row items-center justify-between gap-15 w-full max-w-7xl px-4">
+            <div className="flex flex-row items-center justify-between gap-35 w-full max-w-7xl px-4">
 
                 {/* Host Controls - links | Platzhalter wenn kein Host */}
                 {isHost ? (
@@ -113,7 +118,7 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.05 }}
-                                    className="text-white text-center rounded-xl border bg-white/10 border-white/15 py-2 px-3"
+                                    className={`text-white text-center rounded-xl border ${currentRolledClient?.clientId === c.clientId ? "bg-yellow-400/50" : "bg-white/10"} border-white/15 py-2 px-3`}
                                 >
                                     {i + 1}. {c.name}
                                 </motion.span>
