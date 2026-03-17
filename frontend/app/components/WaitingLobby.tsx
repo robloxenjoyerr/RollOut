@@ -143,11 +143,8 @@ export default function WaitingLobby({ clients = [], isHost = false, roomCode = 
                         <div className="min-h-32 rounded-2xl backdrop-blur-xl bg-white/5 transition-all ease-in-out border border-white/10 p-8 shadow-2xl">
                             {clients && clients.length === 0 ? (
                                 <motion.div
-                                    layout
                                     key="empty"
-                                    className="flex flex-col items-center justify-center h-32 text-slate-400"
-                                    animate={{ opacity: [0.6, 1, 0.6] }}
-                                    transition={{ duration: 1, repeat: Infinity }}
+                                    className="flex flex-col items-center justify-center h-32 animate-pulse text-slate-400"
                                 >
                                     <div className="text-5xl mb-3">👥</div>
                                     <p className="text-lg font-medium">Waiting for the first Client...</p>

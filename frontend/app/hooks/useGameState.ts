@@ -97,13 +97,11 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   }, [addToast])
 
   const handleGameEnded = useCallback(async (data: any) => {
+
     await apiFetch("/api/clearClient", { method: "POST", credentials: "include" })
     addToast(data.message, "info")
     updatePhase("finished")
-    addToast("Rederecting to Home in 5s.", "info")
-    setTimeout(() => {
-      router.push("/")
-    }, 5000)
+
   }, [addToast, updatePhase])
 
   const handleHostDisconnected = (data: any) => {

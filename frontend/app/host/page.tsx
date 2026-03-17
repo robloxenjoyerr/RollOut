@@ -9,7 +9,6 @@ import { Modes } from "../lib/types"
 import Overlay from "../components/Overlay"
 import { AnimatePresence, number } from "framer-motion"
 import { motion } from "framer-motion"
-import RollOutHeader from "../components/RollOutHeader"
 import Footer from "../components/Footer"
 import Header from "../components/Header"
 import ToastContainer from "../components/ToastContainer"
@@ -83,7 +82,7 @@ export default function Host() {
                         <motion.span
                             className={`text-white self-center w-full font-bold text-l shadow-black/20 shadow-sm p-2 m-2 rounded-2xl select-none bg-(--accent-indigo) hover:bg-(--accent-blue) hover:cursor-pointer overflow-auto ${m === "random" ? "bg-linear-to-r from-fuchsia-500 to-cyan-500" : ""}`}
                             key={m}
-                            onClick={() => { setSelectedMode(m); setSelectingMode(false) }}
+                            onClick={() => { setSelectedMode(m); addToast(`Selected ${m}`, "info"); setSelectingMode(false) }}
                         >
                             {m}
                         </motion.span>

@@ -5,7 +5,7 @@ export default function GameFinished(){
     const {toasts, addToast} = useToasts()
     console.log("GAME-FINISHED-VIEW")
     return<>
-        <span className="text-white font-bold text-2xl">Room is closing in 5s..</span>
+       <h1>Everyone has been rolled!</h1>
         <ToastContainer toasts={toasts}/>
     </>
 }

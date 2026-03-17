@@ -7,6 +7,7 @@ import ToastContainer from "./ToastContainer"
 import Button from "./Button"
 import { motion } from "framer-motion"
 import Wheel from "./Wheel"
+import useIsMobile from "../hooks/useIsMobile"
 
 interface GameInProgressProps {
     clients: Client[] | null
@@ -27,6 +28,7 @@ interface GameInProgressProps {
 
 export default function GameInProgress({ clients, toasts, addToast, mode, roomCode, rotation, rollHistory, currentRolledClient, isHost, clientId, isSpinning, onRollNext, onStopGame, onToggleLateJoin }: GameInProgressProps) {
     const router = useRouter()
+    const isMobile = useIsMobile()
 
     console.log("GAME-IN-PROGRESS-VIEW")
 
@@ -43,16 +45,12 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
                 transition={{ duration: 10, repeat: Infinity }} />
         </div>
 
-        <div className="relative min-h-screen flex flex-col items-center px-4 py-6 gap-30">
+        <div className="relative min-h-screen h-screen flex flex-col items-center px-4 py-4 gap-4 overflow-hidden">
 
-            {/* Header */}
-            <h1 className="text-4xl md:text-7xl font-black bg-linear-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent select-none text-center">
-                Game is running!
-            </h1>
 
             {/* Room Code */}
             <motion.span
-                className="px-4 py-2 rounded-2xl cursor-pointer text-2xl md:text-4xl font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50"
+                className="px-3 py-1.5 rounded-2xl cursor-pointer text-xl md:text-2xl font-bold text-blue-300 bg-blue-500/20 border border-blue-400/50 shrink-0"
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
                 onClick={() => { navigator.clipboard.writeText(roomCode); addToast("RoomCode copied!", "info") }}
@@ -60,31 +58,38 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
                 {roomCode}
             </motion.span>
 
-            {/* Main area - Wheel + Sidebars */}
-            <div className="flex flex-row items-center justify-between gap-15 w-full max-w-7xl px-4">
+            {/* Main area - responsiv */}
 
-                {/* Host Controls - links | Platzhalter wenn kein Host */}
-                {isHost ? (
-                    <div className="flex flex-col gap-3 w-64 shrink-0 shadow-black/20 shadow-sm bg-white/15 border border-white/30 rounded-3xl p-4">
-                        <span className="font-bold uppercase self-center text-sm tracking-widest text-slate-400">Host Controls</span>
-                        <div className="flex flex-col gap-3">
-                            <Button disabled={isSpinning} onClick={onRollNext} className="bg-green-500 hover:bg-green-400 h-12">
+            {isMobile 
+            
+            ? 
+
+             <div className="flex flex-col lg:flex-row items-center justify-center gap-4 w-full flex-1 min-h-0 px-2">
+
+                {/* Host Controls / Placeholder */}
+                <div className="flex flex-row lg:flex-col gap-2 lg:gap-3 lg:w-52 xl:w-64 shrink-0 shadow-black/20 shadow-sm bg-white/15 border border-white/30 rounded-3xl p-3 lg:p-4">
+                    {isHost ? (
+                        <>
+                            <span className="font-bold uppercase self-center text-xs tracking-widest text-slate-400 hidden lg:block">Host Controls</span>
+                            <Button disabled={isSpinning} onClick={onRollNext} className="bg-green-500 hover:bg-green-400 h-10 text-sm">
                                 🎲 Roll Next
                             </Button>
-                            <Button disabledTimer={3000} onClick={onToggleLateJoin} className="bg-indigo-500/30 border border-indigo-400/30">
-                                🚪 Toggle Late Join
+                            <Button disabledTimer={3000} onClick={onToggleLateJoin} className="bg-indigo-500/30 border border-indigo-400/30 h-10 text-sm">
+                                🚪 Late Join
                             </Button>
-                            <Button onClick={onStopGame} className="bg-red-500/20 border border-red-400/30 text-red-300">
-                                ⏹ Stop Game
+                            <Button onClick={onStopGame} className="bg-red-500/20 border border-red-400/30 text-red-300 h-10 text-sm">
+                                ⏹ Stop
                             </Button>
+                        </>
+                    ) : (
+                        <div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="w-64 shrink-0" />
-                )}
+
+                    )}
+                </div>
 
                 {/* Wheel - Mitte */}
-                <div className="flex flex-col items-center gap-4 flex-1">
+                <div className="flex flex-col items-center gap-2 flex-1 min-w-0 min-h-0">
                     <AnimatePresence mode="wait">
                         {currentRolledClient && (
                             <motion.div
@@ -92,20 +97,23 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="flex flex-col items-center gap-1"
+                                className="flex flex-col items-center gap-1 shrink-0"
                             >
                                 <span className="text-slate-400 text-xs uppercase tracking-widest">Currently Rolling</span>
-                                <span className="text-3xl font-black text-white">{currentRolledClient.name}</span>
+                                <span className="text-xl md:text-3xl font-black text-white">{currentRolledClient.name}</span>
                             </motion.div>
                         )}
                     </AnimatePresence>
-                    <Wheel clients={clients} rotation={rotation} />
+                    {/* Wheel bekommt max-size damit es nicht überläuft */}
+                    <div className="w-full max-w-[min(60vw,60vh)] aspect-square">
+                        <Wheel clients={clients} rotation={rotation} />
+                    </div>
                 </div>
 
-                {/* Roll History - rechts */}
-                <div className="flex flex-col gap-3 w-64 shrink-0 shadow-black/20 shadow-sm bg-white/15 border border-white/30 rounded-3xl p-4">
-                    <span className="font-bold uppercase self-center text-sm tracking-widest text-slate-400">Roll History</span>
-                    <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
+                {/* Roll History */}
+                <div className="flex flex-col gap-2 lg:gap-3 lg:w-52 xl:w-64 shrink-0 shadow-black/20 shadow-sm bg-white/15 border border-white/30 rounded-3xl p-3 lg:p-4 max-h-48 lg:max-h-96">
+                    <span className="font-bold uppercase self-center text-xs tracking-widest text-slate-400">Roll History</span>
+                    <div className="flex flex-col gap-2 overflow-y-auto">
                         <AnimatePresence>
                             {rollHistory && rollHistory.map((c, i) => (
                                 <motion.span
@@ -113,7 +121,7 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.05 }}
-                                    className="text-white text-center rounded-xl border bg-white/10 border-white/15 py-2 px-3"
+                                    className="text-white text-center rounded-xl border bg-white/10 border-white/15 py-1.5 px-3 text-sm shrink-0"
                                 >
                                     {i + 1}. {c.name}
                                 </motion.span>
@@ -123,6 +131,77 @@ export default function GameInProgress({ clients, toasts, addToast, mode, roomCo
                 </div>
 
             </div>
+        
+            :
+
+             <div className="flex flex-col lg:flex-row items-center justify-center gap-4 w-full flex-1 min-h-0 px-2">
+
+                {/* Host Controls / Placeholder */}
+                <div className="flex flex-row lg:flex-col gap-2 lg:gap-3 lg:w-52 xl:w-64 shrink-0 shadow-black/20 shadow-sm bg-white/15 border border-white/30 rounded-3xl p-3 lg:p-4">
+                    {isHost ? (
+                        <>
+                            <span className="font-bold uppercase self-center text-xs tracking-widest text-slate-400 hidden lg:block">Host Controls</span>
+                            <Button disabled={isSpinning} onClick={onRollNext} className="bg-green-500 hover:bg-green-400 h-10 text-sm">
+                                🎲 Roll Next
+                            </Button>
+                            <Button disabledTimer={3000} onClick={onToggleLateJoin} className="bg-indigo-500/30 border border-indigo-400/30 h-10 text-sm">
+                                🚪 Late Join
+                            </Button>
+                            <Button onClick={onStopGame} className="bg-red-500/20 border border-red-400/30 text-red-300 h-10 text-sm">
+                                ⏹ Stop
+                            </Button>
+                        </>
+                    ) : (
+                        <div>
+                        </div>
+
+                    )}
+                </div>
+
+                {/* Wheel - Mitte */}
+                <div className="flex flex-col items-center gap-2 flex-1 min-w-0 min-h-0">
+                    <AnimatePresence mode="wait">
+                        {currentRolledClient && (
+                            <motion.div
+                                key={currentRolledClient.clientId}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="flex flex-col items-center gap-1 shrink-0"
+                            >
+                                <span className="text-slate-400 text-xs uppercase tracking-widest">Currently Rolling</span>
+                                <span className="text-xl md:text-3xl font-black text-white">{currentRolledClient.name}</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    {/* Wheel bekommt max-size damit es nicht überläuft */}
+                    <div className="w-full max-w-[min(60vw,60vh)] aspect-square">
+                        <Wheel clients={clients} rotation={rotation} />
+                    </div>
+                </div>
+
+                {/* Roll History */}
+                <div className="flex flex-col gap-2 lg:gap-3 lg:w-52 xl:w-64 shrink-0 shadow-black/20 shadow-sm bg-white/15 border border-white/30 rounded-3xl p-3 lg:p-4 max-h-48 lg:max-h-96">
+                    <span className="font-bold uppercase self-center text-xs tracking-widest text-slate-400">Roll History</span>
+                    <div className="flex flex-col gap-2 overflow-y-auto">
+                        <AnimatePresence>
+                            {rollHistory && rollHistory.map((c, i) => (
+                                <motion.span
+                                    key={c.clientId}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="text-white text-center rounded-xl border bg-white/10 border-white/15 py-1.5 px-3 text-sm shrink-0"
+                                >
+                                    {i + 1}. {c.name}
+                                </motion.span>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                </div>
+
+            </div>
+        }
         </div>
     </>
 }

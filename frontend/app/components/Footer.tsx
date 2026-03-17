@@ -37,29 +37,9 @@ export default function Footer() {
 
             {/* Rechte Seite: Rechtliches */}
             <div className="flex gap-6 items-center">
-                <a
-                    href="/privacy"
-                    className="text-white/40 hover:text-(--accent-cyan) text-xs transition-colors cursor-pointer"
-                >
-                    Privacy Policy 
-                </a>
-                <a
-                    href="/contact"
-                    className="text-white/40 hover:text-(--accent-cyan) text-xs transition-colors cursor-pointer"
-                >
-                    Contact
-                </a>
-
-                {/* Kleiner Status-Indikator (optionaler Eyecatcher) */}
-                <div className="flex justify-around gap-5">
-                    <span className="text-[10px] select-none w-fit self-center flex text-center text-white/50 backdrop-blur-md bg-white/5 border border-white/10 p-1 rounded-xl uppercase">
-                        <div className="self-center w-1.5 h-1.5 m-1 rounded-full bg-green-500 animate-pulse" />
-                        currently <span className={`${!roomsOnline || roomsOnline=== 0 ? "text-red-400" : "text-green-400"} mr-2 ml-2 animate-pulse`}> {roomsOnline || "0"} </span>  rooms active 🔥
-                    </span>
-                </div>
 
                 <a
-                    // href="https://buymeacoffee.com/nikolaspasic"
+                    href="https://buymeacoffee.com/nikolaspasic"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-indigo-400 animate-pulse hover:border-(--accent-indigo) transition-all cursor-pointer"
@@ -79,13 +59,33 @@ export default function Footer() {
                             <line x1="14" y1="1" x2="14" y2="4" />
                         </svg>
                     </span>
-                    {/* <span className="text-[10px] flex text-white/40 group-hover:text-white transition-colors uppercase tracking-wider">
-                        Support Dev
-                    </span> */}
+                    
                 </a>
-                <span onClick={() => router.push("/changelog")} className="text-white/40 group-hover:text-white border border-white/10 bg-white/5 p-1 transition-colors text-[10px] select-none hover:cursor-pointer hover:border-gray-400 w-fit self-center flex text-center backdrop-blur-md px-2 rounded-xl uppercase">
-                    Checkout all new features here! 📢
-                </span>
+                {/* Kleiner Status-Indikator (optionaler Eyecatcher) */}
+                <div className="flex justify-around gap-5">
+                    <span className="text-[10px] select-none w-fit self-center flex text-center text-white/50 backdrop-blur-md bg-white/5 border border-white/10 p-1 rounded-xl uppercase">
+                        <div className="self-center w-1.5 h-1.5 m-1 rounded-full bg-green-500 animate-pulse" />
+                        currently <span className={`${!roomsOnline || roomsOnline=== 0 ? "text-red-400" : "text-green-400"} mr-2 ml-2 animate-pulse`}> {roomsOnline || "0"} </span>  rooms active 🔥
+                    </span>
+                </div>
+                <a
+                    href="/privacy"
+                    className="text-white/40 hover:text-(--accent-cyan) text-xs transition-colors cursor-pointer"
+                >
+                    Privacy Policy 
+                </a>
+                <a
+                    href="/contact"
+                    className="text-white/40 hover:text-(--accent-cyan) text-xs transition-colors cursor-pointer"
+                >
+                    Contact
+                </a>
+                <a
+                    href="/changelog"
+                    className="text-white/40 hover:text-(--accent-cyan) text-xs transition-colors cursor-pointer"
+                >
+                    Changelog
+                </a>
             </div>
         </footer>
     );
