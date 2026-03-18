@@ -36,13 +36,13 @@ export default function Footer() {
             </div>
 
             {/* Rechte Seite: Rechtliches */}
-            <div className="flex gap-6 items-center">
+            <div className="flex gap-6 items-center ">
 
                 <a
                     href="https://buymeacoffee.com/nikolaspasic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-indigo-400 animate-pulse hover:border-(--accent-indigo) transition-all cursor-pointer"
+                    className="group absolute left-30 flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-indigo-400 animate-pulse hover:border-(--accent-indigo) transition-all cursor-pointer"
                 >
                     <span className="text-white/40 group-hover:text-(--accent-blue) transition-colors">
                         <svg
@@ -62,7 +62,7 @@ export default function Footer() {
                     
                 </a>
                 {/* Kleiner Status-Indikator (optionaler Eyecatcher) */}
-                <div className="flex justify-around gap-5">
+                <div className="flex justify-around gap-5 right-5 absolute">
                     <span className="text-[10px] select-none w-fit self-center flex text-center text-white/50 backdrop-blur-md bg-white/5 border border-white/10 p-1 rounded-xl uppercase">
                         <div className="self-center w-1.5 h-1.5 m-1 rounded-full bg-green-500 animate-pulse" />
                         currently <span className={`${!roomsOnline || roomsOnline=== 0 ? "text-red-400" : "text-green-400"} mr-2 ml-2 animate-pulse`}> {roomsOnline || "0"} </span>  rooms active 🔥
