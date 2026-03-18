@@ -47,7 +47,7 @@ export default function Button({
     }
 
     const style = twMerge(
-        "select-none font-semibold rounded-2xl shadow-md transition-all duration-150 ease-in-out",
+        "flex items-center justify-center select-none font-semibold text-center rounded-2xl shadow-md transition-all duration-150 ease-in-out",
         padding,                    
         `text-${textColor}`,
         isDisabled

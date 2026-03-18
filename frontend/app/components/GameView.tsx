@@ -62,7 +62,10 @@ export default function GameView({ roomCode, mode, clientId, roomConfig, isHost 
 
     if(gameState.status === "finished"){
         return(
-            <GameFinished /> 
+            <GameFinished 
+                isHost={isHost}
+                onStopGame={stopGame}
+            /> 
         )
     }
 

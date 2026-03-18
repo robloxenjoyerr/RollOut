@@ -17,6 +17,13 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       .map((c: any) => ({ ...c, isHost: false }))
   }
 
+  const getRollHistory = (room: any) => {
+    const hostId = room.game?.hostId ?? room.hostId
+    const allClients = room.game?.clients ?? room.clients ?? []
+    const nonHostClients = allClients.filter((c: any) => c.clientId !== hostId)
+    return nonHostClients.filter((c: any) => c.isRolled).map((c: any) => ({ ...c }))
+  }
+
   socket.on("getGameState", async (clientId: string) => {
     const room = await findRoomByClient(clientId)
 
@@ -25,17 +32,46 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     }
     console.log("ROOMNAME: ", room.game.roomName)
 
-    
+
+    if (room.game.hostId === clientId) {
+      resetHostInactivityTimer(room.game.id)
+    }
+
     io.to(client.gameId).emit("gameStateUpdate", {
       status: room.game.status,
       roomName: room.game.roomName,
       clients: getClientsWithoutHost(room),
+      rollHistory: getRollHistory(room),
       allowLateRoll: room.game.allowLateRoll
-
     })
   })
 
   const hostDisconnectTimers = new Map<string, NodeJS.Timeout>()
+  const hostInactivityTimers = new Map<string, NodeJS.Timeout>()
+
+  const resetHostInactivityTimer = async (roomId: string) => {
+    if (hostInactivityTimers.has(roomId)) {
+      clearTimeout(hostInactivityTimers.get(roomId)!)
+    }
+
+    const timer = setTimeout(async () => {
+      console.log(`[GameHandler] Host inactivity timeout reached for room ${roomId}. Closing room.`)
+      await deleteRoom(roomId)
+      io.to(roomId).emit("roomClosed", {
+        reason: "host_inactivity",
+        message: "Room has been closed due to 3h host inactivity."
+      })
+    }, 1000 * 60 * 60 * 3) // 3 hours
+
+    hostInactivityTimers.set(roomId, timer)
+  }
+
+  const clearHostInactivityTimer = (roomId: string) => {
+    if (hostInactivityTimers.has(roomId)) {
+      clearTimeout(hostInactivityTimers.get(roomId)!)
+      hostInactivityTimers.delete(roomId)
+    }
+  }
 
   socket.on("disconnect", async () => {
 
@@ -52,7 +88,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
     if (isHost) {
       console.log(`[GameHandler - socket.disconnect] HOST has disconnected from Room ${room.game.roomCode}`)
-
+      clearHostInactivityTimer(room.game.id)
       await prisma.liveGames.update({
         where: { id: room.game.id },
         data: {
@@ -76,7 +112,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
             reason: "host_disconnected"
           })
         }
-      }, 1000 * 60 * 5) // * 5 => 5min
+      }, 1000 * 60 * 15) // * 60 => 6min
 
       hostDisconnectTimers.set(room.game.id, timer)
     }
@@ -111,6 +147,8 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
         hostDisconnectTimers.delete(room.id)
       }
 
+      resetHostInactivityTimer(room.id)
+
       await prisma.liveGames.update({
         where: { id: room.id },
         data: {
@@ -118,6 +156,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
           hostLeftAt: null
         }
       })
+
       io.to(room.id).emit("hostReconnected", {
         clientId: client.clientId,
         name: client.name,
@@ -149,9 +188,14 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     console.log(`[GameHandler] Broadcast clientJoined for ${client.name} to room ${room.id}`)
 
 
+    if (room.hostId === client.clientId) {
+      resetHostInactivityTimer(room.id)
+    }
+
     socket.emit("gameStateUpdate", {
       status: room.status,
-      clients: getClientsWithoutHost(room)
+      clients: getClientsWithoutHost(room),
+      rollHistory: getRollHistory(room)
     });
 
   });
@@ -165,8 +209,8 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       if (room && room?.game.clients.length <= 2) {
         return io.to(client.gameId).emit("startGameError", { message: `Not enough Clients. Need atleast ${3 - room.game.clients.length} more.` })
       }
-      else if(!room){
-        
+      else if (!room) {
+
         return io.to(client.gameId).emit("startGameError", { message: "Room was not found." })
       }
 
@@ -189,6 +233,8 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       if (updatedRoomStatus?.status !== "in-progress") {
         console.log("[GameHandler] Room-Status update failed => Room-Status was not successfully updated to 'in-progress'.")
       }
+
+      resetHostInactivityTimer(room.game.id)
 
       console.log(`[GameHandler] Game Start was successful. Broadcasting gameStarted to room ${client.gameId} now.`)
       io.to(client.gameId).emit("gameStarted", { status: "in-progress" })
@@ -217,6 +263,10 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
           : "New joined Clients can now only spectate."
       })
 
+      if (room.game.hostId === client.clientId) {
+        resetHostInactivityTimer(room.game.id)
+      }
+
     } catch (err) {
       console.error(err)
     }
@@ -229,9 +279,16 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
       if (!room) return io.to(client.gameId).emit("error", { message: "Could not stop Room. Room not found." })
 
+      clearHostInactivityTimer(client.gameId)
+      if (hostDisconnectTimers.has(client.gameId)) {
+        clearTimeout(hostDisconnectTimers.get(client.gameId)!)
+        hostDisconnectTimers.delete(client.gameId)
+      }
+
       await deleteRoom(client.gameId)
 
       io.to(client.gameId).emit("gameEnded", { message: "Game has ended!" });
+      io.to(client.gameId).emit("roomClosed", { message: "Room has been closed by the host. Redirecting to join..." });
     } catch (err) {
       console.error(err)
     }
@@ -259,14 +316,21 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
         c => c.isRolled === false && c.clientId !== hostId
       )
 
-      if (unrolledClients.length === 0){
+      if (unrolledClients.length === 0) {
+        clearHostInactivityTimer(room.game.id)
+        if (hostDisconnectTimers.has(room.game.id)) {
+          clearTimeout(hostDisconnectTimers.get(room.game.id)!)
+          hostDisconnectTimers.delete(room.game.id)
+        }
         await deleteRoom(client.gameId)
-        return io.to(client.gameId).emit("gameEnded", { message: "All Clients have been Rolled. Closing in 5s." })
-      } 
+        io.to(client.gameId).emit("gameEnded", { message: "All Clients have been Rolled. Closing in 5s." })
+        return io.to(client.gameId).emit("roomClosed", { message: "All clients rolled. Room closed, redirecting to join..." })
+      }
 
       const randomInt = Math.floor(Math.random() * unrolledClients.length)
       const nextRolled = unrolledClients[randomInt]
 
+      resetHostInactivityTimer(room.game.id)
 
       await prisma.client.update({
         where: { id: nextRolled.id },
@@ -277,8 +341,19 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       const updatedClients = unrolledClients.filter(c => c.id !== nextRolled.id)
 
       const segmentAngle = 360 / unrolledClients.length
-      const margin = segmentAngle * 0.15
-      const randomOffset = margin + Math.random() * (segmentAngle - margin * 2)
+      const margin = segmentAngle * 0.03
+      let randomOffset
+
+      if (Math.random() < 0.3) {
+        // 30% Chance: nah am Rand
+        const edgeOffset = segmentAngle * 0.05
+        randomOffset = Math.random() < 0.5
+          ? edgeOffset // links
+          : segmentAngle - edgeOffset // rechts
+      } else {
+        // 70% normal random
+        randomOffset = Math.random() * segmentAngle
+      }
 
       console.log("randomOffset:", randomOffset, "segmentAngle:", segmentAngle, "unrolledClients.length:", unrolledClients.length)
 

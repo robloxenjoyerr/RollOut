@@ -64,7 +64,9 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
 
   // ✅ Zentrale Event-Handler
   const handleGameStateUpdate = useCallback((data: any) => {
-    setGameState(prev => ({...prev, roomName: data.roomName}))
+    setGameState(prev => ({ ...prev, roomName: data.roomName }))
+    console.log("CLIENTS:", data.clients)
+    setRollHistory(data.rollHistory || [])
     updatePhase(data.status)
     updateClients(data.clients || [])
     initWheel(data.clients || [])  // ← wheel initialisieren
@@ -113,7 +115,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
 
     spinTo(data.nextRolled, data.randomOffset)  // ← alles im wheel hook
 
-    setTimeout(()=> {
+    setTimeout(() => {
       addToast(`Next Rolled is ${data.nextRolled.name}`, "info")
       setRollHistory(prev => [...(prev ?? []), data.nextRolled])
     }, 8000) // =>>>>>>>>>>>>> DELAY TO DISPLAY NEXTROLLED VIA TOASTMESSAGE
@@ -147,6 +149,13 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     console.log("GOTT new toggle state")
   }, [addToast])
 
+  const handleRoomClosed = useCallback((data: any) => {
+    addToast(data.message, "info")
+    setTimeout(() => {
+      router.push("/join")
+    }, 5000)
+  }, [addToast])
+
   // ✅ Socket-Setup einmalig
   useEffect(() => {
     if (!socket) return
@@ -159,6 +168,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
       gameStarted: handleGameStarted,
       startGameError: handleGameStartError,
       gameEnded: handleGameEnded,
+      roomClosed: handleRoomClosed,
       nextRolled: handleNextRolled,
       allPersonsRolled: handleAllRolled,
       hostDisconnected: handleHostDisconnected,

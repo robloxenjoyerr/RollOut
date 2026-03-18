@@ -47,7 +47,7 @@ export function getOrCreateClientId(req: Request, res: Response): string | null{
             domain: process.env.NODE_ENV === "production"
                 ? ".rollout.live"
                 : undefined,
-            maxAge: 1000 * 60 * 60 * 1, // 1 Stunde
+            maxAge: 1000 * 60 * 60 * 5, // 5 Stunden
         })
         
         return newId
