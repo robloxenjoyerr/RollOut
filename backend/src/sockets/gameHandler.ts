@@ -1,6 +1,6 @@
 import { Socket, Server } from "socket.io";
 import prisma from "../lib/prisma-client";
-import { findRoomByClient, findRoomByGameCode, updateRoomStatus, deleteRoom, getRoomClients } from "../services/db-actions";
+import { findRoomByClient, findRoomByGameCode, updateRoomStatus, deleteRoom, getRoomClients, resetRoom } from "../services/db-actions";
 
 export const registerGameHandlers = (io: Server, socket: Socket) => {
   const client = socket.data.client
@@ -30,8 +30,6 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
     if (!room) {
       return io.to(client.gameId).emit("error", { message: "Could not find Room for ClientId: ", clientId })
     }
-    console.log("ROOMNAME: ", room.game.roomName)
-
 
     if (room.game.hostId === clientId) {
       resetHostInactivityTimer(room.game.id)
@@ -287,8 +285,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
 
       await deleteRoom(client.gameId)
 
-      io.to(client.gameId).emit("gameEnded", { message: "Game has ended!" });
-      io.to(client.gameId).emit("roomClosed", { message: "Room has been closed by the host. Redirecting to join..." });
+      return io.to(client.gameId).emit("roomClosed", { message: "Room has been closed by the host. Redirecting to join..." });
     } catch (err) {
       console.error(err)
     }
@@ -322,9 +319,7 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
           clearTimeout(hostDisconnectTimers.get(room.game.id)!)
           hostDisconnectTimers.delete(room.game.id)
         }
-        await deleteRoom(client.gameId)
-        io.to(client.gameId).emit("gameEnded", { message: "All Clients have been Rolled. Closing in 5s." })
-        return io.to(client.gameId).emit("roomClosed", { message: "All clients rolled. Room closed, redirecting to join..." })
+        return io.to(client.gameId).emit("gameEnded", { message: "All clients have been rolled." })
       }
 
       const randomInt = Math.floor(Math.random() * unrolledClients.length)
@@ -363,4 +358,11 @@ export const registerGameHandlers = (io: Server, socket: Socket) => {
       console.error("[GameHandler] Try-Catch Error: ", err)
     }
   });
+
+  socket.on("resetRoom", async () => {
+    await resetRoom(client.id)
+
+    return io.to(client.gameId).emit("roomReseted", { valid: true })
+
+  })
 };

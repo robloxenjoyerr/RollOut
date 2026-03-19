@@ -3,6 +3,7 @@ import { apiFetch } from "@/app/lib/api"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import GameView from "@/app/components/GameView"
+import { routerServerGlobal } from "next/dist/server/lib/router-utils/router-server-context"
 
 // => FIX: when joining as normal client, clientId is undefined => client doesnt get registered in client array and doesnt get rendered for hostview and clientview
 
@@ -52,8 +53,8 @@ export default async function Page({ params, searchParams }: {
         });
 
         console.log("RES: ", res)
-
-        return <GameView roomCode={res.roomCode} mode={res.mode} clientId={res.clientId} roomConfig={res.roomConfig} isHost={res.isHost}/>
+        if(res.valid) return <GameView roomCode={res.roomCode} mode={res.mode} clientId={res.clientId} roomConfig={res.roomConfig} isHost={res.isHost}/>
+        else redirect("/join")
     } catch (error: any) {
         if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error  // redirect durchlassen
         console.error("game/id ERROR : ", error)

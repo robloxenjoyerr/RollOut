@@ -10,6 +10,8 @@ export default function Wheel({
   rotation: number;
 }) {
   const [isMounted, setIsMounted] = useState(false);
+  const [isAnimating, setIsAnimating] = useState<boolean>(false)
+
   const controls = useAnimation()
   const prevRotationRef = useRef(0)
   const radius = 150;
@@ -20,45 +22,58 @@ export default function Wheel({
     setIsMounted(true);
   }, []);
 
+
+  useEffect(() => {
+    setIsAnimating(true)
+    console.log("Is animating.")
+    setTimeout(() => {
+      setIsAnimating(false)
+    }, 1000)
+  }, [rotation])
+
   useEffect(() => {
     if (!isMounted || rotation === prevRotationRef.current) return
 
     const prev = prevRotationRef.current
-const kickback = prev - Math.random() * 40 - 10  // war 50-30, jetzt 20-10
+    const kickback = prev - Math.random() * 40 - 10  // war 50-30, jetzt 20-10
 
     const spins = 5
     const target = rotation + spins * 360
 
-    
-controls.start({
-  rotate: [prev, kickback, rotation],
-  transition: {
-    duration: 9,
-    times: [0, 0.12, 1],  // Kickback nimmt 12% der Zeit → spürbarer
-    ease: [
-      [0.4, 0, 0.6, 1],   // Kickback: sanfter rein, nicht so abrupt
-      [0.16, 1, 0.3, 1],  // Auslauf: bleibt gleich
-    ]
-  }
-})
+
+    controls.start({
+      rotate: [prev, kickback, rotation],
+      transition: {
+        duration: 9,
+        times: [0, 0.12, 1],  // Kickback nimmt 12% der Zeit → spürbarer
+        ease: [
+          [0.4, 0, 0.6, 1],   // Kickback: sanfter rein, nicht so abrupt
+          [0.16, 1, 0.3, 1],  // Auslauf: bleibt gleich
+        ]
+      }
+    })
 
     prevRotationRef.current = rotation
   }, [rotation, isMounted])
 
-  const getPersonColor = (name: string) => {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return `hsl(${Math.abs(hash) % 360}, 80%, 55%)`;
-  };
+
 
   if (!isMounted) return <div className="w-87.5 h-87.5" />;
   if (total === 0) return <div className="text-white italic font-bold">No one left to roll!</div>;
   if (!clients || !total) return null
 
   return (
+
     <div className="relative select-none flex items-center justify-center" style={{ width: 450, height: 450 }}>
+      {isAnimating && <motion.div
+        className="absolute inset-0 rounded-full pointer-events-none"
+        initial={{ scale: 0.9, opacity: 0.8 }}
+        animate={{ scale: 1.15, opacity: 0 }}
+        transition={{ duration: 0.5 }}
+        style={{
+          border: "4px solid rgba(27, 132, 217,0.8)"
+        }}
+      />}
 
       {/* Outer glow ring */}
       <div className="absolute inset-0 rounded-full" style={{

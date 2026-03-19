@@ -16,8 +16,7 @@ interface GameViewProps {
 }
 
 export default function GameView({ roomCode, mode, clientId, roomConfig, isHost }: GameViewProps) {
-    const [clients, setClients] = useState<Client[]>([])
-    const { gameState, toasts, addToast, rollNext, wheelClients, rollHistory, rotation, isSpinning, startGame, stopGame, toggleLateJoin } = useGameState({
+    const { gameState, toasts, addToast, rollNext, wheelClients, rollHistory, rotation, isSpinning, startGame, stopGame, toggleLateJoin, resetRoom } = useGameState({
         roomCode,
         mode,
         clientId,
@@ -64,6 +63,7 @@ export default function GameView({ roomCode, mode, clientId, roomConfig, isHost 
         return(
             <GameFinished 
                 isHost={isHost}
+                onResetRoom={resetRoom}
                 onStopGame={stopGame}
             /> 
         )

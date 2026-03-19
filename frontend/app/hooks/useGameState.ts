@@ -75,7 +75,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   const handleClientJoined = useCallback((data: any) => {
     console.log("Someone joined!!!")
     updateClients(data.clients)
-    addToast(`New Client ${data.name} has connected!`, "info")
+    addToast(`Client ${data.name} has connected!`, "info")
     // ✅ FIX: Sende nur den String!
     socket?.emit("getGameState", clientId)
   }, [updateClients, addToast, socket, clientId])
@@ -97,14 +97,6 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
     addToast(`${data.message}`, "error")
     console.log(data.message)
   }, [addToast])
-
-  const handleGameEnded = useCallback(async (data: any) => {
-
-    await apiFetch("/api/clearClient", { method: "POST", credentials: "include" })
-    addToast(data.message, "info")
-    updatePhase("finished")
-
-  }, [addToast, updatePhase])
 
   const handleHostDisconnected = (data: any) => {
     addToast(`${data.message}`, "warning")
@@ -145,17 +137,44 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
   }, [addToast])
 
   const handleToggleLateJoinUpdate = useCallback((data: any) => {
-    addToast(data.message, "info")
-    console.log("GOTT new toggle state")
+    addToast("This Function is still in development", "info")
   }, [addToast])
 
-  const handleRoomClosed = useCallback((data: any) => {
+  const handleRoomClosed = useCallback(async (data: any) => {
     addToast(data.message, "info")
+    await apiFetch("/api/clearClient", { method: "POST", credentials: "include" })
+
+    let timer = 5
+
+    const interval = setInterval(() => {
+      addToast(`Room Closing in ${timer}`, "info")
+      console.log()
+      timer -= 1
+
+
+      if (timer < 0) {
+        clearInterval(interval)
+      }
+    }, 1000) // ✅ 1 Sekunde
     setTimeout(() => {
-      router.push("/join")
+      clearInterval(interval)
+      router.push(isHost ? "/host" : "/join")
     }, 5000)
   }, [addToast])
 
+  const handleGameEnded = useCallback(async (data: any) => {
+
+    addToast(data.message, "info")
+    updatePhase("finished")
+
+  }, [addToast, updatePhase])
+
+  const handleRoomReseted = useCallback((data: any) => {
+    if (data.valid) {
+      addToast("Room reseted successfully", "info")
+      updatePhase("in-progress")
+    }
+  }, [addToast])
   // ✅ Socket-Setup einmalig
   useEffect(() => {
     if (!socket) return
@@ -169,6 +188,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
       startGameError: handleGameStartError,
       gameEnded: handleGameEnded,
       roomClosed: handleRoomClosed,
+      roomReseted: handleRoomReseted,
       nextRolled: handleNextRolled,
       allPersonsRolled: handleAllRolled,
       hostDisconnected: handleHostDisconnected,
@@ -224,6 +244,10 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
       // API-Call + Socket-Emit
       if (!socket) return
       socket.emit("stopGame", { roomCode, clientId })
+    },
+    resetRoom: async () => {
+      if (!socket) return
+      socket.emit("resetRoom", { roomCode, clientId })
     },
     toggleLateJoin: async () => {
       if (!socket) return

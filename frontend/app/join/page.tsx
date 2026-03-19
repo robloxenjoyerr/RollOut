@@ -36,6 +36,7 @@ export default function JoinPage() {
     async function verifyRoom() {
         if (!roomCode){
             shakeFeedbackTimeout()
+            addToast("Invalid Room-Code", "error")
             return null
         }
 
@@ -74,7 +75,7 @@ export default function JoinPage() {
     async function joinRoom() {
         console.log(`roomCode: ${roomCode} and username: ${username}`)
         if (!roomCode || !username) {
-            addToast("Either Room-Code or Username was invalid.", "error")
+            addToast("Invalid Username", "error")
             shakeFeedbackTimeout()
             return
         }
