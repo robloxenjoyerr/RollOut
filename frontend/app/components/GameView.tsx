@@ -4,8 +4,7 @@ import Loading from "./Loading"
 import WaitingLobby from "./WaitingLobby"
 import GameInProgress from "./GameInProgress"
 import GameFinished from "./GameFinished"
-import { Client } from "../lib/types"
-import { useState } from "react"
+
 
 interface GameViewProps {
     roomCode: string
@@ -15,7 +14,7 @@ interface GameViewProps {
     isHost: boolean
 }
 
-export default function GameView({ roomCode, mode, clientId, roomConfig, isHost }: GameViewProps) {
+export default function GameView({ roomCode, mode, clientId, isHost }: GameViewProps) {
     const { gameState, toasts, addToast, rollNext, wheelClients, rollHistory, rotation, isSpinning, startGame, stopGame, toggleLateJoin, resetRoom } = useGameState({
         roomCode,
         mode,

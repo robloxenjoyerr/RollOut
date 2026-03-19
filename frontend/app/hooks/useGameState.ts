@@ -148,7 +148,7 @@ export function useGameState({ roomCode, mode, clientId, isHost }: UseGameStateP
 
     const interval = setInterval(() => {
       addToast(`Room Closing in ${timer}`, "info")
-      console.log()
+      console.log(timer)
       timer -= 1
 
 
