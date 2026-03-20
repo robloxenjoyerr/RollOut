@@ -162,6 +162,7 @@ export async function resetRoom(clientId: string) {
   } catch (err) {
     console.error(err)
   }
+
 }
 
 // export async function findClientBy
