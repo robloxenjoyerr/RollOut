@@ -21,10 +21,8 @@ interface WaitingLobbyProps {
 
 export default function WaitingLobby({ clients = [], isHost = false, roomCode = "", roomName, onStartGame, onStopGame, toasts, addToast }: WaitingLobbyProps) {
     const [isGameEnding, setIsGameEnding] = useState<boolean>(false)
-    console.log("WAITING-LOBBY-SCREEN")
-    console.log(roomName)
     return <>
-        <Overlay isOpen={isGameEnding} onClose={() => setIsGameEnding(false)}>
+        <Overlay isOpen={isGameEnding} onClose={() => setIsGameEnding(false)} className="z-999">
             <div className="flex flex-col gap-5">
                 <span className="font-bold ">Do you really want to Stop?</span>
                 <div className="flex gap-5 items-stretch">

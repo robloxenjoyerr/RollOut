@@ -38,7 +38,7 @@ export default function Footer() {
             {/* Rechte Seite: Rechtliches */}
             <div className="flex gap-6 items-center ">
 
-                <a
+                {/* <a
                     href="https://buymeacoffee.com/nikolaspasic"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -60,7 +60,7 @@ export default function Footer() {
                         </svg>
                     </span>
                     
-                </a>
+                </a> */}
                 {/* Kleiner Status-Indikator (optionaler Eyecatcher) */}
                 <div className="flex justify-around gap-5 right-5 absolute">
                     <span className="text-[10px] select-none w-fit self-center flex text-center text-white/50 backdrop-blur-md bg-white/5 border border-white/10 p-1 rounded-xl uppercase">

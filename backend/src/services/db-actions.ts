@@ -59,7 +59,7 @@ export async function findRoomByClient(clientId: string) {
     include: {
       game: {
         include: {
-          clients: true 
+          clients: true
         }
       }
     }
@@ -127,9 +127,42 @@ export async function addClientToGame(gameId: string, clientData: { clientId: st
 }
 
 
-export async function getRoomClients(roomCode: string){
+export async function getRoomClients(roomCode: string) {
   const room = await findRoomByClient
 }
 
+export async function resetRoom(clientId: string) {
+  try {
+    if (!clientId) {
+      console.log("[DB-ACTIONS - resetRoom] ERROR: ClientId is undefined. ")
+      return null
+    }
+
+    const room = await findRoomByClient(clientId)
+
+    if (!room) {
+      console.log("[DB-ACTIONS - resetRoom] ERROR: Room not found. ")
+      return null
+    }
+
+    await prisma.client.updateMany({
+      where: { gameId: room.game.id },
+      data: { isRolled: false }
+    })
+
+    console.log("[DB-ACTIONS - resetRoom] Updated all Clients successfully. ")
+    
+    await prisma.liveGames.update({
+      where: {id: room.game.id},
+      data: {status: "is-progress"}
+    })
+    
+    console.log("[DB-ACTIONS - resetRoom] Updated room Status successfully. ")
+    return true
+  } catch (err) {
+    console.error(err)
+  }
+
+}
 
 // export async function findClientBy
