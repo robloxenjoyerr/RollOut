@@ -8,12 +8,18 @@ interface GameFinishedProps {
     onStopGame: () => void
     onResetRoom: () => void
 
+    
+
 }
 
 
 
 export default function GameFinished({ isHost, onStopGame, onResetRoom }: GameFinishedProps) {
     const { toasts, addToast } = useToasts()
+
+
+
+
     function closeGame() {
         let timer = 5
 
